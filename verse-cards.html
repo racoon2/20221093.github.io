@@ -38,6 +38,16 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 .item b{color:var(--acc)}
 .item small{display:block;color:var(--mute);margin-top:2px}
 .note{font:12px system-ui,sans-serif;color:var(--mute);margin:14px 0;line-height:1.5}
+.rec{font:13px system-ui,sans-serif;color:var(--acc);margin:-4px 0 12px}
+.bl{display:inline-block;margin:0 2px;padding:2px 4px;border:0;border-bottom:2px solid var(--acc);border-radius:0;background:transparent;color:var(--ink);text-align:center;font:inherit;margin-bottom:0}
+.gd{color:var(--ok);font-weight:700}.wr{color:var(--bad);font-weight:700}.us{font-size:12px;color:var(--mute);margin-left:2px}
+.chip{display:inline-block;margin:4px;padding:7px 13px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);font:15px system-ui,sans-serif;cursor:grab;touch-action:none;user-select:none}
+.chip.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip.drag{position:fixed;z-index:9;pointer-events:none;opacity:.92;margin:0;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.slot{display:inline-block;min-width:5.5ch;padding:4px 8px;margin:0 2px;border-bottom:2px solid var(--acc);border-radius:6px 6px 0 0;text-align:center}
+.slot.hot{background:rgba(122,92,62,.22)}
+.slot.fill{color:var(--acc);font-weight:700;cursor:pointer}
+.bank{margin-top:16px;display:flex;flex-wrap:wrap;justify-content:center;width:100%}
 </style>
 </head>
 <body>
@@ -46,6 +56,12 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 <div class="sub">A~E 시리즈 · 카드를 눌러 뒤집고, 외웠는지 체크하세요.</div>
 <div class="bar"><i id="bar"></i></div>
 <div class="stat"><span id="prog"></span><span id="left"></span></div>
+<div class="rec" id="rec"></div>
+<div class="tabs">
+<button id="m1" class="on" onclick="setMode('card')">카드</button>
+<button id="m2" onclick="setMode('blank')">빈칸 채우기</button>
+<button id="m3" onclick="setMode('type')">직접 입력</button>
+</div>
 <div class="tabs">
 <button id="t5" onclick="toggleRnd()">랜덤 순서</button>
 <button id="t4" onclick="toggleEn()">영어</button>
@@ -107,7 +123,7 @@ function applyV(a){a.forEach(function(c){var v=V[c.ref];if(v){c.text=v[0];c.en=v
 function load(){try{var r=localStorage.getItem(KEY);if(r)return applyV(JSON.parse(r))}catch(e){}return applyV(seed())}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(cards))}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-var cards=load(),queue=[],cur=null,shown=false,reverse=false,showEn=false,rnd=false,pack="A";
+var cards=load(),queue=[],cur=null,shown=false,reverse=false,showEn=false,rnd=false,mode="card",pack="A";
 function pool(){return cards.filter(function(c){return c.text&&(pack==="all"||c.pk===pack)})}
 function chips(){
 var h='<button class="'+(pack==="all"?"on":"")+'" onclick="setPack(\'all\')">전체</button>';
@@ -116,8 +132,8 @@ document.getElementById("chips").innerHTML=h;
 }
 function setPack(k){pack=k;chips();build()}
 function build(){queue=pool().filter(function(c){return c.box<3});if(rnd)queue.sort(function(){return Math.random()-.5});next()}
-function next(){cur=queue.shift()||null;shown=false;render()}
-function render(){picks();
+function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;render()}
+function render(){picks();document.getElementById("rec").textContent="🔥 "+recText();
 var all=pool(),done=all.filter(function(c){return c.box>=3}).length;
 document.getElementById("bar").style.width=(all.length?done/all.length*100:0)+"%";
 document.getElementById("prog").textContent="외운 구절 "+done+" / "+all.length;
@@ -128,19 +144,61 @@ a.classList.add("hide");
 el.innerHTML=all.length?'<div class="ref">🎉 학습 완료!</div><div class="hint">이 묶음의 구절을 모두 외웠어요.</div><button style="margin-top:14px" onclick="event.stopPropagation();reset()">처음부터 다시</button>':'<div class="hint">이 섹션은 아직 본문이 준비되지 않았어요.</div>';
 return}
 var tag='<div class="tp">'+(cur.pk?cur.pk+" · ":"")+esc(cur.tp)+'</div>';
+if(mode!=="card"){a.classList.add("hide");practice(tag);return}
 var R='<div class="ref">'+esc(cur.ref)+'</div>',T='<div class="txt">'+esc(cur.text)+'</div>'+(showEn&&cur.en?'<div class="txt" style="font-size:14px;color:var(--mute);margin-top:12px">'+esc(cur.en)+'</div>':'');
 var front=reverse?T:R,back=reverse?R:T;
 el.innerHTML=tag+(shown?back:front)+'<div class="hint">'+(shown?"":"눌러서 확인")+"</div>";
 a.classList.toggle("hide",!shown);
 }
-function flip(){if(!cur)return;shown=!shown;render()}
-function grade(ok){if(ok){cur.box++}else{cur.box=0;queue.push(cur)}save();next()}
+function flip(){if(!cur||mode!=="card")return;shown=!shown;render()}
+function grade(ok){if(ok){cur.box++}else{cur.box=0;queue.push(cur)}logToday();save();next()}
 function reset(){pool().forEach(function(c){c.box=0});save();build()}
 function toggleRnd(){rnd=!rnd;document.getElementById("t5").classList.toggle("on",rnd);build()}
 function picks(){var h="";pool().forEach(function(c){var on=cur&&cur.id===c.id;h+='<button class="'+(on?"on":"")+'" onclick="jump('+c.id+')">'+esc(c.ref)+'</button>'});document.getElementById("picks").innerHTML=h}
-function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;render()}
+function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;bres=null;tres=null;blankFor=0;render()}
 function toggleEn(){showEn=!showEn;document.getElementById("t4").classList.toggle("on",showEn);render()}
+var bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
+var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
+function norm(x){return x.replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
+function setMode(m){mode=m;["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;render()}
+function pickBlanks(){var w=cur.text.split(/\s+/),idx=[];w.forEach(function(x,i){if(norm(x))idx.push(i)});idx.sort(function(){return Math.random()-.5});blanks=idx.slice(0,Math.max(1,Math.round(w.length*.35))).sort(function(a,b){return a-b});blankFor=cur.id;bres=null;bankOrder=blanks.map(function(x,i){return i}).sort(function(){return Math.random()-.5});slots=blanks.map(function(){return -1});selB=-1}
+function practice(tag){
+var el=document.getElementById("card"),h=tag+'<div class="ref">'+esc(cur.ref)+'</div>',b="";
+if(mode==="blank"){
+if(blankFor!==cur.id)pickBlanks();
+var w=cur.text.split(/\s+/);
+h+='<div class="txt" style="margin-top:14px;line-height:2.4;text-align:left">'+w.map(function(x,i){
+var k=blanks.indexOf(i);if(k<0)return esc(x);
+if(bres){var r=bres[k];return '<span class="'+(r.ok?"gd":"wr")+'">'+esc(x)+'</span>'+(r.ok||!r.u?"":'<s class="us">'+esc(r.u)+'</s>')}
+var bi=slots[k];
+return '<span class="slot'+(bi>=0?" fill":"")+'" data-k="'+k+'" onclick="slotTap('+k+')">'+(bi>=0?esc(w[blanks[bi]]):"")+'</span>'}).join(" ")+'</div>';
+if(!bres){h+='<div class="bank">'+bankOrder.filter(function(bi){return slots.indexOf(bi)<0}).map(function(bi){return '<span class="chip'+(selB===bi?" sel":"")+'" onpointerdown="dragStart(event,'+bi+')">'+esc(w[blanks[bi]])+'</span>'}).join("")+'</div><div class="hint" style="margin-top:8px">보기를 빈칸으로 끌어다 놓거나, 보기를 누른 뒤 빈칸을 눌러 넣으세요. 넣은 단어를 누르면 빠져요.</div>'}
+b=bres?'<button class="on" onclick="finish(bres.every(function(r){return r.ok}))">다음</button>':'<button class="on" onclick="checkBlank()">확인</button>';
+}else{
+h+='<textarea id="tin" placeholder="외운 구절을 입력하세요" style="margin-top:14px"'+(tres?" disabled":"")+'>'+(tres?esc(tres.u):"")+'</textarea>';
+if(tres)h+='<div class="txt" style="margin-top:12px"><b class="'+(tres.p>=90?"gd":"wr")+'">정확도 '+tres.p+'%</b><br><span style="font-size:15px">'+esc(cur.text)+'</span></div>';
+b=tres?'<button class="on" onclick="finish(tres.p>=90)">다음</button>':'<button class="on" onclick="checkType()">채점</button>';
+}
+el.innerHTML=h+'<div class="row" style="width:100%">'+b+'</div>';
+}
+function checkBlank(){var w=cur.text.split(/\s+/);bres=blanks.map(function(i,k){var bi=slots[k],u=bi>=0?w[blanks[bi]]:"";return{u:u,ok:norm(u)===norm(w[i])}});render()}
+function slotTap(k){if(slots[k]>=0){slots[k]=-1;selB=-1;render()}else if(selB>=0){slots[k]=selB;selB=-1;render()}}
+function dragStart(e,bi){e.preventDefault();var s=e.currentTarget,r=s.getBoundingClientRect();dragB=bi;moved=false;sx=e.clientX;sy=e.clientY;dx=e.clientX-r.left;dy=e.clientY-r.top;dragEl=s.cloneNode(true);dragEl.className="chip drag";dragEl.style.left=r.left+"px";dragEl.style.top=r.top+"px";document.body.appendChild(dragEl);document.addEventListener("pointermove",dragMove);document.addEventListener("pointerup",dragEnd);document.addEventListener("pointercancel",dragCancel)}
+function nearSlot(x,y){var best=null,bd=1e9;document.querySelectorAll(".slot").forEach(function(el){var r=el.getBoundingClientRect(),a=Math.max(Math.abs(x-(r.left+r.width/2))-r.width/2,0),b=Math.max(Math.abs(y-(r.top+r.height/2))-r.height/2,0),d=Math.hypot(a,b);if(d<bd){bd=d;best=el}});return bd<=40?best:null}
+function hot(el){document.querySelectorAll(".slot.hot").forEach(function(x){x.classList.remove("hot")});if(el)el.classList.add("hot")}
+function dragMove(e){if(!dragEl)return;if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>6)moved=true;dragEl.style.left=(e.clientX-dx)+"px";dragEl.style.top=(e.clientY-dy)+"px";if(moved)hot(nearSlot(e.clientX,e.clientY))}
+function dragStop(){document.removeEventListener("pointermove",dragMove);document.removeEventListener("pointerup",dragEnd);document.removeEventListener("pointercancel",dragCancel);if(dragEl){dragEl.remove();dragEl=null}hot(null)}
+function dragCancel(){dragStop();render()}
+function dragEnd(e){dragStop();if(moved){var sl=nearSlot(e.clientX,e.clientY);if(sl){slots[+sl.dataset.k]=dragB;selB=-1}}else{selB=selB===dragB?-1:dragB}render()}
+function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
+function checkType(){var u=document.getElementById("tin").value,a=norm(u),b=norm(cur.text);tres={u:u,p:Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))};render()}
+function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
+function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function getLog(){try{return JSON.parse(localStorage.getItem(LK))||{}}catch(e){return{}}}
+function logToday(){var l=getLog(),k=ymd(new Date());l[k]=(l[k]||0)+1;try{localStorage.setItem(LK,JSON.stringify(l))}catch(e){}}
+function recText(){var l=getLog(),d=new Date(),t=l[ymd(d)]||0,s=0;if(!t)d.setDate(d.getDate()-1);while(l[ymd(d)]){s++;d.setDate(d.getDate()-1)}return "오늘 "+t+"개 학습 · 연속 "+s+"일 · 총 "+Object.keys(l).length+"일"}
 chips();build();
 </script>
 </body>
 </html>
+
