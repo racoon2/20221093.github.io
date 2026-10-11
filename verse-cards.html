@@ -221,10 +221,10 @@ return '<span class="slot'+(bi>=0?" fill":"")+'" data-k="'+k+'" onclick="slotTap
 if(!bres){h+='<div class="bank">'+bankOrder.filter(function(bi){return slots.indexOf(bi)<0}).map(function(bi){return '<span class="chip'+(selB===bi?" sel":"")+'" onpointerdown="dragStart(event,'+bi+')">'+esc(bankW[bi])+'</span>'}).join("")+'</div><div class="hint" style="margin-top:8px">보기에는 오답도 섞여 있어요. 보기를 빈칸으로 끌어다 놓거나, 보기를 누른 뒤 빈칸을 눌러 넣으세요. 넣은 단어를 누르면 빠져요.</div>'}
 b=bres?'<button class="on" onclick="finish(bres.every(function(r){return r.ok}))">다음</button>':'<button class="on" onclick="checkBlank()">확인</button>';
 }else{
-h+='<div class="hint" style="margin-top:14px">'+(listening?"":"🎤 버튼을 누르고 구절을 외워서 말해 보세요")+'</div>';
+h+='<div class="hint" style="margin-top:14px">'+(listening?"":"🎤 버튼을 누르고 구절을 외워서 말해 보세요<br>할렐루야 98%↑ · 아멘 90%↑ · 은혜로워요 80%↑ · 다시 묵상 80% 미만")+'</div>';
 if(listening)h+='<div class="txt" id="vlive" style="margin-top:10px;min-height:28px;color:var(--mute)">'+esc(vtext)+'</div>';
 else if(vmsg&&!tres)h+='<div class="hint" style="margin-top:10px;color:var(--bad)">'+esc(vmsg)+'</div>';
-if(tres)h+='<div class="txt" style="margin-top:12px"><b class="'+(tres.p>=80?"gd":"wr")+'">정확도 '+tres.p+'%</b><br><span style="font-size:14px;color:var(--mute)">내가 말한 내용: '+esc(tres.u)+'</span><br><span style="font-size:15px">'+esc(cur.text)+'</span></div>';
+if(tres)h+='<div class="txt" style="margin-top:12px"><div style="font-size:26px;font-weight:700" class="'+rank(tres.p).c+'">'+rank(tres.p).e+' '+rank(tres.p).t+'</div><b>정확도 '+tres.p+'%</b><br><span style="font-size:14px;color:var(--mute)">내가 말한 내용: '+esc(tres.u)+'</span><br><span style="font-size:15px">'+esc(cur.text)+'</span></div>';
 b=tres?'<button onclick="startVoice()">다시 말하기</button><button class="on" onclick="finish(tres.p>=80)">다음</button>':(listening?'<button class="bad" onclick="stopVoice()">⏹ 끝내기</button>':'<button class="on" onclick="startVoice()">🎤 말하기</button>');
 }
 el.innerHTML=h+'<div class="row" style="width:100%">'+b+'</div>';
@@ -238,20 +238,24 @@ function dragMove(e){if(!dragEl)return;if(Math.abs(e.clientX-sx)+Math.abs(e.clie
 function dragStop(){document.removeEventListener("pointermove",dragMove);document.removeEventListener("pointerup",dragEnd);document.removeEventListener("pointercancel",dragCancel);if(dragEl){dragEl.remove();dragEl=null}hot(null)}
 function dragCancel(){dragStop();render()}
 function dragEnd(e){dragStop();if(moved){var sl=nearSlot(e.clientX,e.clientY);if(sl){slots[+sl.dataset.k]=dragB;selB=-1}}else{selB=selB===dragB?-1:dragB}render()}
-function pct(a,b){a=norm(a);return Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))}
+var CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",JUNG="ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ",JONG=" ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+function jamo(s){var o="";for(var i=0;i<s.length;i++){var c=s.charCodeAt(i)-44032;if(c>=0&&c<11172){o+=CHO[Math.floor(c/588)]+JUNG[Math.floor(c%588/28)].replace("ㅔ","ㅐ")+JONG[c%28].trim()}else o+=s[i]}return o}
+function pct(a,b){a=jamo(norm(a));b=jamo(b);return Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))}
+function rank(p){return p>=98?{t:"할렐루야",e:"🙌",c:"gd"}:p>=90?{t:"아멘",e:"🙏",c:"gd"}:p>=80?{t:"은혜로워요",e:"🙂",c:""}:{t:"다시 묵상",e:"📖",c:"wr"}}
+function pickBest(arr){var jt=jamo(norm(cur.text)),best=arr[0]||"",bs=-1;arr.forEach(function(t){var sc=lcs(jamo(norm(t)),jt);if(sc>bs){bs=sc;best=t}});return best}
 function resetVoice(){if(listening){listening=false;try{if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.abort()}catch(e){}}vtext="";vmsg=""}
 function voiceDone(t){listening=false;if(!t||!t.trim()){vmsg="소리가 인식되지 않았어요. 다시 말해 보세요.";render();return}tres={u:t,p:pct(t,norm(cur.text))};render()}
 function startVoice(){tres=null;vtext="";vmsg="";
-if(window.AndroidSTT){listening=true;render();AndroidSTT.start();return}
+if(window.AndroidSTT){listening=true;render();try{AndroidSTT.start(cur.text)}catch(e){AndroidSTT.start()}return}
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){vmsg="이 환경에서는 음성 인식을 쓸 수 없어요. 크롬이나 설치한 앱에서 사용해 주세요.";render();return}
-rec=new SR();rec.lang="ko-KR";rec.continuous=true;rec.interimResults=true;
-rec.onresult=function(e){var t="";for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";vtext=t.trim();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
+rec=new SR();rec.lang="ko-KR";rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;
+rec.onresult=function(e){var t="";for(var i=0;i<e.results.length;i++)t+=pickBest(Array.prototype.map.call(e.results[i],function(a){return a.transcript}))+" ";vtext=t.trim();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
 rec.onerror=function(e){if(!listening)return;listening=false;vmsg=e.error==="not-allowed"?"마이크 권한이 필요해요. 권한을 허용해 주세요.":"인식 오류: "+e.error;render()};
 rec.onend=function(){if(listening)voiceDone(vtext)};
 listening=true;try{rec.start()}catch(e){listening=false;vmsg="음성 인식을 시작하지 못했어요."}render()}
 function stopVoice(){if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.stop()}
-window.onNativeVoice=function(t){voiceDone(t)};
+window.onNativeVoice=function(a){if(typeof a==="string")a=[a];voiceDone(pickBest(a))};
 window.onNativeVoiceError=function(m){listening=false;vmsg=m;render()};
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
 function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
