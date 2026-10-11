@@ -60,7 +60,7 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 <div class="tabs">
 <button id="m1" class="on" onclick="setMode('card')">카드</button>
 <button id="m2" onclick="setMode('blank')">빈칸 채우기</button>
-<button id="m3" onclick="setMode('type')">직접 입력</button>
+<button id="m3" onclick="setMode('type')">음성 암송</button>
 </div>
 <div class="tabs">
 <button id="t5" onclick="toggleRnd()">랜덤 순서</button>
@@ -172,7 +172,7 @@ document.getElementById("chips").innerHTML=h;
 }
 function setPack(k){pack=k;chips();build()}
 function build(){queue=pool().filter(function(c){return c.box<3});if(rnd)queue.sort(function(){return Math.random()-.5});next()}
-function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;render()}
+function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function render(){picks();document.getElementById("rec").textContent="🔥 "+recText();
 var all=pool(),done=all.filter(function(c){return c.box>=3}).length;
 document.getElementById("bar").style.width=(all.length?done/all.length*100:0)+"%";
@@ -195,12 +195,13 @@ function grade(ok){if(ok){cur.box++}else{cur.box=0;queue.push(cur)}logToday();sa
 function reset(){pool().forEach(function(c){c.box=0});save();build()}
 function toggleRnd(){rnd=!rnd;document.getElementById("t5").classList.toggle("on",rnd);build()}
 function picks(){var h="";pool().forEach(function(c){var on=cur&&cur.id===c.id;h+='<button class="'+(on?"on":"")+'" onclick="jump('+c.id+')">'+esc(c.ref)+'</button>'});document.getElementById("picks").innerHTML=h}
-function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;bres=null;tres=null;blankFor=0;render()}
+function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function toggleEn(){showEn=!showEn;document.getElementById("t4").classList.toggle("on",showEn);render()}
+var rec=null,listening=false,vtext="",vmsg="";
 var bankW=[],bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
 var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
 function norm(x){return x.replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
-function setMode(m){mode=m;["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;render()}
+function setMode(m){mode=m;["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function clean(x){return x.replace(/[.,;:!?"“”'‘’()]+$/,"")}
 function decoys(n,ans){var seen={},same=[],other=[];ans.forEach(function(a){seen[a]=1});
 cards.forEach(function(c){if(c.id===cur.id||!c.text)return;c.text.split(/\s+/).forEach(function(x){var t=norm(x);if(t.length<2||seen[t])return;seen[t]=1;(c.pk===cur.pk?same:other).push(clean(x))})});
@@ -220,9 +221,11 @@ return '<span class="slot'+(bi>=0?" fill":"")+'" data-k="'+k+'" onclick="slotTap
 if(!bres){h+='<div class="bank">'+bankOrder.filter(function(bi){return slots.indexOf(bi)<0}).map(function(bi){return '<span class="chip'+(selB===bi?" sel":"")+'" onpointerdown="dragStart(event,'+bi+')">'+esc(bankW[bi])+'</span>'}).join("")+'</div><div class="hint" style="margin-top:8px">보기에는 오답도 섞여 있어요. 보기를 빈칸으로 끌어다 놓거나, 보기를 누른 뒤 빈칸을 눌러 넣으세요. 넣은 단어를 누르면 빠져요.</div>'}
 b=bres?'<button class="on" onclick="finish(bres.every(function(r){return r.ok}))">다음</button>':'<button class="on" onclick="checkBlank()">확인</button>';
 }else{
-h+='<textarea id="tin" placeholder="외운 구절을 입력하세요" style="margin-top:14px"'+(tres?" disabled":"")+'>'+(tres?esc(tres.u):"")+'</textarea>';
-if(tres)h+='<div class="txt" style="margin-top:12px"><b class="'+(tres.p>=90?"gd":"wr")+'">정확도 '+tres.p+'%</b><br><span style="font-size:15px">'+esc(cur.text)+'</span></div>';
-b=tres?'<button class="on" onclick="finish(tres.p>=90)">다음</button>':'<button class="on" onclick="checkType()">채점</button>';
+h+='<div class="hint" style="margin-top:14px">'+(listening?"":"🎤 버튼을 누르고 구절을 외워서 말해 보세요")+'</div>';
+if(listening)h+='<div class="txt" id="vlive" style="margin-top:10px;min-height:28px;color:var(--mute)">'+esc(vtext)+'</div>';
+else if(vmsg&&!tres)h+='<div class="hint" style="margin-top:10px;color:var(--bad)">'+esc(vmsg)+'</div>';
+if(tres)h+='<div class="txt" style="margin-top:12px"><b class="'+(tres.p>=80?"gd":"wr")+'">정확도 '+tres.p+'%</b><br><span style="font-size:14px;color:var(--mute)">내가 말한 내용: '+esc(tres.u)+'</span><br><span style="font-size:15px">'+esc(cur.text)+'</span></div>';
+b=tres?'<button onclick="startVoice()">다시 말하기</button><button class="on" onclick="finish(tres.p>=80)">다음</button>':(listening?'<button class="bad" onclick="stopVoice()">⏹ 끝내기</button>':'<button class="on" onclick="startVoice()">🎤 말하기</button>');
 }
 el.innerHTML=h+'<div class="row" style="width:100%">'+b+'</div>';
 }
@@ -235,8 +238,22 @@ function dragMove(e){if(!dragEl)return;if(Math.abs(e.clientX-sx)+Math.abs(e.clie
 function dragStop(){document.removeEventListener("pointermove",dragMove);document.removeEventListener("pointerup",dragEnd);document.removeEventListener("pointercancel",dragCancel);if(dragEl){dragEl.remove();dragEl=null}hot(null)}
 function dragCancel(){dragStop();render()}
 function dragEnd(e){dragStop();if(moved){var sl=nearSlot(e.clientX,e.clientY);if(sl){slots[+sl.dataset.k]=dragB;selB=-1}}else{selB=selB===dragB?-1:dragB}render()}
+function pct(a,b){a=norm(a);return Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))}
+function resetVoice(){if(listening){listening=false;try{if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.abort()}catch(e){}}vtext="";vmsg=""}
+function voiceDone(t){listening=false;if(!t||!t.trim()){vmsg="소리가 인식되지 않았어요. 다시 말해 보세요.";render();return}tres={u:t,p:pct(t,norm(cur.text))};render()}
+function startVoice(){tres=null;vtext="";vmsg="";
+if(window.AndroidSTT){listening=true;render();AndroidSTT.start();return}
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){vmsg="이 환경에서는 음성 인식을 쓸 수 없어요. 크롬이나 설치한 앱에서 사용해 주세요.";render();return}
+rec=new SR();rec.lang="ko-KR";rec.continuous=true;rec.interimResults=true;
+rec.onresult=function(e){var t="";for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";vtext=t.trim();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
+rec.onerror=function(e){if(!listening)return;listening=false;vmsg=e.error==="not-allowed"?"마이크 권한이 필요해요. 권한을 허용해 주세요.":"인식 오류: "+e.error;render()};
+rec.onend=function(){if(listening)voiceDone(vtext)};
+listening=true;try{rec.start()}catch(e){listening=false;vmsg="음성 인식을 시작하지 못했어요."}render()}
+function stopVoice(){if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.stop()}
+window.onNativeVoice=function(t){voiceDone(t)};
+window.onNativeVoiceError=function(m){listening=false;vmsg=m;render()};
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
-function checkType(){var u=document.getElementById("tin").value,a=norm(u),b=norm(cur.text);tres={u:u,p:Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))};render()}
 function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
 function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function getLog(){try{return JSON.parse(localStorage.getItem(LK))||{}}catch(e){return{}}}
@@ -246,4 +263,3 @@ chips();build();
 </script>
 </body>
 </html>
-
