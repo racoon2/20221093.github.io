@@ -153,7 +153,7 @@ var V={
 </script>
 <script>
 /* ★ 말이 없을 때 자동으로 끝나는 시간(초). 이 숫자를 바꾸면 돼요 (크롬 기준) */
-var SIL_SEC=4;
+var SIL_SEC=5;
 var KEY="tms-cards-v2";
 var D=[
 ["A","새로운 삶",[["중심되신 그리스도","고린도후서 5:17","갈라디아서 2:20"],["그리스도께 순종","로마서 12:1","요한복음 14:21"],["말씀","디모데후서 3:16","여호수아 1:8"],["기도","요한복음 15:7","빌립보서 4:6-7"],["교제","마태복음 18:20","히브리서 10:24-25"],["증거","마태복음 4:19","로마서 1:16"]]],
@@ -201,7 +201,7 @@ function toggleRnd(){rnd=!rnd;document.getElementById("t5").classList.toggle("on
 function picks(){var h="";pool().forEach(function(c){var on=cur&&cur.id===c.id;h+='<button class="'+(on?"on":"")+'" onclick="jump('+c.id+')">'+esc(c.ref)+'</button>'});document.getElementById("picks").innerHTML=h}
 function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function toggleEn(){showEn=!showEn;document.getElementById("t4").classList.toggle("on",showEn);render()}
-var rec=null,sil=null,listening=false,vtext="",vmsg="";
+var rec=null,sil=null,listening=false,vtext="",vmsg="",vacc="",vstop=false;
 var bankW=[],bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
 var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
 function norm(x){return x.replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
@@ -265,13 +265,14 @@ function startVoice(){tres=null;vtext="";vmsg="";
 if(window.AndroidSTT){listening=true;render();try{AndroidSTT.start(cur.text)}catch(e){AndroidSTT.start()}return}
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){vmsg="이 환경에서는 음성 인식을 쓸 수 없어요. 크롬이나 설치한 앱에서 사용해 주세요.";render();return}
-rec=new SR();rec.lang="ko-KR";rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;
-rec.onresult=function(e){var t="";for(var i=0;i<e.results.length;i++)t+=pickBest(Array.prototype.map.call(e.results[i],function(a){return a.transcript}))+" ";vtext=t.trim();armSil();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
-rec.onerror=function(e){if(!listening)return;listening=false;vmsg=e.error==="not-allowed"?"마이크 권한이 필요해요. 권한을 허용해 주세요.":"인식 오류: "+e.error;render()};
-rec.onend=function(){if(listening)voiceDone(vtext)};
+vacc="";vstop=false;
+rec=new SR();rec.lang="ko-KR";rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=5;
+rec.onresult=function(e){var r=e.results[e.results.length-1],t=pickBest(Array.prototype.map.call(r,function(a){return a.transcript}));if(r.isFinal){vacc=(vacc+" "+t).trim();vtext=vacc}else{vtext=(vacc+" "+t).trim()}armSil();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
+rec.onerror=function(e){if(!listening||e.error==="no-speech"||e.error==="aborted")return;listening=false;vmsg=e.error==="not-allowed"?"마이크 권한이 필요해요. 권한을 허용해 주세요.":"인식 오류: "+e.error;render()};
+rec.onend=function(){if(!listening)return;vacc=vtext;if(vstop){voiceDone(vtext)}else{setTimeout(function(){if(listening&&!vstop){try{rec.start()}catch(x){}}},150)}};
 listening=true;try{rec.start();armSil()}catch(e){listening=false;vmsg="음성 인식을 시작하지 못했어요."}render()}
 function armSil(){clearTimeout(sil);sil=setTimeout(function(){if(listening)stopVoice()},SIL_SEC*1000)}
-function stopVoice(){if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.stop()}
+function stopVoice(){vstop=true;if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.stop()}
 window.onNativeVoice=function(a){if(typeof a==="string")a=[a];voiceDone(pickBest(a))};
 window.onNativeVoiceError=function(m){listening=false;vmsg=m;render()};
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
