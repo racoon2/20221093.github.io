@@ -162,14 +162,13 @@ var V={
 /* ★ 말이 없을 때 자동으로 끝나는 시간(초). 이 숫자를 바꾸면 돼요 (크롬 기준) */
 var SIL_SEC=5;
 /* ★ 버전 표시. 파일을 고칠 때마다 이 값을 올리세요 (예: v1.1) */
-var APP_VER="v1.5 · 2026-10-12";
+var APP_VER="v1.6 · 2026-10-12";
 /* ★ 공지 내용. 수정할 때마다 아래 문장을 바꾸고 위의 APP_VER 숫자를 올리면,
    사용자에게 공지 창이 다시 떠요. ("다시 안 보기"를 누른 사람도 새 버전이면 다시 떠요)
    공지를 띄우고 싶지 않으면 NOTICE=[]; 로 비워 두세요. */
 var NOTICE=[
 "김다현 누나의 피드백을 반영해서 영어 빈칸 채우기와 영어 음성 암송을 추가했어요. 고마워요 🙏",
-"빈칸 채우기·음성 암송 화면에서 'English로 연습' 버튼을 눌러 보세요.",
-"영어 음성 암송은 크롬에서는 바로 되고, 설치한 앱에서는 앱을 새로 설치해야 해요."
+"카카오톡 같은 앱 안 브라우저에서 열면 마이크 허용이 계속 떠요. 이럴 땐 화면 위의 '크롬으로 열기'를 눌러 주세요."
 ];
 var KEY="tms-cards-v2";
 var D=[
@@ -302,6 +301,9 @@ var d=document.createElement("div");d.id="nbox";d.className="ov";
 d.innerHTML='<div class="nb"><div class="nt">📢 업데이트 안내<span class="nv">'+esc(APP_VER)+'</span></div><ul>'+NOTICE.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul><div class="row"><button onclick="closeNotice(false)">닫기</button><button class="on" onclick="closeNotice(true)">다시 안 보기</button></div></div>';
 document.body.appendChild(d)}
 function closeNotice(never){if(never){try{localStorage.setItem("tms-notice-seen",APP_VER)}catch(e){}}var d=document.getElementById("nbox");if(d)d.remove()}
+var INAPP=typeof navigator!=="undefined"&&/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|; Line\/|DaumApps/i.test(navigator.userAgent)&&!window.AndroidSTT;
+function openExternal(){var u=location.href,ua=navigator.userAgent;if(/KAKAOTALK/i.test(ua))location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(u);else if(/android/i.test(ua))location.href="intent://"+u.replace(/^https?:\/\//,"")+"#Intent;scheme=https;package=com.android.chrome;end";else alert("화면 메뉴(⋮ 또는 공유 버튼)에서 '다른 브라우저로 열기'를 눌러 주세요.")}
+function inappBanner(){if(!INAPP)return;var d=document.createElement("div");d.className="note";d.style.cssText="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px";d.innerHTML='카카오톡 같은 앱 안 브라우저에서 열면 <b>마이크 허용이 계속 떠요.</b> 크롬으로 열면 한 번만 허용하면 돼요.<br><button class="on" style="margin-top:8px;padding:8px 12px" onclick="openExternal()">크롬으로 열기</button>';var m=document.querySelector("main");m.insertBefore(d,m.firstChild)}
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
 function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
 function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
