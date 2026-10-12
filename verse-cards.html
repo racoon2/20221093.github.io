@@ -1,280 +1,25 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow">
-<title>주제별 성경암송 60구절 플래시카드</title>
-<style>
-:root{--bg:#faf7f2;--card:#fff;--ink:#2b2622;--mute:#8a8178;--acc:#7a5c3e;--ok:#4f8a5b;--bad:#b5533c;--line:#e6dfd4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1a17;--card:#2a2622;--ink:#f1ebe3;--mute:#a39a8f;--acc:#d2a974;--line:#3b352f}}
-:root[data-theme="dark"]{--bg:#1d1a17;--card:#2a2622;--ink:#f1ebe3;--mute:#a39a8f;--acc:#d2a974;--line:#3b352f}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif KR",Georgia,serif;min-height:100vh}
-main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
-h1{font-size:20px;margin:0 0 4px}
-.sub{color:var(--mute);font-size:13px;margin-bottom:14px;font-family:system-ui,sans-serif}
-.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
-.stat{font:13px system-ui,sans-serif;color:var(--mute);display:flex;justify-content:space-between;margin-bottom:12px}
-.tabs,.chips{display:flex;gap:8px;margin-bottom:12px;font-family:system-ui,sans-serif;flex-wrap:wrap}
-button{font-family:system-ui,sans-serif;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:14px}
-.chips button{padding:6px 12px;font-size:13px}
-button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:240px;padding:28px 22px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.05);user-select:none}
-.tp{font:12px system-ui,sans-serif;color:var(--mute);margin-bottom:12px}
-.ref{font-size:22px;font-weight:700;color:var(--acc)}
-.txt{font-size:18px;line-height:1.7}
-.hint{margin-top:18px;font:12px system-ui,sans-serif;color:var(--mute);line-height:1.5}
-.row{display:flex;gap:10px;margin-top:14px}
-.row button{flex:1;padding:14px}
-.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
-.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
-.hide{display:none}
-input,textarea{width:100%;font:15px system-ui,sans-serif;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:10px}
-textarea{min-height:70px;resize:vertical;margin:8px 0 0}
-.item{display:flex;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;font-family:system-ui,sans-serif;font-size:14px;align-items:flex-start}
-.item>div{flex:1}
-.item b{color:var(--acc)}
-.item small{display:block;color:var(--mute);margin-top:2px}
-.note{font:12px system-ui,sans-serif;color:var(--mute);margin:14px 0;line-height:1.5}
-.rec{font:13px system-ui,sans-serif;color:var(--acc);margin:-4px 0 12px}
-.bl{display:inline-block;margin:0 2px;padding:2px 4px;border:0;border-bottom:2px solid var(--acc);border-radius:0;background:transparent;color:var(--ink);text-align:center;font:inherit;margin-bottom:0}
-.gd{color:var(--ok);font-weight:700}.wr{color:var(--bad);font-weight:700}.us{font-size:12px;color:var(--mute);margin-left:2px}
-.chip{display:inline-block;margin:4px;padding:7px 13px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);font:15px system-ui,sans-serif;cursor:grab;touch-action:none;user-select:none}
-.chip.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
-.chip.drag{position:fixed;z-index:9;pointer-events:none;opacity:.92;margin:0;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-.slot{display:inline-block;min-width:5.5ch;padding:4px 8px;margin:0 2px;border-bottom:2px solid var(--acc);border-radius:6px 6px 0 0;text-align:center}
-.slot.hot{background:rgba(122,92,62,.22)}
-.slot.fill{color:var(--acc);font-weight:700;cursor:pointer}
-.bank{margin-top:16px;display:flex;flex-wrap:wrap;justify-content:center;width:100%}
-.dg{color:var(--ok)}
-.dr{color:var(--bad);font-weight:700;text-decoration:underline}
-</style>
-</head>
-<body>
-<main>
-<h1>📖 주제별 성경암송 60구절</h1>
-<div class="sub">A~E 시리즈 · 카드를 눌러 뒤집고, 외웠는지 체크하세요.</div>
-<div class="bar"><i id="bar"></i></div>
-<div class="stat"><span id="prog"></span><span id="left"></span></div>
-<div class="rec" id="rec"></div>
-<div class="tabs">
-<button id="m1" class="on" onclick="setMode('card')">카드</button>
-<button id="m2" onclick="setMode('blank')">빈칸 채우기</button>
-<button id="m3" onclick="setMode('type')">음성 암송</button>
-</div>
-<div class="tabs">
-<button id="t5" onclick="toggleRnd()">랜덤 순서</button>
-<button id="t4" onclick="toggleEn()">영어</button>
-</div>
-<section id="study">
-<div class="chips" id="chips"></div>
-<div class="card" id="card" onclick="flip()"></div>
-<div class="row hide" id="ans">
-<button class="bad" onclick="grade(false)">다시 볼래요</button>
-<button class="ok" onclick="grade(true)">외웠어요</button>
-</div>
-<div class="note" style="margin:16px 0 6px">구절 바로 고르기</div>
-<div class="chips" id="picks"></div>
-</section>
-</main>
-<script id="verse-data">
-/* ===== 본문 데이터 (여기에 추가하세요) =====
-   형식:  "출처":[`한글 본문`,`영어 본문(선택)`],
-   출처는 아래 목록의 표기와 똑같이 써야 카드에 연결돼요. 본문은 백틱(`)으로 감싸면 따옴표가 있어도 안전해요. */
-var V={
-// ---------- A 새로운 삶 ----------
-"고린도후서 5:17":[`그런즉 누구든지 그리스도 안에 있으면 새로운 피조물이라 이전 것은 지나갔으니 보라 새 것이 되었도다`,`Therefore, if anyone is in Christ, he is a new creation; the old has gone, the new has come!`],
-"갈라디아서 2:20":[`내가 그리스도와 함께 십자가에 못 박혔나니 그런즉 이제는 내가 사는 것이 아니요 오직 내 안에 그리스도께서 사시는 것이라 이제 내가 육체 가운데 사는 것은 나를 사랑하사 나를 위하여 자기 자신을 버리신 하나님의 아들을 믿는 믿음 안에서 사는 것이라`,`I have been crucified with Christ and I no longer live, but Christ lives in me. The life I live in the body, I live by faith in the Son of God, who loved me and gave himself for me.`],
-"로마서 12:1":[`그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라`,`Therefore, I urge you, brothers, in view of God's mercy, to offer your bodies as living sacrifices, holy and pleasing to God--this is your spiritual act of worship.`],
-"요한복음 14:21":[`나의 계명을 지키는 자라야 나를 사랑하는 자니 나를 사랑하는 자는 내 아버지께 사랑을 받을 것이요 나도 그를 사랑하여 그에게 나를 나타내리라`,`Whoever has my commands and obeys them, he is the one who loves me. He who loves me will be loved by my Father, and I too will love him and show myself to him.`],
-"디모데후서 3:16":[`모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니`,`All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness,`],
-"여호수아 1:8":[`이 율법책을 네 입에서 떠나지 말게 하며 주야로 그것을 묵상하여 그 안에 기록된 대로 다 지켜 행하라 그리하면 네 길이 평탄하게 될 것이며 네가 형통하리라`,`Do not let this Book of the Law depart from your mouth; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful.`],
-"요한복음 15:7":[`너희가 내 안에 거하고 내 말이 너희 안에 거하면 무엇이든지 원하는 대로 구하라 그리하면 이루리라`,`If you remain in me and my words remain in you, ask whatever you wish, and it will be given you.`],
-"빌립보서 4:6-7":[`아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로, 너희 구할 것을 감사함으로 하나님께 아뢰라 그리하면 모든 지각에 뛰어난 하나님의 평강이 그리스도 예수 안에서 너희 마음과 생각을 지키시리라`,`Do not be anxious about anything, but in everything, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.`],
-"마태복음 18:20":[`두세 사람이 내 이름으로 모인 곳에는 나도 그들 중에 있느니라`,`For where two or three come together in my name, there am I with them.`],
-"히브리서 10:24-25":[`서로 돌아보아 사랑과 선행을 격려하며 모이기를 폐하는 어떤 사람들의 습관과 같이 하지 말고 오직 권하여 그 날이 가까움을 볼수록 더욱 그리하자`,`And let us consider how we may spur one another on toward love and good deeds. Let us not give up meeting together, as some are in the habit of doing, but let us encourage one another--and all the more as you see the Day approaching.`],
-"마태복음 4:19":[`말씀하시되 나를 따라오라 내가 너희를 사람을 낚는 어부가 되게 하리라 하시니`,`"Come, follow me," Jesus said, "and I will make you fishers of men."`],
-"로마서 1:16":[`내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다`,`I am not ashamed of the gospel, because it is the power of God for the salvation of everyone who believes: first for the Jew, then for the Gentile.`],
-// ---------- B 그리스도를 전파함 ----------
-"로마서 3:23":[`모든 사람이 죄를 범하였으매 하나님의 영광에 이르지 못하더니`,`for all have sinned and fall short of the glory of God,`],
-"이사야 53:6":[`우리는 다 양 같아서 그릇 행하여 각기 제 길로 갔거늘 여호와께서는 우리 모두의 죄악을 그에게 담당시키셨도다`,`We all, like sheep, have gone astray, each of us has turned to his own way; and the LORD has laid on him the iniquity of us all.`],
-"로마서 6:23":[`죄의 삯은 사망이요 하나님의 은사는 그리스도 예수 우리 주 안에 있는 영생이니라`,`For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.`],
-"히브리서 9:27":[`한번 죽는 것은 사람에게 정해진 것이요 그 후에는 심판이 있으리니`,`Just as man is destined to die once, and after that to face judgment,`],
-"로마서 5:8":[`우리가 아직 죄인 되었을 때에 그리스도께서 우리를 위하여 죽으심으로 하나님께서 우리에 대한 자기의 사랑을 확증하셨느니라`,`But God demonstrates his own love for us in this: While we were still sinners, Christ died for us.`],
-"베드로전서 3:18":[`그리스도께서도 단번에 죄를 위하여 죽으사 의인으로서 불의한 자를 대신하셨으니 이는 우리를 하나님 앞으로 인도하려 하심이라 육체로는 죽임을 당하시고 영으로는 살리심을 받으셨으니`,`For Christ died for sins once for all, the righteous for the unrighteous, to bring you to God. He was put to death in the body but made alive by the Spirit,`],
-"에베소서 2:8":[`너희는 그 은혜에 의하여 믿음으로 말미암아 구원을 받았으니 이것은 너희에게서 난 것이 아니요 하나님의 선물이라`,`For it is by grace you have been saved, through faith--and this not from yourselves, it is the gift of God--`],
-"디도서 3:5":[`우리를 구원하시되 우리가 행한 바 의로운 행위로 말미암지 아니하고 오직 그의 긍휼하심을 따라 중생의 씻음과 성령의 새롭게 하심으로 하셨나니`,`he saved us, not because of righteous things we had done, but because of his mercy. He saved us through the washing of rebirth and renewal by the Holy Spirit,`],
-"요한복음 1:12":[`영접하는 자 곧 그 이름을 믿는 자들에게는 하나님의 자녀가 되는 권세를 주셨으니`,`Yet to all who received him, to those who believed in his name, he gave the right to become children of God--`],
-"요한계시록 3:20":[`볼지어다 내가 문 밖에 서서 두드리노니 누구든지 내 음성을 듣고 문을 열면 내가 그에게로 들어가 그와 더불어 먹고 그는 나와 더불어 먹으리라`,`Here I am! I stand at the door and knock. If anyone hears my voice and opens the door, I will come in and eat with him, and he with me.`],
-"요한일서 5:13":[`내가 하나님의 아들의 이름을 믿는 너희에게 이것을 쓰는 것은 너희로 하여금 너희에게 영생이 있음을 알게 하려 함이라`,`I write these things to you who believe in the name of the Son of God so that you may know that you have eternal life.`],
-"요한복음 5:24":[`내가 진실로 진실로 너희에게 이르노니 내 말을 듣고 또 나 보내신 이를 믿는 자는 영생을 얻었고 심판에 이르지 아니하나니 사망에서 생명으로 옮겼느니라`,`"I tell you the truth, whoever hears my word and believes him who sent me has eternal life and will not be condemned; he has crossed over from death to life.`],
-// ---------- C 하나님을 의뢰함 ----------
-"고린도전서 3:16":[`너희는 너희가 하나님의 성전인 것과 하나님의 성령이 너희 안에 계시는 것을 알지 못하느냐`,`Don't you know that you yourselves are God's temple and that God's Spirit lives in you?`],
-"고린도전서 2:12":[`우리가 세상의 영을 받지 아니하고 오직 하나님으로부터 온 영을 받았으니 이는 우리로 하여금 하나님께서 우리에게 은혜로 주신 것들을 알게 하려 하심이라`,`We have not received the spirit of the world but the Spirit who is from God, that we may understand what God has freely given us.`],
-"이사야 41:10":[`두려워하지 말라 내가 너와 함께 함이라 놀라지 말라 나는 네 하나님이 됨이라 내가 너를 굳세게 하리라 참으로 너를 도와 주리라 참으로 나의 의로운 오른손으로 너를 붙들리라`,`So do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you; I will uphold you with my righteous right hand.`],
-"빌립보서 4:13":[`내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라`,`I can do everything through him who gives me strength.`],
-"예레미야애가 3:22,23":[`여호와의 인자와 긍휼이 무궁하시므로 우리가 진멸되지 아니함이니이다 이것들이 아침마다 새로우니 주의 성실하심이 크시도소이다`,`Because of the LORD's great love we are not consumed, for his compassions never fail. They are new every morning; great is your faithfulness.`],
-"민수기 23:19":[`하나님은 사람이 아니시니 거짓말을 하지 않으시고 인생이 아니시니 후회가 없으시도다 어찌 그 말씀하신 바를 행하지 않으시며 하신 말씀을 실행하지 않으시랴`,`God is not a man, that he should lie, nor a son of man, that he should change his mind. Does he speak and then not act? Does he promise and not fulfill?`],
-"이사야 26:3":[`주께서 심지가 견고한 자를 평강하고 평강하도록 지키시리니 이는 그가 주를 신뢰함이니이다`,`You will keep in perfect peace him whose mind is steadfast, because he trusts in you.`],
-"베드로전서 5:7":[`너희 염려를 다 주께 맡기라 이는 그가 너희를 돌보심이라`,`Cast all your anxiety on him because he cares for you.`],
-"로마서 8:32":[`자기 아들을 아끼지 아니하시고 우리 모든 사람을 위하여 내주신 이가 어찌 그 아들과 함께 모든 것을 우리에게 주시지 아니하겠느냐`,`He who did not spare his own Son, but gave him up for us all--how will he not also, along with him, graciously give us all things?`],
-"빌립보서 4:19":[`나의 하나님이 그리스도 예수 안에서 영광 가운데 그 풍성한 대로 너희 모든 쓸 것을 채우시리라`,`And my God will meet all your needs according to his glorious riches in Christ Jesus.`],
-"히브리서 2:18":[`그가 시험을 받아 고난을 당하셨은즉 시험 받는 자들을 능히 도우실 수 있느니라`,`Because he himself suffered when he was tempted, he is able to help those who are being tempted.`],
-"시편 119:9":[`청년이 무엇으로 그의 행실을 깨끗하게 하리이까 주의 말씀만 지킬 따름이니이다`,`How can a young man keep his way pure? By living according to your word.`],
-// ---------- D 그리스도 제자의 자격 ----------
-"마태복음 6:33":[`그런즉 너희는 먼저 그의 나라와 그의 의를 구하라 그리하면 이 모든 것을 너희에게 더하시리라`,`But seek first his kingdom and his righteousness, and all these things will be given to you as well.`],
-"누가복음 9:23":[`또 무리에게 이르시되 아무든지 나를 따라오려거든 자기를 부인하고 날마다 제 십자가를 지고 나를 따를 것이니라`,`Then he said to them all: "If anyone would come after me, he must deny himself and take up his cross daily and follow me.`],
-"요한일서 2:15,16":[`이 세상이나 세상에 있는 것들을 사랑하지 말라 누구든지 세상을 사랑하면 아버지의 사랑이 그 안에 있지 아니하니 이는 세상에 있는 모든 것이 육신의 정욕과 안목의 정욕과 이생의 자랑이니 다 아버지께로부터 온 것이 아니요 세상으로부터 온 것이라`,`Do not love the world or anything in the world. If anyone loves the world, the love of the Father is not in him. For everything in the world--the cravings of sinful man, the lust of his eyes and the boasting of what he has and does--comes not from the Father but from the world.`],
-"로마서 12:2":[`너희는 이 세대를 본받지 말고 오직 마음을 새롭게 함으로 변화를 받아 하나님의 선하시고 기뻐하시고 온전하신 뜻이 무엇인지 분별하도록 하라`,`Do not conform any longer to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God's will is--his good, pleasing and perfect will.`],
-"고린도전서 15:58":[`그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말고 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희 수고가 주 안에서 헛되지 않은 줄 앎이라`,`Therefore, my dear brothers, stand firm. Let nothing move you. Always give yourselves fully to the work of the Lord, because you know that your labor in the Lord is not in vain.`],
-"히브리서 12:3":[`너희가 피곤하여 낙심하지 않기 위하여 죄인들이 이같이 자기에게 거역한 일을 참으신 이를 생각하라`,`Consider him who endured such opposition from sinful men, so that you will not grow weary and lose heart.`],
-"마가복음 10:45":[`인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라`,`For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many."`],
-"고린도후서 4:5":[`우리는 우리를 전파하는 것이 아니라 오직 그리스도 예수의 주 되신 것과 또 예수를 위하여 우리가 너희의 종 된 것을 전파함이라`,`For we do not preach ourselves, but Jesus Christ as Lord, and ourselves as your servants for Jesus' sake.`],
-"잠언 3:9,10":[`네 재물과 네 소산물의 처음 익은 열매로 여호와를 공경하라 그리하면 네 창고가 가득히 차고 네 포도즙 틀에 새 포도즙이 넘치리라`,`Honor the LORD with your wealth, with the firstfruits of all your crops; then your barns will be filled to overflowing, and your vats will brim over with new wine.`],
-"고린도후서 9:6,7":[`이것이 곧 적게 심는 자는 적게 거두고 많이 심는 자는 많이 거둔다 하는 말이로다 각각 그 마음에 정한 대로 할 것이요 인색함으로나 억지로 하지 말지니 하나님은 즐겨 내는 자를 사랑하시느니라`,`Remember this: Whoever sows sparingly will also reap sparingly, and whoever sows generously will also reap generously. Each man should give what he has decided in his heart to give, not reluctantly or under compulsion, for God loves a cheerful giver.`],
-"사도행전 1:8":[`오직 성령이 너희에게 임하시면 너희가 권능을 받고 예루살렘과 온 유대와 사마리아와 땅 끝까지 이르러 내 증인이 되리라 하시니라`,`But you will receive power when the Holy Spirit comes on you; and you will be my witnesses in Jerusalem, and in all Judea and Samaria, and to the ends of the earth."`],
-"마태복음 28:19,20":[`그러므로 너희는 가서 모든 민족을 제자로 삼아 아버지와 아들과 성령의 이름으로 세례를 베풀고 내가 너희에게 분부한 모든 것을 가르쳐 지키게 하라 볼지어다 내가 세상 끝날까지 너희와 항상 함께 있으리라 하시니라`,`Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age."`],
-// ---------- E 그리스도를 닮아 감 ----------
-"요한복음 13:34,35":[`새 계명을 너희에게 주노니 서로 사랑하라 내가 너희를 사랑한 것 같이 너희도 서로 사랑하라 너희가 서로 사랑하면 이로써 모든 사람이 너희가 내 제자인 줄 알리라`,`"A new command I give you: Love one another. As I have loved you, so you must love one another. By this all men will know that you are my disciples, if you love one another."`],
-"요한일서 3:18":[`자녀들아 우리가 말과 혀로만 사랑하지 말고 행함과 진실함으로 하자`,`Dear children, let us not love with words or tongue but with actions and in truth.`],
-"빌립보서 2:3,4":[`아무 일에든지 다툼이나 허영으로 하지 말고 오직 겸손한 마음으로 각각 자기보다 남을 낫게 여기고 각각 자기 일을 돌볼뿐더러 또한 각각 다른 사람들의 일을 돌보아 나의 기쁨을 충만하게 하라`,`Do nothing out of selfish ambition or vain conceit, but in humility consider others better than yourselves. Each of you should look not only to your own interests, but also to the interests of others.`],
-"베드로전서 5:5,6":[`젊은 자들아 이와 같이 장로들에게 순종하고 다 서로 겸손으로 허리를 동이라 하나님은 교만한 자를 대적하시되 겸손한 자들에게는 은혜를 주시느니라 그러므로 하나님의 능하신 손 아래에서 겸손하라 때가 되면 너희를 높이시리라`,`Young men, in the same way be submissive to those who are older. All of you, clothe yourselves with humility toward one another, because, "God opposes the proud but gives grace to the humble." Humble yourselves, therefore, under God's mighty hand, that he may lift you up in due time.`],
-"에베소서 5:3":[`음행과 온갖 더러운 것과 탐욕은 너희 중에서 그 이름조차도 부르지 말라 이는 성도에게 마땅한 바니라`,`But among you there must not be even a hint of sexual immorality, or of any kind of impurity, or of greed, because these are improper for God's holy people.`],
-"베드로전서 2:11":[`사랑하는 자들아 거류민과 나그네 같은 너희를 권하노니 영혼을 거슬러 싸우는 육체의 정욕을 제어하라`,`Dear friends, I urge you, as aliens and strangers in the world, to abstain from sinful desires, which war against your soul.`],
-"레위기 19:11":[`너희는 도둑질하지 말며 속이지 말며 서로 거짓말하지 말며`,`Do not steal. Do not lie. Do not deceive one another.`],
-"사도행전 24:16":[`이것으로 말미암아 나도 하나님과 사람에 대하여 항상 양심에 거리낌이 없기를 힘쓰나이다`,`So I strive always to keep my conscience clear before God and man.`],
-"히브리서 11:6":[`믿음이 없이는 하나님을 기쁘시게 하지 못하나니 하나님께 나아가는 자는 반드시 그가 계신 것과 또한 그가 자기를 찾는 자들에게 상 주시는 이심을 믿어야 할지니라`,`And without faith it is impossible to please God, because anyone who comes to him must believe that he exists and that he rewards those who earnestly seek him.`],
-"로마서 4:20,21":[`믿음이 없어 하나님의 약속을 의심하지 않고 믿음으로 견고하여져서 하나님께 영광을 돌리며 약속하신 그것을 또한 능히 이루실 줄을 확신하였으니`,`Yet he did not waver through unbelief regarding the promise of God, but was strengthened in his faith and gave glory to God, being fully persuaded that God had power to do what he had promised.`],
-"갈라디아서 6:9":[`우리가 선을 행하되 낙심하지 말지니 포기하지 아니하면 때가 이르매 거두리라 그러므로 우리는 기회 있는 대로 모든 이에게 착한 일을 하되 더욱 믿음의 가정들에게 할지니라`,`Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up. Therefore, as we have opportunity, let us do good to all people, especially to those who belong to the family of believers.`],
-"마태복음 5:16":[`이같이 너희 빛이 사람 앞에 비치게 하여 그들로 너희 착한 행실을 보고 하늘에 계신 너희 아버지께 영광을 돌리게 하라`,`In the same way, let your light shine before men, that they may see your good deeds and praise your Father in heaven.`],
-};
-</script>
-<script>
-/* ★ 말이 없을 때 자동으로 끝나는 시간(초). 이 숫자를 바꾸면 돼요 (크롬 기준) */
-var SIL_SEC=4;
-var KEY="tms-cards-v2";
-var D=[
-["A","새로운 삶",[["중심되신 그리스도","고린도후서 5:17","갈라디아서 2:20"],["그리스도께 순종","로마서 12:1","요한복음 14:21"],["말씀","디모데후서 3:16","여호수아 1:8"],["기도","요한복음 15:7","빌립보서 4:6-7"],["교제","마태복음 18:20","히브리서 10:24-25"],["증거","마태복음 4:19","로마서 1:16"]]],
-["B","그리스도를 전파함",[["모든 사람이 죄를 범함","로마서 3:23","이사야 53:6"],["죄의 형벌","로마서 6:23","히브리서 9:27"],["그리스도가 형벌을 받음","로마서 5:8","베드로전서 3:18"],["선행으로 구원받지 못함","에베소서 2:8","디도서 3:5"],["그리스도를 모셔야 함","요한복음 1:12","요한계시록 3:20"],["구원의 확신","요한일서 5:13","요한복음 5:24"]]],
-["C","하나님을 의뢰함",[["성령","고린도전서 3:16","고린도전서 2:12"],["능력","이사야 41:10","빌립보서 4:13"],["성실","예레미야애가 3:22,23","민수기 23:19"],["평안","이사야 26:3","베드로전서 5:7"],["공급","로마서 8:32","빌립보서 4:19"],["유혹에서 도우심","히브리서 2:18","시편 119:9"]]],
-["D","그리스도 제자의 자격",[["그리스도를 첫자리에 모심","마태복음 6:33","누가복음 9:23"],["죄에서 떠남","요한일서 2:15,16","로마서 12:2"],["견고함","고린도전서 15:58","히브리서 12:3"],["다른 사람을 섬김","마가복음 10:45","고린도후서 4:5"],["후히 드릴 것","잠언 3:9,10","고린도후서 9:6,7"],["세계 비전","사도행전 1:8","마태복음 28:19,20"]]],
-["E","그리스도를 닮아 감",[["사랑","요한복음 13:34,35","요한일서 3:18"],["겸손","빌립보서 2:3,4","베드로전서 5:5,6"],["순결","에베소서 5:3","베드로전서 2:11"],["정직","레위기 19:11","사도행전 24:16"],["믿음","히브리서 11:6","로마서 4:20,21"],["선행","갈라디아서 6:9","마태복음 5:16"]]]
-];
-function seed(){var s=[],id=1;D.forEach(function(p){p[2].forEach(function(t){for(var i=1;i<3;i++)s.push({id:id++,pk:p[0],tp:t[0],ref:t[i],text:"",box:0})})});return s}
-function applyV(a){a.forEach(function(c){var v=V[c.ref];if(v){c.text=v[0];c.en=v[1]||""}});return a}
-function load(){var b=seed(),m={};try{var r=localStorage.getItem(KEY);if(r)JSON.parse(r).forEach(function(c){m[c.ref]=c})}catch(e){}b.forEach(function(c){if(m[c.ref])c.box=m[c.ref].box||0});return applyV(b)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(cards))}catch(e){}}
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-var cards=load(),queue=[],cur=null,shown=false,reverse=false,showEn=false,rnd=false,mode="card",pack="A";
-function pool(){return cards.filter(function(c){return c.text&&(pack==="all"||c.pk===pack)})}
-function chips(){
-var h='<button class="'+(pack==="all"?"on":"")+'" onclick="setPack(\'all\')">전체</button>';
-D.forEach(function(p){h+='<button class="'+(pack===p[0]?"on":"")+'" onclick="setPack(\''+p[0]+'\')">'+p[0]+' '+esc(p[1])+'</button>'});
-document.getElementById("chips").innerHTML=h;
-}
-function setPack(k){pack=k;chips();build()}
-function build(){queue=pool().filter(function(c){return c.box<3});if(rnd)queue.sort(function(){return Math.random()-.5});next()}
-function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
-function render(){picks();document.getElementById("rec").textContent="🔥 "+recText();
-var all=pool(),done=all.filter(function(c){return c.box>=3}).length;
-document.getElementById("bar").style.width=(all.length?done/all.length*100:0)+"%";
-document.getElementById("prog").textContent="외운 구절 "+done+" / "+all.length;
-document.getElementById("left").textContent=cur?"남은 카드 "+(queue.length+1):"";
-var el=document.getElementById("card"),a=document.getElementById("ans");
-if(!cur){
-a.classList.add("hide");
-el.innerHTML=all.length?'<div class="ref">🎉 학습 완료!</div><div class="hint">이 묶음의 구절을 모두 외웠어요.</div><button style="margin-top:14px" onclick="event.stopPropagation();reset()">처음부터 다시</button>':'<div class="hint">이 섹션은 아직 본문이 준비되지 않았어요.</div>';
-return}
-var tag='<div class="tp">'+(cur.pk?cur.pk+" · ":"")+esc(cur.tp)+'</div>';
-if(mode!=="card"){a.classList.add("hide");practice(tag);return}
-var R='<div class="ref">'+esc(cur.ref)+'</div>',T='<div class="txt">'+esc(cur.text)+'</div>'+(showEn&&cur.en?'<div class="txt" style="font-size:14px;color:var(--mute);margin-top:12px">'+esc(cur.en)+'</div>':'');
-var front=reverse?T:R,back=reverse?R:T;
-el.innerHTML=tag+(shown?back:front)+'<div class="hint">'+(shown?"":"눌러서 확인")+"</div>";
-a.classList.toggle("hide",!shown);
-}
-function flip(){if(!cur||mode!=="card")return;shown=!shown;render()}
-function grade(ok){if(ok){cur.box++}else{cur.box=0;queue.push(cur)}logToday();save();next()}
-function reset(){pool().forEach(function(c){c.box=0});save();build()}
-function toggleRnd(){rnd=!rnd;document.getElementById("t5").classList.toggle("on",rnd);build()}
-function picks(){var h="";pool().forEach(function(c){var on=cur&&cur.id===c.id;h+='<button class="'+(on?"on":"")+'" onclick="jump('+c.id+')">'+esc(c.ref)+'</button>'});document.getElementById("picks").innerHTML=h}
-function jump(id){var c=cards.filter(function(x){return x.id===id})[0];if(!c)return;if(cur&&cur.id!==c.id&&cur.box<3)queue.unshift(cur);queue=queue.filter(function(x){return x.id!==c.id});cur=c;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
-function toggleEn(){showEn=!showEn;document.getElementById("t4").classList.toggle("on",showEn);render()}
-var rec=null,sil=null,listening=false,vtext="",vmsg="",vacc="",vstop=false;
-var bankW=[],bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
-var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
-function norm(x){return x.replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
-function setMode(m){mode=m;["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
-function clean(x){return x.replace(/[.,;:!?"“”'‘’()]+$/,"")}
-function decoys(n,ans){var seen={},same=[],other=[];ans.forEach(function(a){seen[a]=1});
-cards.forEach(function(c){if(c.id===cur.id||!c.text)return;c.text.split(/\s+/).forEach(function(x){var t=norm(x);if(t.length<2||seen[t])return;seen[t]=1;(c.pk===cur.pk?same:other).push(clean(x))})});
-function shuf(a){return a.sort(function(){return Math.random()-.5})}
-return shuf(same).concat(shuf(other)).slice(0,n)}
-function pickBlanks(){var w=cur.text.split(/\s+/),idx=[];w.forEach(function(x,i){if(norm(x))idx.push(i)});idx.sort(function(){return Math.random()-.5});blanks=idx.slice(0,Math.max(1,Math.round(w.length*.35))).sort(function(a,b){return a-b});blankFor=cur.id;bres=null;bankW=blanks.map(function(i){return clean(w[i])}).concat(decoys(Math.min(6,Math.max(2,Math.ceil(blanks.length/2))),blanks.map(function(i){return norm(w[i])})));bankOrder=bankW.map(function(x,i){return i}).sort(function(){return Math.random()-.5});slots=blanks.map(function(){return -1});selB=-1}
-function practice(tag){
-var el=document.getElementById("card"),h=tag+'<div class="ref">'+esc(cur.ref)+'</div>',b="";
-if(mode==="blank"){
-if(blankFor!==cur.id)pickBlanks();
-var w=cur.text.split(/\s+/);
-h+='<div class="txt" style="margin-top:14px;line-height:2.4;text-align:left">'+w.map(function(x,i){
-var k=blanks.indexOf(i);if(k<0)return esc(x);
-if(bres){var r=bres[k];return '<span class="'+(r.ok?"gd":"wr")+'">'+esc(x)+'</span>'+(r.ok||!r.u?"":'<s class="us">'+esc(r.u)+'</s>')}
-var bi=slots[k];
-return '<span class="slot'+(bi>=0?" fill":"")+'" data-k="'+k+'" onclick="slotTap('+k+')">'+(bi>=0?esc(bankW[bi]):"")+'</span>'}).join(" ")+'</div>';
-if(!bres){h+='<div class="bank">'+bankOrder.filter(function(bi){return slots.indexOf(bi)<0}).map(function(bi){return '<span class="chip'+(selB===bi?" sel":"")+'" onpointerdown="dragStart(event,'+bi+')">'+esc(bankW[bi])+'</span>'}).join("")+'</div><div class="hint" style="margin-top:8px">보기에는 오답도 섞여 있어요. 보기를 빈칸으로 끌어다 놓거나, 보기를 누른 뒤 빈칸을 눌러 넣으세요. 넣은 단어를 누르면 빠져요.</div>'}
-b=bres?'<button class="on" onclick="finish(bres.every(function(r){return r.ok}))">다음</button>':'<button class="on" onclick="checkBlank()">확인</button>';
-}else{
-h+='<div class="hint" style="margin-top:14px">'+(listening?"":"🎤 버튼을 누르고 구절을 외워서 말해 보세요 ("+SIL_SEC+"초 동안 말이 없으면 자동으로 끝나요)<br>할렐루야 98%↑ · 아멘 90%↑ · 은혜로워요 80%↑ · 다시 묵상 80% 미만")+'</div>';
-if(listening)h+='<div class="txt" id="vlive" style="margin-top:10px;min-height:28px;color:var(--mute)">'+esc(vtext)+'</div>';
-else if(vmsg&&!tres)h+='<div class="hint" style="margin-top:10px;color:var(--bad)">'+esc(vmsg)+'</div>';
-if(tres)h+='<div class="txt" style="margin-top:12px"><div style="font-size:26px;font-weight:700" class="'+rank(tres.p).c+'">'+rank(tres.p).e+' '+rank(tres.p).t+'</div><b>정확도 '+tres.p+'%</b><br><span style="font-size:14px;color:var(--mute)">내가 말한 내용: '+esc(tres.u)+'</span><br><span style="font-size:16px;line-height:1.8">'+diffHtml(cur.text,tres.u)+'</span><div class="hint" style="margin-top:6px"><span class="dg">초록</span>: 맞게 말한 부분 · <span class="dr">빨강</span>: 틀리거나 빠진 부분</div></div>';
-b=tres?'<button onclick="startVoice()">다시 말하기</button><button class="on" onclick="finish(tres.p>=80)">다음</button>':(listening?'<button class="bad" onclick="stopVoice()">⏹ 끝내기</button>':'<button class="on" onclick="startVoice()">🎤 말하기</button>');
-}
-el.innerHTML=h+'<div class="row" style="width:100%">'+b+'</div>';
-}
-function checkBlank(){var w=cur.text.split(/\s+/);bres=blanks.map(function(i,k){var bi=slots[k],u=bi>=0?bankW[bi]:"";return{u:u,ok:norm(u)===norm(w[i])}});render()}
-function slotTap(k){if(slots[k]>=0){slots[k]=-1;selB=-1;render()}else if(selB>=0){slots[k]=selB;selB=-1;render()}}
-function dragStart(e,bi){e.preventDefault();var s=e.currentTarget,r=s.getBoundingClientRect();dragB=bi;moved=false;sx=e.clientX;sy=e.clientY;dx=e.clientX-r.left;dy=e.clientY-r.top;dragEl=s.cloneNode(true);dragEl.className="chip drag";dragEl.style.left=r.left+"px";dragEl.style.top=r.top+"px";document.body.appendChild(dragEl);document.addEventListener("pointermove",dragMove);document.addEventListener("pointerup",dragEnd);document.addEventListener("pointercancel",dragCancel)}
-function nearSlot(x,y){var best=null,bd=1e9;document.querySelectorAll(".slot").forEach(function(el){var r=el.getBoundingClientRect(),a=Math.max(Math.abs(x-(r.left+r.width/2))-r.width/2,0),b=Math.max(Math.abs(y-(r.top+r.height/2))-r.height/2,0),d=Math.hypot(a,b);if(d<bd){bd=d;best=el}});return bd<=40?best:null}
-function hot(el){document.querySelectorAll(".slot.hot").forEach(function(x){x.classList.remove("hot")});if(el)el.classList.add("hot")}
-function dragMove(e){if(!dragEl)return;if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>6)moved=true;dragEl.style.left=(e.clientX-dx)+"px";dragEl.style.top=(e.clientY-dy)+"px";if(moved)hot(nearSlot(e.clientX,e.clientY))}
-function dragStop(){document.removeEventListener("pointermove",dragMove);document.removeEventListener("pointerup",dragEnd);document.removeEventListener("pointercancel",dragCancel);if(dragEl){dragEl.remove();dragEl=null}hot(null)}
-function dragCancel(){dragStop();render()}
-function dragEnd(e){dragStop();if(moved){var sl=nearSlot(e.clientX,e.clientY);if(sl){slots[+sl.dataset.k]=dragB;selB=-1}}else{selB=selB===dragB?-1:dragB}render()}
-var CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ",JUNG="ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ",JONG=" ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
-function jamo(s){var o="";for(var i=0;i<s.length;i++){var c=s.charCodeAt(i)-44032;if(c>=0&&c<11172){o+=CHO[Math.floor(c/588)]+JUNG[Math.floor(c%588/28)].replace("ㅔ","ㅐ")+JONG[c%28].trim()}else o+=s[i]}return o}
-function diffHtml(t,u){
-var tc=[],uc=[],i,j;
-for(i=0;i<t.length;i++)if(norm(t[i]))tc.push({c:jamo(t[i]),i:i});
-for(i=0;i<u.length;i++)if(norm(u[i]))uc.push(jamo(u[i]));
-var m=tc.length,n=uc.length,dp=[];
-for(i=0;i<=m;i++)dp.push(new Array(n+1).fill(0));
-for(i=1;i<=m;i++)for(j=1;j<=n;j++)dp[i][j]=tc[i-1].c===uc[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
-var ok={},a=m,b=n;
-while(a>0&&b>0){if(tc[a-1].c===uc[b-1]){ok[tc[a-1].i]=1;a--;b--}else if(dp[a-1][b]>=dp[a][b-1])a--;else b--}
-var o="";
-for(i=0;i<t.length;i++){var ch=esc(t[i]);o+=norm(t[i])?'<span class="'+(ok[i]?"dg":"dr")+'">'+ch+'</span>':ch}
-return o}
-function pct(a,b){a=jamo(norm(a));b=jamo(b);return Math.round(100*lcs(a,b)/Math.max(a.length,b.length,1))}
-function rank(p){return p>=98?{t:"할렐루야",e:"🙌",c:"gd"}:p>=90?{t:"아멘",e:"🙏",c:"gd"}:p>=80?{t:"은혜로워요",e:"🙂",c:""}:{t:"다시 묵상",e:"📖",c:"wr"}}
-function pickBest(arr){var jt=jamo(norm(cur.text)),best=arr[0]||"",bs=-1;arr.forEach(function(t){var sc=lcs(jamo(norm(t)),jt);if(sc>bs){bs=sc;best=t}});return best}
-function resetVoice(){clearTimeout(sil);if(listening){listening=false;try{if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.abort()}catch(e){}}vtext="";vmsg=""}
-function voiceDone(t){clearTimeout(sil);listening=false;if(!t||!t.trim()){vmsg="소리가 인식되지 않았어요. 다시 말해 보세요.";render();return}tres={u:t,p:pct(t,norm(cur.text))};render()}
-function startVoice(){tres=null;vtext="";vmsg="";
-if(window.AndroidSTT){listening=true;render();try{AndroidSTT.start(cur.text)}catch(e){AndroidSTT.start()}return}
+if(window.AndroidSTT){if(lang==="en"&&typeof AndroidSTT.start2!=="function"){vmsg="영어 음성 암송은 앱(APK)을 새로 설치해야 쓸 수 있어요. 크롬에서는 바로 쓸 수 있어요.";render();return}listening=true;render();try{if(lang==="en")AndroidSTT.start2(T(cur),"en-US");else AndroidSTT.start(T(cur))}catch(e){try{AndroidSTT.start()}catch(e2){}}return}
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){vmsg="이 환경에서는 음성 인식을 쓸 수 없어요. 크롬이나 설치한 앱에서 사용해 주세요.";render();return}
 vacc="";vstop=false;
-rec=new SR();rec.lang="ko-KR";rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=5;
+rec=new SR();rec.lang=lang==="en"?"en-US":"ko-KR";rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=5;
 rec.onresult=function(e){var r=e.results[e.results.length-1],t=pickBest(Array.prototype.map.call(r,function(a){return a.transcript}));if(r.isFinal){vacc=(vacc+" "+t).trim();vtext=vacc}else{vtext=(vacc+" "+t).trim()}armSil();var el=document.getElementById("vlive");if(el)el.textContent=vtext};
 rec.onerror=function(e){if(!listening||e.error==="no-speech"||e.error==="aborted")return;listening=false;vmsg=e.error==="not-allowed"?"마이크 권한이 필요해요. 권한을 허용해 주세요.":"인식 오류: "+e.error;render()};
 rec.onend=function(){if(!listening)return;vacc=vtext;if(vstop){voiceDone(vtext)}else{setTimeout(function(){if(listening&&!vstop){try{rec.start()}catch(x){}}},150)}};
 listening=true;try{rec.start();armSil()}catch(e){listening=false;vmsg="음성 인식을 시작하지 못했어요."}render()}
 function armSil(){clearTimeout(sil);sil=setTimeout(function(){if(listening)stopVoice()},SIL_SEC*1000)}
+function toggleLang(){lang=lang==="en"?"ko":"en";var b=document.getElementById("m4");b.classList.toggle("on",lang==="en");b.textContent=lang==="en"?"한글로 연습":"English로 연습";bres=null;tres=null;blankFor=0;resetVoice();render()}
 function stopVoice(){vstop=true;if(window.AndroidSTT)AndroidSTT.stop();else if(rec)rec.stop()}
 window.onNativeVoice=function(a){if(typeof a==="string")a=[a];voiceDone(pickBest(a))};
 window.onNativeVoiceError=function(m){listening=false;vmsg=m;render()};
+function showNotice(force){
+var seen="";try{seen=localStorage.getItem("tms-notice-seen")||""}catch(e){}
+if(!NOTICE.length||(!force&&seen===APP_VER))return;
+if(document.getElementById("nbox"))return;
+var d=document.createElement("div");d.id="nbox";d.className="ov";
+d.innerHTML='<div class="nb"><div class="nt">📢 업데이트 안내<span class="nv">'+esc(APP_VER)+'</span></div><ul>'+NOTICE.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul><div class="row"><button onclick="closeNotice(false)">닫기</button><button class="on" onclick="closeNotice(true)">다시 안 보기</button></div></div>';
+document.body.appendChild(d)}
+function closeNotice(never){if(never){try{localStorage.setItem("tms-notice-seen",APP_VER)}catch(e){}}var d=document.getElementById("nbox");if(d)d.remove()}
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
 function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
 function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
@@ -282,6 +27,8 @@ function getLog(){try{return JSON.parse(localStorage.getItem(LK))||{}}catch(e){r
 function logToday(){var l=getLog(),k=ymd(new Date());l[k]=(l[k]||0)+1;try{localStorage.setItem(LK,JSON.stringify(l))}catch(e){}}
 function recText(){var l=getLog(),d=new Date(),t=l[ymd(d)]||0,s=0;if(!t)d.setDate(d.getDate()-1);while(l[ymd(d)]){s++;d.setDate(d.getDate()-1)}return "오늘 "+t+"개 학습 · 연속 "+s+"일 · 총 "+Object.keys(l).length+"일"}
 chips();build();
+document.getElementById("ver").textContent="버전 "+APP_VER+" · 공지 보기";
+showNotice();
 </script>
 </body>
 </html>
