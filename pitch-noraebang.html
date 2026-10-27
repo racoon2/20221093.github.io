@@ -78,10 +78,51 @@ button:focus-visible,label.btn:focus-within,input:focus-visible{outline:2px soli
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
 .legend .refsw{display:inline-block;width:18px;height:6px;border-radius:3px;background:var(--ref);opacity:.5;margin-right:6px;vertical-align:2px}
 
+/* 터치 공통 */
+button,.btn,.tabs button,#strip{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#roll{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.btn{min-height:44px;justify-content:center}
+.tabs button{min-height:40px}
+.transport{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.transport .stop{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+.miniScore{font-family:var(--display);font-size:22px;color:var(--accent);margin-left:auto;font-variant-numeric:tabular-nums}
+.miniScore small{font-family:var(--body);font-size:11px;color:var(--muted);margin-right:6px;letter-spacing:.06em}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--line)}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);margin-top:-8px;border:3px solid var(--stage)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--stage)}
+input[type=range]:disabled{opacity:.4;cursor:default}
+
 @media (max-width:760px){
   .lower{grid-template-columns:1fr}
-  .readouts{grid-template-columns:1fr 1fr}
-  .meter{grid-column:1 / -1}
+  .wrap{padding-block:14px calc(96px + env(safe-area-inset-bottom,0px));gap:12px}
+  .top{align-items:center}
+  .top p{display:none}
+  h1{font-size:30px}
+  .songbar{padding:8px 12px;font-size:14px}
+  .readouts{grid-template-columns:1fr 1fr;gap:8px}
+  .meter{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px}
+  .meter .lbl{width:100%}
+  .meter .bar{flex:1;margin:6px 0}
+  .ro{padding:6px 10px}
+  .ro b{font-size:22px}
+  #roll{height:clamp(200px,36vh,300px)}
+  .legend{font-size:12px;gap:4px 12px}
+  .card{padding:14px}
+  /* 핵심 버튼은 화면 아래에 고정 */
+  .transport{position:fixed;left:0;right:0;bottom:0;z-index:20;flex-wrap:nowrap;
+    padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+    background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-top:1px solid var(--line)}
+  .transport .btn{flex:1;min-height:50px;padding:8px 6px;font-size:15px;white-space:nowrap}
+  .transport .stop{flex:2}
+  .miniScore{flex:none;margin-left:4px}
+}
+@media (max-width:760px) and (max-height:500px){
+  #roll{height:56vh}
+  .readouts{display:none}
 }
 @media (prefers-reduced-motion:reduce){.meter .bar i{transition:none}}
 </style>
@@ -125,20 +166,20 @@ button:focus-visible,label.btn:focus-within,input:focus-visible{outline:2px soli
         <button role="tab" id="tabMic" aria-selected="true">마이크로 부르기</button>
         <button role="tab" id="tabFile" aria-selected="false">녹음 파일로 채점</button>
       </div>
+      <div id="transport" class="transport">
+        <button id="btnSing" class="btn primary">● 부르기 시작</button>
+        <button id="btnBoth" class="btn primary" hidden disabled>▶ 같이 듣기</button>
+        <button id="btnListen" class="btn">▶ 원곡 듣기</button>
+        <button id="btnStop" class="btn stop" hidden>■ 정지</button>
+        <span id="miniScore" class="miniScore" hidden></span>
+      </div>
       <div id="panelMic" class="panel">
-        <div class="btnrow">
-          <button id="btnSing" class="btn primary">● 부르기 시작</button>
-          <button id="btnListen" class="btn">▶ 원곡 듣기</button>
-          <button id="btnStop" class="btn" disabled>■ 정지</button>
-        </div>
         <label class="slider" for="lat"><span>지연 보정 <b id="latV">150ms</b></span><input type="range" id="lat" min="0" max="500" step="10" value="150"></label>
         <p class="tip">이어폰을 끼고 부르세요. 스피커 소리가 마이크로 다시 들어가면 원곡 음이 잡혀 점수가 실제보다 높게 나옵니다. 보는 위치를 옮겨 두면 그 지점부터 시작해요.</p>
       </div>
       <div id="panelFile" class="panel" hidden>
         <div class="btnrow">
-          <label class="btn primary" for="recFile">녹음 파일 넣기<input type="file" id="recFile" accept="audio/*,video/*" hidden></label>
-          <button id="btnBoth" class="btn" disabled>▶ 같이 듣기</button>
-          <button id="btnStop2" class="btn" disabled>■ 정지</button>
+          <label class="btn" for="recFile">녹음 파일 넣기<input type="file" id="recFile" accept="audio/*,video/*" hidden></label>
         </div>
         <span id="recName" class="mono small">아직 녹음 파일이 없어요</span>
         <label class="slider" for="off"><span>싱크 <b id="offV">0ms</b></span><input type="range" id="off" min="-3000" max="3000" step="10" value="0" disabled></label>
@@ -335,6 +376,9 @@ function showResult(kind) {
   const labels = { demo: "예시 결과 · 직접 불러서 바꿔 보세요", live: "부르는 중 · 실시간 점수", final: "최종 점수", file: "녹음 파일 채점 결과", none: "아직 부른 기록이 없어요" };
   $("resLabel").textContent = labels[r.N ? S.kind : "none"];
   if (S.kind === "live") { shownScore = r.score; $("score").textContent = r.score; } else animateScore(r.score);
+  const ms = $("miniScore");
+  ms.hidden = !r.N || S.kind === "demo";
+  ms.innerHTML = "<small>" + (S.kind === "live" ? "실시간" : "점수") + "</small>" + r.score + "점";
   const s = r.score;
   $("grade").textContent = !r.N ? "" : s >= 95 ? "음정 완벽" : s >= 85 ? "아주 안정적" : s >= 70 ? "괜찮아요" : s >= 50 ? "조금 더 연습" : "음을 다시 잡아 봐요";
   const pct = x => r.N ? Math.round(100 * x / r.N) : 0;
@@ -465,12 +509,22 @@ function livePitch(buf, sr) {
 function ensureCtx() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; }
 function notice(msg) { const el = $("notice"); el.textContent = msg || ""; el.hidden = !msg; }
 function setButtons() {
-  const busy = !S.ref;
-  $("btnSing").disabled = S.playing || busy; $("btnListen").disabled = S.playing || busy;
-  $("btnStop").disabled = !S.playing; $("btnStop2").disabled = !S.playing;
-  $("btnBoth").disabled = S.playing || !S.recBuffer;
-  $("songFile").disabled = S.playing; $("recFile").disabled = S.playing;
-  $("btnSing").textContent = S.capturing ? "● 부르는 중" : "● 부르기 시작";
+  const busy = !S.ref, p = S.playing;
+  $("btnSing").hidden = p || S.mode !== "mic";
+  $("btnBoth").hidden = p || S.mode !== "file";
+  $("btnListen").hidden = p;
+  $("btnStop").hidden = !p;
+  $("btnSing").disabled = busy; $("btnListen").disabled = busy;
+  $("btnBoth").disabled = busy || !S.recBuffer;
+  $("songFile").disabled = p; $("recFile").disabled = p;
+  $("btnStop").textContent = S.capturing ? "■ 그만 부르기" : "■ 정지";
+}
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); }
+    else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) { wakeLock = null; }
 }
 async function startPlay(capture, withRec) {
   if (!S.song || S.playing) return;
@@ -501,7 +555,7 @@ async function startPlay(capture, withRec) {
     if (pos >= 0) { if (pos < S.recBuffer.duration) rs.start(startAt, pos); } else rs.start(startAt - pos, 0);
     recSrc = rs;
   }
-  S.playing = true; S.capturing = capture; setButtons();
+  S.playing = true; S.capturing = capture; setButtons(); keepAwake(true);
   raf = requestAnimationFrame(tick);
 }
 function tick() {
@@ -537,7 +591,7 @@ function stopPlay() {
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   const wasCapturing = S.capturing;
   S.playing = false; S.capturing = false; S.liveMidi = NaN; analyser = null;
-  setButtons();
+  setButtons(); keepAwake(false);
   if (wasCapturing) showResult("final");
   redraw();
 }
@@ -657,13 +711,13 @@ $("btnSing").addEventListener("click", () => startPlay(true, false));
 $("btnListen").addEventListener("click", () => startPlay(false, false));
 $("btnBoth").addEventListener("click", () => startPlay(false, true));
 $("btnStop").addEventListener("click", stopPlay);
-$("btnStop2").addEventListener("click", stopPlay);
 $("lat").addEventListener("input", e => { S.latency = +e.target.value; $("latV").textContent = S.latency + "ms"; });
 $("key").addEventListener("input", e => { S.shift = +e.target.value; $("keyV").textContent = (S.shift > 0 ? "+" : "") + S.shift; if (!S.capturing) showResult(); redraw(); });
 function setMode(m) {
   S.mode = m;
   $("tabMic").setAttribute("aria-selected", m === "mic"); $("tabFile").setAttribute("aria-selected", m === "file");
   $("panelMic").hidden = m !== "mic"; $("panelFile").hidden = m !== "file"; notice("");
+  setButtons();
 }
 $("tabMic").addEventListener("click", () => { if (!S.playing) setMode("mic"); });
 $("tabFile").addEventListener("click", () => { if (!S.playing) setMode("file"); });
