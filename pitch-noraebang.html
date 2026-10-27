@@ -105,8 +105,9 @@ input[type=range]:disabled{opacity:.4;cursor:default}
   .top{align-items:center}
   .top p{display:none}
   h1{font-size:32px}
-  .loaders{width:100%}
-  .loaders .btn{flex:1;min-height:48px}
+  .loaders{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .loaders .btn{min-height:48px;white-space:nowrap;font-size:15px;padding:8px 10px}
+  #btnDangdae{grid-column:1 / -1}
   .songbar{padding:10px 12px;font-size:15px}
   .lower{grid-template-columns:1fr}
   .readouts{grid-template-columns:1fr 1fr;gap:8px}
@@ -152,7 +153,8 @@ input[type=range]:disabled{opacity:.4;cursor:default}
     </div>
     <div class="loaders">
       <label class="btn primary" for="songFile">곡 파일<input type="file" id="songFile" accept="audio/*" hidden></label>
-      <label class="btn" for="scoreFile">악보 파일 (MIDI·MusicXML)<input type="file" id="scoreFile" accept=".mid,.midi,.xml,.musicxml,.mxl,audio/midi,audio/x-midi" hidden></label>
+      <label class="btn" for="scoreFile">악보 파일<span class="small" style="font-weight:500">MIDI·XML</span><input type="file" id="scoreFile" accept=".mid,.midi,.xml,.musicxml,.mxl,audio/midi,audio/x-midi" hidden></label>
+      <button class="btn" id="btnDangdae">♪ 당대하라 · 베이스 악보 불러오기</button>
     </div>
   </header>
 
@@ -247,6 +249,64 @@ input[type=range]:disabled{opacity:.4;cursor:default}
   </div>
 </div>
 
+<script type="text/plain" id="scoreDangdae"><score-partwise version="3.1"><work><work-title>당대하라</work-title></work><part-list><score-part id="P1"><part-name>베이스</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>12</divisions><key><fifths>4</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line><clef-octave-change>-1</clef-octave-change></clef></attributes><direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>66</per-minute></metronome></direction-type><sound tempo="66"/></direction><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="2"><note><pitch><step>B</step><octave>2</octave></pitch><duration>48</duration><type>whole</type></note></measure>
+<measure number="3"><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="4"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>D</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="5"><note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>D</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="6"><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="7"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>D</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="8"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>36</duration><type>half</type><dot/></note><note><rest/><duration>12</duration><type>quarter</type></note></measure>
+<measure number="9"><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="10"><note><pitch><step>B</step><octave>2</octave></pitch><duration>48</duration><type>whole</type></note></measure>
+<measure number="11"><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="12"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>D</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="13"><note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="14"><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="15"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="16"><note><pitch><step>B</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="17"><note><pitch><step>A</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="18"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="19"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="20"><note><pitch><step>E</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="21"><note><pitch><step>A</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="22"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="23"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="24"><note><pitch><step>E</step><octave>3</octave></pitch><duration>36</duration><type>half</type><dot/></note><note><rest/><duration>12</duration><type>quarter</type></note></measure>
+<measure number="25"><note><rest measure="yes"/><duration>48</duration><type>whole</type></note></measure>
+<measure number="26"><note><rest measure="yes"/><duration>48</duration><type>whole</type></note></measure>
+<measure number="27"><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="28"><note><pitch><step>B</step><octave>2</octave></pitch><duration>48</duration><type>whole</type></note></measure>
+<measure number="29"><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="30"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>D</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="31"><note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="32"><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><tie type="start"/><type>16th</type><notations><tied type="start"/></notations></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><tie type="stop"/><type>quarter</type><dot/><notations><tied type="stop"/></notations></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="33"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="34"><note><pitch><step>B</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="35"><note><pitch><step>A</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="36"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="37"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="38"><note><pitch><step>E</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="39"><note><pitch><step>A</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="40"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="41"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="42"><note><pitch><step>E</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="43"><note><pitch><step>A</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>12</duration><tie type="start"/><type>quarter</type><notations><tied type="start"/></notations></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><tie type="stop"/><type>eighth</type><notations><tied type="stop"/></notations></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="44"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><tie type="start"/><type>quarter</type><notations><tied type="start"/></notations></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><tie type="stop"/><type>eighth</type><notations><tied type="stop"/></notations></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="45"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><tie type="start"/><type>quarter</type><notations><tied type="start"/></notations></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><tie type="stop"/><type>eighth</type><notations><tied type="stop"/></notations></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="46"><note><pitch><step>E</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note></measure>
+<measure number="47"><note><pitch><step>A</step><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>12</duration><tie type="start"/><type>quarter</type><notations><tied type="start"/></notations></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><tie type="stop"/><type>eighth</type><notations><tied type="stop"/></notations></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="48"><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="49"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>12</duration><type>quarter</type></note><note><pitch><step>B</step><octave>2</octave></pitch><duration>12</duration><type>quarter</type></note></measure>
+<measure number="50"><note><pitch><step>E</step><octave>3</octave></pitch><duration>24</duration><type>half</type></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="51"><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>18</duration><type>quarter</type><dot/></note><note><rest/><duration>12</duration><type>quarter</type></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note><note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>4</duration><type>eighth</type><time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification></note></measure>
+<measure number="52"><note><pitch><step>A</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>18</duration><tie type="start"/><type>quarter</type><dot/><notations><tied type="start"/></notations></note><note><pitch><step>A</step><octave>3</octave></pitch><duration>24</duration><tie type="stop"/><type>half</type><notations><tied type="stop"/></notations></note></measure>
+<measure number="53"><note><rest/><duration>24</duration><type>half</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>9</duration><type>eighth</type><dot/></note><note><pitch><step>B</step><octave>3</octave></pitch><duration>3</duration><type>16th</type></note></measure>
+<measure number="54"><note><pitch><step>E</step><octave>3</octave></pitch><duration>48</duration><type>whole</type></note></measure>
+<measure number="55"><note><rest/><duration>30</duration><type>half</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note><note><pitch><step>E</step><octave>3</octave></pitch><duration>6</duration><type>eighth</type></note></measure>
+<measure number="56"><note><pitch><step>E</step><octave>3</octave></pitch><duration>48</duration><type>whole</type></note></measure>
+<measure number="57"><note><rest measure="yes"/><duration>48</duration><type>whole</type></note></measure></part></score-partwise>
+</script>
 <script>
 (() => {
 const $ = id => document.getElementById(id);
@@ -269,13 +329,39 @@ function yinFrame(x, off, W, tauMin, tauMax, d) {
     for (let t = tauMin; t <= tauMax; t++) if (d[t] < m) { m = d[t]; mi = t; }
     if (m < 0.3) found = mi; else return 0;
   }
+  yinFrame.conf = d[found];
   let p = found;
   if (found > 1 && found < tauMax) { const a = d[found - 1], b = d[found], c = d[found + 1], den = a - 2 * b + c; if (den !== 0) p = found + 0.5 * (a - c) / den; }
   return p;
 }
-/* 목소리만 있는 녹음용: YIN */
+/* 목소리용: McLeod 피치(MPM). 낮은 남자 목소리에서 YIN보다 옥타브 오류가 적음 */
+function mpmFrame(x, off, W, tauMin, tauMax, d) {
+  for (let tau = 0; tau <= tauMax; tau++) {
+    let r = 0, m = 0;
+    for (let j = 0; j < W; j++) { const a = x[off + j], b = x[off + j + tau]; r += a * b; m += a * a + b * b; }
+    d[tau] = m > 0 ? 2 * r / m : 0;
+  }
+  let gmax = 0; const peaks = [];
+  let tau = 1;
+  while (tau <= tauMax && d[tau] > 0) tau++;
+  while (tau <= tauMax) {
+    while (tau <= tauMax && d[tau] <= 0) tau++;
+    let best = -1, bi = -1;
+    while (tau <= tauMax && d[tau] > 0) { if (d[tau] > best) { best = d[tau]; bi = tau; } tau++; }
+    if (bi > 0 && bi >= tauMin && bi < tauMax) { peaks.push(bi); if (best > gmax) gmax = best; }
+  }
+  mpmFrame.conf = 0;
+  if (!peaks.length || gmax <= 0) return 0;
+  const thr = 0.9 * gmax;
+  let pick = peaks[0];
+  for (const pk of peaks) if (d[pk] >= thr) { pick = pk; break; }
+  mpmFrame.conf = d[pick];
+  const a = d[pick - 1], b = d[pick], c = d[pick + 1], den = a - 2 * b + c;
+  return den !== 0 ? pick + 0.5 * (a - c) / den : pick;
+}
+/* 목소리만 있는 녹음용 */
 function analyzeVoice(x, sr, hop, progress) {
-  const W = 384, tauMax = Math.floor(sr / 70), tauMin = Math.floor(sr / 1100);
+  const W = 512, tauMax = Math.floor(sr / 60), tauMin = Math.floor(sr / 900);
   const n = Math.max(0, Math.floor((x.length - W - tauMax) / hop));
   const f0 = new Float32Array(n), rms = new Float32Array(n);
   for (let i = 0; i < n; i++) { let s = 0; const o = i * hop; for (let j = 0; j < W; j++) { const v = x[o + j]; s += v * v; } rms[i] = Math.sqrt(s / W); }
@@ -284,8 +370,8 @@ function analyzeVoice(x, sr, hop, progress) {
   const d = new Float32Array(tauMax + 1);
   for (let i = 0; i < n; i++) {
     if (rms[i] < gate) continue;
-    const p = yinFrame(x, i * hop, W, tauMin, tauMax, d);
-    f0[i] = p > 0 ? sr / p : 0;
+    const p = mpmFrame(x, i * hop, W, tauMin, tauMax, d);
+    f0[i] = p > 0 && mpmFrame.conf > 0.6 ? sr / p : 0;
     if (progress && i % 400 === 0) progress(i / n);
   }
   return f0;
@@ -390,7 +476,7 @@ function analyzeMelody(L, R, sr, hop, progress) {
   }
   return f0;
 }
-const workerSrc = [yinFrame, analyzeVoice, analyzeMelody].map(f => f.toString()).join("\n") +
+const workerSrc = [yinFrame, mpmFrame, analyzeVoice, analyzeMelody].map(f => f.toString()).join("\n") +
   "\nonmessage=e=>{const d=e.data,pg=p=>postMessage({p});const f0=d.type==='melody'?analyzeMelody(d.L,d.R,d.sr,d.hop,pg):analyzeVoice(d.x,d.sr,d.hop,pg);postMessage({f0},[f0.buffer]);};";
 function runWorker(msg, onP) {
   const local = () => msg.type === "melody" ? analyzeMelody(msg.L, msg.R, msg.sr, msg.hop, null) : analyzeVoice(msg.x, msg.sr, msg.hop, null);
@@ -665,11 +751,12 @@ async function renderGuide() {
   const part = curPart(); if (!part) { S.guide = null; return; }
   const job = ++guideJob, dur = Math.max(1, S.dur), sr = 22050;
   const oc = new OfflineAudioContext(1, Math.ceil(dur * sr), sr);
-  const master = oc.createGain(); master.gain.value = 0.22; master.connect(oc.destination);
+  const lpf = oc.createBiquadFilter(); lpf.type = "lowpass"; lpf.frequency.value = 2400; lpf.connect(oc.destination);
+  const master = oc.createGain(); master.gain.value = 0.13; master.connect(lpf);
   for (const n of part.notes) {
     let s = mapT(n.s), e = mapT(n.e) - 0.02;
     if (e <= 0 || s >= dur) continue; s = Math.max(0, s); if (e - s < 0.05) continue;
-    const o = oc.createOscillator(); o.type = "triangle"; o.frequency.value = 440 * Math.pow(2, (n.m + S.shift - 69) / 12);
+    const o = oc.createOscillator(); o.type = "sawtooth"; o.frequency.value = 440 * Math.pow(2, (n.m + S.shift - 69) / 12);
     const g = oc.createGain();
     g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(1, s + 0.015);
     g.gain.setValueAtTime(1, e - 0.03); g.gain.linearRampToValueAtTime(0, e);
@@ -839,7 +926,9 @@ function updateReadouts() {
   let me = NaN;
   if (S.capturing) me = S.liveMidi; else if (S.user && S.user[idx] !== undefined) me = S.user[idx];
   $("roTarget").innerHTML = noteHTML(target);
-  $("roMe").innerHTML = noteHTML(me);
+  let meHTML = noteHTML(me);
+  if (!isNaN(target) && !isNaN(me)) { const oc = Math.round((me - target) / 12); if (oc) meHTML += "<small>" + Math.abs(oc) + "옥타브 " + (oc < 0 ? "아래" : "위") + "</small>"; }
+  $("roMe").innerHTML = meHTML;
   const nd = $("needle");
   if (!isNaN(target) && !isNaN(me)) {
     const dc = cents(me, target); nd.classList.remove("off");
@@ -860,11 +949,14 @@ function livePitch(buf, sr) {
   if (!liveX || liveX.length !== n) liveX = new Float32Array(n);
   let s = 0;
   for (let i = 0; i < n; i++) { let a = 0; for (let j = 0; j < k; j++) a += buf[i * k + j]; a /= k; liveX[i] = a; s += a * a; }
-  if (Math.sqrt(s / n) < 0.008) return 0;
-  const srE = sr / k, tauMax = Math.min(799, Math.floor(srE / 70)), tauMin = Math.floor(srE / 1100), W = Math.min(384, n - tauMax - 1);
-  if (W < 128) return 0;
-  const p = yinFrame(liveX, 0, W, tauMin, tauMax, liveD);
-  return p > 0 ? srE / p : 0;
+  if (Math.sqrt(s / n) < 0.003) return 0;
+  const srE = sr / k, tauMax = Math.min(799, Math.floor(srE / 60)), tauMin = Math.floor(srE / 900);
+  const W = Math.min(640, n - tauMax - 1);
+  if (W < 200) return 0;
+  const off = n - W - tauMax - 1;
+  const p = mpmFrame(liveX, off, W, tauMin, tauMax, liveD);
+  if (p <= 0 || mpmFrame.conf < 0.6) return 0;
+  return srE / p;
 }
 function buildUserFromLive(latMs) {
   const u = new Float32Array(S.N).fill(NaN); let pIdx = -9, pVal = NaN, pT = -9;
@@ -930,13 +1022,15 @@ async function startPlay(capture, withRec) {
   if (capture) {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("no api");
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: false } });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     } catch (e) {
       notice("마이크를 열 수 없어요. 이 미리보기 창은 마이크를 막아 둘 수 있어서, 함께 보낸 HTML 파일을 브라우저에서 직접 열면 마이크로 부를 수 있어요. 여기서는 '녹음 파일로 채점'을 쓰면 됩니다.");
       return;
     }
     const ms = ctx.createMediaStreamSource(stream);
-    analyser = ctx.createAnalyser(); analyser.fftSize = 2048; ms.connect(analyser);
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1200;
+    const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 55;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 4096; ms.connect(hp); hp.connect(lp); lp.connect(analyser);
     micBuf = new Float32Array(analyser.fftSize);
     S.user = new Float32Array(S.N).fill(NaN); S.userRaw = null; S.liveRaw = []; S.kind = "live";
     lastIdx = -1; liveHist = []; lastLatAt = performance.now();
@@ -1048,13 +1142,14 @@ $("btnAuto").addEventListener("click", () => setOffset(autoOffset()));
 
 /* ================= 곡 불러오기 ================= */
 function busy(text) { const b = $("busy"); b.hidden = !text; if (text) b.textContent = text; }
+let loadSeq = 0;
 async function loadSong(buffer, name) {
-  S.song = buffer; S.songName = name; S.refAudio = null;
-  $("songName").textContent = name;
+  const my = ++loadSeq;
   busy("멜로디 뽑는 중…"); $("songStatus").textContent = "멜로디 추출 중";
-  S.ref = null; setButtons();
   const [L, R] = await render16k(buffer, 2, 0);
-  const f0 = await runWorker({ type: "melody", L, R, sr: SR, hop: HOP }, p => { const t = Math.round(p * 100) + "%"; $("songStatus").textContent = "멜로디 추출 " + t; busy("멜로디 뽑는 중… " + t); });
+  const f0 = await runWorker({ type: "melody", L, R, sr: SR, hop: HOP }, p => { if (my !== loadSeq) return; const t = Math.round(p * 100) + "%"; $("songStatus").textContent = "멜로디 추출 " + t; busy("멜로디 뽑는 중… " + t); });
+  if (my !== loadSeq) return false;
+  S.song = buffer; S.songName = name; $("songName").textContent = name;
   S.refAudio = noteify(toMidiTrack(f0));
   let v = 0; for (const r of S.refAudio) if (!isNaN(r)) v++;
   $("songStatus").textContent = fmt(buffer.duration) + " · 노래 구간 " + Math.round(100 * v / Math.max(1, S.refAudio.length)) + "%";
@@ -1063,6 +1158,7 @@ async function loadSong(buffer, name) {
   refreshRef();
   if (S.score) await renderGuide();
   setButtons();
+  return true;
 }
 $("songFile").addEventListener("change", async e => {
   const f = e.target.files[0]; e.target.value = "";
@@ -1082,17 +1178,9 @@ $("songFile").addEventListener("change", async e => {
 });
 
 /* ================= 악보 불러오기 ================= */
-$("scoreFile").addEventListener("change", async e => {
-  const f = e.target.files[0]; e.target.value = "";
-  if (!f) return;
-  notice("");
-  try {
-    const ab = await f.arrayBuffer(), head = new Uint8Array(ab, 0, 4), sig = String.fromCharCode(...head);
-    let parsed;
-    if (sig === "MThd") parsed = parseMidi(ab);
-    else if (sig.startsWith("PK")) parsed = parseMusicXML(await readMxl(ab));
-    else parsed = parseMusicXML(new TextDecoder().decode(ab));
+async function applyScore(parsed, fileName) {
     if (!parsed.parts.length) throw new Error("empty");
+    const f = { name: fileName };
     const bassIdx = parsed.parts.findIndex(p => /bass|베이스|바리톤|bari/i.test(p.name));
     S.score = { name: f.name.replace(/\.[^.]+$/, ""), parts: parsed.parts, bpm: parsed.bpm, partIdx: bassIdx >= 0 ? bassIdx : 0, offset: 0, scale: 1, low: false };
     if (!S.song) { $("songName").textContent = S.score.name + " (악보 가이드 음)"; $("songStatus").textContent = ""; }
@@ -1111,9 +1199,32 @@ $("scoreFile").addEventListener("change", async e => {
     refreshRef(); await renderGuide();
     showResult(S.user ? S.kind : "final"); setButtons(); redraw();
     if (S.song) notice("악보를 불러왔어요. 곡을 들으면서 이 파트의 첫 음이 나올 때 '지금이 첫 음!'을 누르거나, 시작 시각을 직접 맞춰 주세요.");
+}
+$("scoreFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  notice("");
+  try {
+    const ab = await f.arrayBuffer(), head = new Uint8Array(ab, 0, 4), sig = String.fromCharCode(...head);
+    let parsed;
+    if (sig === "MThd") parsed = parseMidi(ab);
+    else if (sig.startsWith("PK")) parsed = parseMusicXML(await readMxl(ab));
+    else parsed = parseMusicXML(new TextDecoder().decode(ab));
+    if (!S.song) { loadSeq++; busy(null); $("songStatus").textContent = ""; }
+    await applyScore(parsed, f.name);
   } catch (err) {
     notice("악보 파일을 읽지 못했어요. 악보 프로그램(뮤즈스코어 등)에서 MIDI(.mid)나 MusicXML(.musicxml, .mxl)로 내보낸 파일을 넣어 주세요.");
   }
+});
+$("btnDangdae").addEventListener("click", async () => {
+  if (S.playing) return;
+  notice("");
+  try {
+    if (!S.song) { loadSeq++; busy(null); $("songStatus").textContent = ""; }
+    if (S.songName.startsWith("예시곡")) { S.song = null; S.refAudio = null; S.songName = ""; S.user = null; S.liveRaw = []; S.userRaw = null; S.recBuffer = null; $("songStatus").textContent = ""; }
+    await applyScore(parseMusicXML($("scoreDangdae").textContent), "당대하라.musicxml");
+    if (!S.song) notice("당대하라 베이스 파트를 불러왔어요. 지금은 악보 가이드 음에 맞춰 연습해요. 원곡 파일을 넣으면 반주와 함께 부를 수 있고, 그때는 '지금이 첫 음!'으로 시작 위치를 맞추세요.");
+  } catch (err) { notice("내장 악보를 불러오지 못했어요."); }
 });
 function applyScoreControls(rebuild) {
   const sc = S.score; if (!sc) return;
@@ -1230,7 +1341,7 @@ redraw();
 (async () => {
   try {
     const buf = await makeDemo();
-    await loadSong(buf, "예시곡 · 반짝반짝 작은 별 (합성음)");
+    if (!(await loadSong(buf, "예시곡 · 반짝반짝 작은 별 (합성음)"))) return;
     S.user = demoUser(); S.viewT = 13.2;
     showResult("demo"); redraw();
   } catch (e) {
