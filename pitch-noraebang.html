@@ -305,7 +305,7 @@ function analyzeMelody(L, R, sr, hop, progress) {
   const sal = new Float32Array(NB), V = new Float32Array(NB), V2 = new Float32Array(NB), A = new Float32Array(NB), Ai = new Int16Array(NB);
   const back = new Int16Array(n * NB), salQ = new Uint8Array(n * NB), fmax = new Float32Array(n), rms = new Float32Array(n);
   const kmin = Math.ceil(60 * N / sr), kmax = Math.min(half - 2, Math.floor(5000 * N / sr));
-  const LAM = 0.015, CAP = 0.5;
+  const LAM = 0.03, CAP = 0.8;
   for (let t = 0; t < n; t++) {
     const start = t * hop - half; let e = 0;
     for (let i = 0; i < N; i++) {
@@ -382,11 +382,11 @@ function analyzeMelody(L, R, sr, hop, progress) {
   const rs = Float32Array.from(rms).sort(), gate = Math.max((rs[Math.floor(n * 0.95)] || 0) * 0.08, 1e-5);
   const vals = []; for (let t = 0; t < n; t++) if (rms[t] > gate) vals.push(ps[t]);
   vals.sort((a, b) => a - b);
-  const thr = (vals[Math.floor(vals.length * 0.75)] || 0) * 0.3;
+  const thr = (vals[Math.floor(vals.length * 0.75)] || 0) * 0.4;
   const f0 = new Float32Array(n);
   for (let t = 0; t < n; t++) {
     const rel = salQ[t * NB + path[t]] / 255;
-    if (rms[t] > gate && ps[t] > thr && rel > 0.5) f0[t] = FMIN * Math.pow(2, path[t] / 120);
+    if (rms[t] > gate && ps[t] > thr && rel > 0.65) f0[t] = FMIN * Math.pow(2, path[t] / 120);
   }
   return f0;
 }
@@ -420,6 +420,54 @@ function toMidiTrack(f0) {
     if (j - i < 5) for (let k = i; k < j; k++) out[k] = NaN;
     i = j;
   }
+  return out;
+}
+/* 뽑은 음정 곡선을 노래방식 음표(반음 단위 막대)로 정리 */
+function noteify(tr) {
+  const n = tr.length, out = new Float32Array(n).fill(NaN);
+  let sx = 0, sy = 0;
+  for (let i = 0; i < n; i++) if (!isNaN(tr[i])) { const f = tr[i] - Math.round(tr[i]); sx += Math.cos(2 * Math.PI * f); sy += Math.sin(2 * Math.PI * f); }
+  const tune = Math.atan2(sy, sx) / (2 * Math.PI);
+  const sm = new Float32Array(n).fill(NaN), w = [];
+  for (let i = 0; i < n; i++) {
+    if (isNaN(tr[i])) continue;
+    w.length = 0;
+    for (let k = -4; k <= 4; k++) { const j = i + k; if (j >= 0 && j < n && !isNaN(tr[j])) w.push(tr[j]); }
+    w.sort((a, b) => a - b); sm[i] = w[w.length >> 1];
+  }
+  const segs = [];
+  let i = 0;
+  while (i < n) {
+    if (isNaN(sm[i])) { i++; continue; }
+    let j = i; while (j < n && !isNaN(sm[j])) j++;
+    let s = i;
+    while (s < j) {
+      const cur = Math.round(sm[s] - tune); let e = s + 1, off = 0;
+      while (e < j) {
+        if (Math.round(sm[e] - tune) !== cur) { off++; if (off >= 4) { e -= 3; break; } } else off = 0;
+        e++;
+      }
+      if (e > j) e = j;
+      const vals = []; for (let k = s; k < e; k++) vals.push(sm[k]); vals.sort((a, b) => a - b);
+      segs.push({ s, e, m: Math.round(vals[vals.length >> 1] - tune) + tune });
+      s = e;
+    }
+    i = j;
+  }
+  const keep = [];
+  for (const g of segs) {
+    const last = keep[keep.length - 1];
+    if (last && Math.abs(last.m - g.m) < 0.01 && g.s - last.e <= 4) { last.e = g.e; continue; }
+    keep.push(g);
+  }
+  const fin = keep.filter((g, k) => {
+    if (g.e - g.s < 6) return false;
+    if (g.e - g.s >= 18) return true;
+    const pv = keep[k - 1], nx = keep[k + 1];
+    const far = o => !o || Math.abs(o.m - g.m) > 6;
+    return !(far(pv) && far(nx));
+  });
+  for (const g of fin) for (let k = g.s; k < g.e; k++) out[k] = g.m;
   return out;
 }
 async function decodeFile(file) {
@@ -591,7 +639,7 @@ function setRange() {
   if (!v.length) { S.lo = 52; S.hi = 76; return; }
   let lo = Math.floor(v[Math.floor(v.length * 0.04)]) - 4, hi = Math.ceil(v[Math.floor(v.length * 0.96)]) + 4;
   if (hi - lo < 18) { const c = (hi + lo) / 2; lo = Math.floor(c - 9); hi = lo + 18; }
-  S.lo = lo; S.hi = hi; S.vc = NaN;
+  S.lo = lo; S.hi = hi; S.vc = NaN; S.vcT = 0;
 }
 function refreshRef() {
   S.dur = computeDur(); S.N = Math.ceil(S.dur / HOPS) + 1;
@@ -711,12 +759,16 @@ function drawRoll() {
   const n = S.ref.length, i0 = Math.max(0, Math.floor(t0 / HOPS)), i1 = Math.min(n - 1, Math.ceil((t0 + span) / HOPS));
   let lo, hi;
   if (phone) {
-    const v = []; for (let i = i0; i <= i1; i += 2) if (!isNaN(S.ref[i])) v.push(S.ref[i]);
-    if (v.length) {
-      v.sort((a, b) => a - b); const tc = v[v.length >> 1] + S.shift;
-      S.vc = isNaN(S.vc) || !S.playing ? tc : S.vc + (tc - S.vc) * 0.05;
-    } else if (isNaN(S.vc)) S.vc = (S.lo + S.hi) / 2 + S.shift;
-    lo = S.vc - 7; hi = S.vc + 7;
+    const HALF = 8;
+    let mn = 1e9, mx = -1e9;
+    for (let i = i0; i <= i1; i++) { const r = S.ref[i]; if (!isNaN(r)) { if (r < mn) mn = r; if (r > mx) mx = r; } }
+    if (isNaN(S.vc)) S.vc = mn < 1e9 ? (mn + mx) / 2 + S.shift : (S.lo + S.hi) / 2 + S.shift;
+    if (mn < 1e9) {
+      mn += S.shift; mx += S.shift;
+      if (!S.vcT || mn < S.vc - HALF + 2 || mx > S.vc + HALF - 2) S.vcT = (mn + mx) / 2;
+      if (S.vcT) S.vc = S.playing ? S.vc + (S.vcT - S.vc) * 0.04 : S.vcT;
+    }
+    lo = S.vc - HALF; hi = S.vc + HALF;
   } else { lo = S.lo + S.shift; hi = S.hi + S.shift; }
   const semi = H / (hi - lo), X = t => (t - t0) * PPS, Y = m => H - (m - lo) * semi;
   g.font = "500 " + (phone ? 12 : 11) + "px " + C.mono; g.textBaseline = "middle";
@@ -906,9 +958,12 @@ function tick() {
     analyser.getFloatTimeDomainData(micBuf);
     const f = livePitch(micBuf, actx.sampleRate);
     let m = f > 0 ? 69 + 12 * Math.log2(f / 440) : NaN;
-    liveHist.push(m); if (liveHist.length > 3) liveHist.shift();
+    const prevVals = liveHist.filter(v => !isNaN(v)).sort((a, b) => a - b);
+    const stable = prevVals.length >= 3 ? prevVals[prevVals.length >> 1] : NaN;
+    if (!isNaN(m) && !isNaN(stable)) { const dj = m - stable; if (Math.abs(Math.abs(dj) - 12) < 1) m -= 12 * Math.sign(dj); }
+    liveHist.push(m); if (liveHist.length > 5) liveHist.shift();
     const vals = liveHist.filter(v => !isNaN(v)).sort((a, b) => a - b);
-    if (!isNaN(m) && vals.length >= 2) m = vals[vals.length >> 1];
+    if (!isNaN(m) && vals.length >= 3) m = vals[vals.length >> 1];
     S.liveMidi = m;
     if (!isNaN(m)) S.liveRaw.push({ t: S.viewT, m });
     const idx = Math.round((S.viewT - S.latency / 1000) / HOPS);
@@ -1000,7 +1055,7 @@ async function loadSong(buffer, name) {
   S.ref = null; setButtons();
   const [L, R] = await render16k(buffer, 2, 0);
   const f0 = await runWorker({ type: "melody", L, R, sr: SR, hop: HOP }, p => { const t = Math.round(p * 100) + "%"; $("songStatus").textContent = "멜로디 추출 " + t; busy("멜로디 뽑는 중… " + t); });
-  S.refAudio = toMidiTrack(f0);
+  S.refAudio = noteify(toMidiTrack(f0));
   let v = 0; for (const r of S.refAudio) if (!isNaN(r)) v++;
   $("songStatus").textContent = fmt(buffer.duration) + " · 노래 구간 " + Math.round(100 * v / Math.max(1, S.refAudio.length)) + "%";
   busy(null);
@@ -1148,7 +1203,7 @@ $("latAuto").addEventListener("click", () => {
 });
 $("key").addEventListener("input", e => {
   S.shift = +e.target.value; $("keyV").textContent = (S.shift > 0 ? "+" : "") + S.shift;
-  S.vc = NaN; if (S.score) scheduleGuide(); showResult(); redraw();
+  S.vc = NaN; S.vcT = 0; if (S.score) scheduleGuide(); showResult(); redraw();
 });
 function setMode(m) {
   S.mode = m;
