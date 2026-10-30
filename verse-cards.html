@@ -154,7 +154,7 @@ var V={
 "사도행전 24:16":[`이것으로 말미암아 나도 하나님과 사람에 대하여 항상 양심에 거리낌이 없기를 힘쓰나이다`,`So I strive always to keep my conscience clear before God and man.`],
 "히브리서 11:6":[`믿음이 없이는 하나님을 기쁘시게 하지 못하나니 하나님께 나아가는 자는 반드시 그가 계신 것과 또한 그가 자기를 찾는 자들에게 상 주시는 이심을 믿어야 할지니라`,`And without faith it is impossible to please God, because anyone who comes to him must believe that he exists and that he rewards those who earnestly seek him.`],
 "로마서 4:20,21":[`믿음이 없어 하나님의 약속을 의심하지 않고 믿음으로 견고하여져서 하나님께 영광을 돌리며 약속하신 그것을 또한 능히 이루실 줄을 확신하였으니`,`Yet he did not waver through unbelief regarding the promise of God, but was strengthened in his faith and gave glory to God, being fully persuaded that God had power to do what he had promised.`],
-"갈라디아서 6:9":[`우리가 선을 행하되 낙심하지 말지니 포기하지 아니하면 때가 이르매 거두리라 그러므로 우리는 기회 있는 대로 모든 이에게 착한 일을 하되 더욱 믿음의 가정들에게 할지니라`,`Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up. Therefore, as we have opportunity, let us do good to all people, especially to those who belong to the family of believers.`],
+"갈라디아서 6:9,10":[`우리가 선을 행하되 낙심하지 말지니 포기하지 아니하면 때가 이르매 거두리라 그러므로 우리는 기회 있는 대로 모든 이에게 착한 일을 하되 더욱 믿음의 가정들에게 할지니라`,`Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up. Therefore, as we have opportunity, let us do good to all people, especially to those who belong to the family of believers.`],
 "마태복음 5:16":[`이같이 너희 빛이 사람 앞에 비치게 하여 그들로 너희 착한 행실을 보고 하늘에 계신 너희 아버지께 영광을 돌리게 하라`,`In the same way, let your light shine before men, that they may see your good deeds and praise your Father in heaven.`],
 };
 </script>
@@ -176,7 +176,7 @@ var D=[
 ["B","그리스도를 전파함",[["모든 사람이 죄를 범함","로마서 3:23","이사야 53:6"],["죄의 형벌","로마서 6:23","히브리서 9:27"],["그리스도가 형벌을 받음","로마서 5:8","베드로전서 3:18"],["선행으로 구원받지 못함","에베소서 2:8","디도서 3:5"],["그리스도를 모셔야 함","요한복음 1:12","요한계시록 3:20"],["구원의 확신","요한일서 5:13","요한복음 5:24"]]],
 ["C","하나님을 의뢰함",[["성령","고린도전서 3:16","고린도전서 2:12"],["능력","이사야 41:10","빌립보서 4:13"],["성실","예레미야애가 3:22,23","민수기 23:19"],["평안","이사야 26:3","베드로전서 5:7"],["공급","로마서 8:32","빌립보서 4:19"],["유혹에서 도우심","히브리서 2:18","시편 119:9"]]],
 ["D","그리스도 제자의 자격",[["그리스도를 첫자리에 모심","마태복음 6:33","누가복음 9:23"],["죄에서 떠남","요한일서 2:15,16","로마서 12:2"],["견고함","고린도전서 15:58","히브리서 12:3"],["다른 사람을 섬김","마가복음 10:45","고린도후서 4:5"],["후히 드릴 것","잠언 3:9,10","고린도후서 9:6,7"],["세계 비전","사도행전 1:8","마태복음 28:19,20"]]],
-["E","그리스도를 닮아 감",[["사랑","요한복음 13:34,35","요한일서 3:18"],["겸손","빌립보서 2:3,4","베드로전서 5:5,6"],["순결","에베소서 5:3","베드로전서 2:11"],["정직","레위기 19:11","사도행전 24:16"],["믿음","히브리서 11:6","로마서 4:20,21"],["선행","갈라디아서 6:9","마태복음 5:16"]]]
+["E","그리스도를 닮아 감",[["사랑","요한복음 13:34,35","요한일서 3:18"],["겸손","빌립보서 2:3,4","베드로전서 5:5,6"],["순결","에베소서 5:3","베드로전서 2:11"],["정직","레위기 19:11","사도행전 24:16"],["믿음","히브리서 11:6","로마서 4:20,21"],["선행","갈라디아서 6:9,10","마태복음 5:16"]]]
 ];
 function seed(){var s=[],id=1;D.forEach(function(p){p[2].forEach(function(t){for(var i=1;i<3;i++)s.push({id:id++,pk:p[0],tp:t[0],ref:t[i],text:"",box:0})})});return s}
 function applyV(a){a.forEach(function(c){var v=V[c.ref];if(v){c.text=v[0];c.en=v[1]||""}});return a}
