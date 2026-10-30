@@ -59,6 +59,13 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 .ne ul{margin:6px 0 4px}
 .nb details{margin:8px 0;font-size:13px;color:var(--mute)}
 .nb summary{cursor:pointer;margin-bottom:6px}
+.nb2{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;font-family:system-ui,sans-serif;max-height:60vh;overflow:auto}
+.nb2 .sh{display:flex;align-items:center;gap:6px;margin:12px 0 4px;font-size:14px}
+.nb2 .sh button{padding:4px 8px;font-size:12px}
+.nb2 .sh button:first-of-type{margin-left:auto}
+.cb{display:flex;align-items:center;padding:4px 0;font-size:14px;gap:6px}
+.cb input{width:auto;margin:0}
+.cb small{color:var(--mute)}
 </style>
 </head>
 <body>
@@ -69,6 +76,7 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 <button id="m1" class="on" onclick="setMode('card')">카드</button>
 <button id="m2" onclick="setMode('blank')">빈칸 채우기</button>
 <button id="m3" onclick="setMode('type')">음성 암송</button>
+<button id="m5" onclick="setMode('typing')">타이핑</button>
 </div>
 <div class="tabs">
 <button id="t5" onclick="toggleRnd()">랜덤 순서</button>
@@ -84,6 +92,8 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 </div>
 <div class="note" style="margin:16px 0 6px">구절 바로 고르기</div>
 <div class="chips" id="picks"></div>
+<div class="chips" style="margin-top:10px"><button id="starb" onclick="toggleMine()">☆ 모음에 담기</button><button onclick="toggleEdit()">✎ 모음 편집</button></div>
+<div id="edit" class="hide"></div>
 </section>
 <div class="note" id="ver" style="text-align:center;margin:20px 0 0;cursor:pointer;text-decoration:underline" onclick="showNotice(true)"></div>
 </main>
@@ -163,12 +173,13 @@ var V={
 /* ★ 말이 없을 때 자동으로 끝나는 시간(초). 이 숫자를 바꾸면 돼요 (크롬 기준) */
 var SIL_SEC=5;
 /* ★ 버전 표시. 파일을 고칠 때마다 이 값을 올리세요 (예: v1.1) */
-var APP_VER="v1.10 · 2026-10-30";
+var APP_VER="v1.11 · 2026-10-30";
 /* ★ 공지 목록 (맨 위가 최신). 수정할 때마다 맨 위에 새 항목을 "추가"하고, 위의 APP_VER 숫자를 올리세요.
    기존 항목은 지우지 않고 그대로 두면 '이전 업데이트 보기'에 쌓여요.
    형식: {v:"버전",d:"날짜",t:["문장1","문장2"]},
    ("다시 안 보기"를 누른 사람도 APP_VER가 바뀌면 다시 떠요. 전부 비우려면 NOTICES=[]; ) */
 var NOTICES=[
+{v:"v1.11",d:"2026-10-30",t:["타이핑 모드: 외운 구절 전체를 직접 입력하면 정확도와 틀린 부분을 알려 줘요.","내 모음: 카드 아래 '☆ 모음에 담기'나 '✎ 모음 편집'으로 원하는 구절만 담고, 위의 '★ 내 모음'에서 카드·빈칸 채우기·음성 암송·타이핑으로 연습해요."]},
 {v:"v1.10",d:"2026-10-30",t:["화면 위쪽의 '남은 카드'와 '오늘 학습' 표시를 없앴어요."]},
 {v:"v1.9",d:"2026-10-30",t:["위쪽의 '외운 구절' 진행 바를 없앴어요.","빈칸 채우기·음성 암송 화면에서는 'English로 연습'(한글로 연습) 버튼만 남겼어요."]},
 {v:"v1.8",d:"2026-10-30",t:["59번(선행) 구절 출처를 갈라디아서 6:9,10으로 바로잡았어요. 이 구절의 학습 진도는 새로 시작돼요."]},
@@ -178,6 +189,8 @@ var NOTICES=[
 {v:"v1.1",d:"2026-10-12",t:["빈칸 채우기: 보기를 끌어다 놓는 방식이고, 오답 보기가 섞여 나와요.","음성 암송: 맞은 글자는 초록, 틀린 글자는 빨강으로 보여 줘요.","모바일 웹에서 음성이 겹쳐 나오던 문제를 고쳤어요.","이 공지 창이 새로 생겼어요. 업데이트될 때마다 내용이 떠요."]}
 ];
 var KEY="tms-cards-v2";
+var MK="tms-mine-v1",mine=[],editing=false;
+try{mine=JSON.parse(localStorage.getItem(MK))||[]}catch(e){mine=[]}
 var D=[
 ["A","새로운 삶",[["중심되신 그리스도","고린도후서 5:17","갈라디아서 2:20"],["그리스도께 순종","로마서 12:1","요한복음 14:21"],["말씀","디모데후서 3:16","여호수아 1:8"],["기도","요한복음 15:7","빌립보서 4:6-7"],["교제","마태복음 18:20","히브리서 10:24-25"],["증거","마태복음 4:19","로마서 1:16"]]],
 ["B","그리스도를 전파함",[["모든 사람이 죄를 범함","로마서 3:23","이사야 53:6"],["죄의 형벌","로마서 6:23","히브리서 9:27"],["그리스도가 형벌을 받음","로마서 5:8","베드로전서 3:18"],["선행으로 구원받지 못함","에베소서 2:8","디도서 3:5"],["그리스도를 모셔야 함","요한복음 1:12","요한계시록 3:20"],["구원의 확신","요한일서 5:13","요한복음 5:24"]]],
@@ -191,21 +204,21 @@ function load(){var b=seed(),m={};try{var r=localStorage.getItem(KEY);if(r)JSON.
 function save(){try{localStorage.setItem(KEY,JSON.stringify(cards))}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var cards=load(),queue=[],cur=null,shown=false,reverse=false,showEn=false,rnd=false,mode="card",pack="A";
-function pool(){return cards.filter(function(c){return c.text&&(pack==="all"||c.pk===pack)})}
+function pool(){return cards.filter(function(c){return c.text&&(pack==="all"||(pack==="M"?inMine(c.ref):c.pk===pack))})}
 function chips(){
 var h='<button class="'+(pack==="all"?"on":"")+'" onclick="setPack(\'all\')">전체</button>';
 D.forEach(function(p){h+='<button class="'+(pack===p[0]?"on":"")+'" onclick="setPack(\''+p[0]+'\')">'+p[0]+' '+esc(p[1])+'</button>'});
-document.getElementById("chips").innerHTML=h;
+h+='<button class="'+(pack==="M"?"on":"")+'" onclick="setPack(\'M\')">★ 내 모음 ('+mineCount()+')</button>';document.getElementById("chips").innerHTML=h;
 }
 function setPack(k){pack=k;chips();build()}
 function build(){queue=pool().filter(function(c){return c.box<3});if(rnd)queue.sort(function(){return Math.random()-.5});next()}
 function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
-function render(){picks();
+function render(){picks();starUpd();
 var all=pool();
 var el=document.getElementById("card"),a=document.getElementById("ans");
 if(!cur){
 a.classList.add("hide");
-el.innerHTML=all.length?'<div class="ref">🎉 학습 완료!</div><div class="hint">이 묶음의 구절을 모두 외웠어요.</div><button style="margin-top:14px" onclick="event.stopPropagation();reset()">처음부터 다시</button>':'<div class="hint">이 섹션은 아직 본문이 준비되지 않았어요.</div>';
+el.innerHTML=all.length?'<div class="ref">🎉 학습 완료!</div><div class="hint">이 묶음의 구절을 모두 외웠어요.</div><button style="margin-top:14px" onclick="event.stopPropagation();reset()">처음부터 다시</button>':'<div class="hint">'+(pack==="M"?"내 모음이 비어 있어요.<br>카드 아래 '☆ 모음에 담기'나 '✎ 모음 편집'으로 구절을 담아 보세요.":"이 섹션은 아직 본문이 준비되지 않았어요.")+'</div>';
 return}
 var tag='<div class="tp">'+(cur.pk?cur.pk+" · ":"")+esc(cur.tp)+'</div>';
 if(mode!=="card"){a.classList.add("hide");practice(tag);return}
@@ -225,7 +238,7 @@ var lang="ko",rec=null,sil=null,listening=false,vtext="",vmsg="",vacc="",vstop=f
 var bankW=[],bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
 var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
 function norm(x){return x.toLowerCase().replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
-function setMode(m){mode=m;if(m==="card"&&lang==="en"){lang="ko";var b0=document.getElementById("m4");b0.classList.remove("on");b0.textContent="English로 연습"}document.getElementById("m4").style.display=m==="card"?"none":"";document.getElementById("t4").style.display=m==="card"?"":"none";["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
+function setMode(m){mode=m;if(m==="card"&&lang==="en"){lang="ko";var b0=document.getElementById("m4");b0.classList.remove("on");b0.textContent="English로 연습"}document.getElementById("m4").style.display=m==="card"?"none":"";document.getElementById("t4").style.display=m==="card"?"":"none";[["card","m1"],["blank","m2"],["type","m3"],["typing","m5"]].forEach(function(x){document.getElementById(x[1]).classList.toggle("on",x[0]===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function clean(x){return x.replace(/^[“"'‘(]+|[.,;:!?"“”'‘’()\-—]+$/g,"")}
 function T(c){return lang==="en"?(c.en||c.text):c.text}
 function decoys(n,ans){var seen={},same=[],other=[];ans.forEach(function(a){seen[a]=1});
@@ -245,6 +258,11 @@ var bi=slots[k];
 return '<span class="slot'+(bi>=0?" fill":"")+'" data-k="'+k+'" onclick="slotTap('+k+')">'+(bi>=0?esc(bankW[bi]):"")+'</span>'}).join(" ")+'</div>';
 if(!bres){h+='<div class="bank">'+bankOrder.filter(function(bi){return slots.indexOf(bi)<0}).map(function(bi){return '<span class="chip'+(selB===bi?" sel":"")+'" onpointerdown="dragStart(event,'+bi+')">'+esc(bankW[bi])+'</span>'}).join("")+'</div><div class="hint" style="margin-top:8px">보기에는 오답도 섞여 있어요. 보기를 빈칸으로 끌어다 놓거나, 보기를 누른 뒤 빈칸을 눌러 넣으세요. 넣은 단어를 누르면 빠져요.</div>'}
 b=bres?'<button class="on" onclick="finish(bres.every(function(r){return r.ok}))">다음</button>':'<button class="on" onclick="checkBlank()">확인</button>';
+}else if(mode==="typing"){
+h+='<textarea id="tin" placeholder="'+(lang==="en"?"Type the whole verse from memory":"외운 구절 전체를 입력하세요")+'"'+(tres?" disabled":"")+' style="margin-top:14px;min-height:120px;text-align:left;font-size:16px">'+(tres?esc(tres.u):"")+'</textarea>';
+if(!tres)h+='<div class="hint">보지 않고 구절 전체를 입력해 보세요. 띄어쓰기와 문장부호는 달라도 괜찮아요.<br>할렐루야 98%↑ · 아멘 90%↑ · 은혜로워요 80%↑ · 다시 묵상 80% 미만</div>';
+else h+='<div class="txt" style="margin-top:12px"><div style="font-size:26px;font-weight:700" class="'+rank(tres.p).c+'">'+rank(tres.p).e+' '+rank(tres.p).t+'</div><b>정확도 '+tres.p+'%</b><br><span style="font-size:16px;line-height:1.8">'+diffHtml(T(cur),tres.u)+'</span><div class="hint" style="margin-top:6px"><span class="dg">초록</span>: 맞게 쓴 부분 · <span class="dr">빨강</span>: 틀리거나 빠진 부분</div></div>';
+b=tres?'<button onclick="retype()">다시 쓰기</button><button class="on" onclick="finish(tres.p>=80)">다음</button>':'<button class="on" onclick="checkTyping()">채점</button>';
 }else{
 h+='<div class="hint" style="margin-top:14px">'+(listening?"":"🎤 버튼을 누르고 구절을 외워서 말해 보세요 ("+SIL_SEC+"초 동안 말이 없으면 자동으로 끝나요)<br>할렐루야 98%↑ · 아멘 90%↑ · 은혜로워요 80%↑ · 다시 묵상 80% 미만")+'</div>';
 if(listening)h+='<div class="txt" id="vlive" style="margin-top:10px;min-height:28px;color:var(--mute)">'+esc(vtext)+'</div>';
@@ -310,6 +328,25 @@ function closeNotice(never){if(never){try{localStorage.setItem("tms-notice-seen"
 var INAPP=typeof navigator!=="undefined"&&/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|; Line\/|DaumApps/i.test(navigator.userAgent)&&!window.AndroidSTT;
 function openExternal(){var u=location.href,ua=navigator.userAgent;if(/KAKAOTALK/i.test(ua))location.href="kakaotalk://web/openExternal?url="+encodeURIComponent(u);else if(/android/i.test(ua))location.href="intent://"+u.replace(/^https?:\/\//,"")+"#Intent;scheme=https;package=com.android.chrome;end";else alert("화면 메뉴(⋮ 또는 공유 버튼)에서 '다른 브라우저로 열기'를 눌러 주세요.")}
 function inappBanner(){if(!INAPP)return;var d=document.createElement("div");d.className="note";d.style.cssText="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px";d.innerHTML='카카오톡 같은 앱 안 브라우저에서 열면 <b>마이크 허용이 계속 떠요.</b> 크롬으로 열면 한 번만 허용하면 돼요.<br><button class="on" style="margin-top:8px;padding:8px 12px" onclick="openExternal()">크롬으로 열기</button>';var m=document.querySelector("main");m.insertBefore(d,m.firstChild)}
+function inMine(r){return mine.indexOf(r)>=0}
+function mineCount(){return cards.filter(function(c){return inMine(c.ref)}).length}
+function saveMine(){try{localStorage.setItem(MK,JSON.stringify(mine))}catch(e){}}
+function setMine(r,on){var i=mine.indexOf(r);if(on&&i<0)mine.push(r);if(!on&&i>=0)mine.splice(i,1)}
+function starUpd(){var sb=document.getElementById("starb");if(!sb)return;var on=cur&&inMine(cur.ref);sb.textContent=on?"★ 모음에서 빼기":"☆ 모음에 담기";sb.classList.toggle("on",!!on)}
+function toggleMine(){if(!cur)return;setMine(cur.ref,!inMine(cur.ref));saveMine();chips();starUpd()}
+function toggleEdit(){editing=!editing;if(!editing&&pack==="M")build();renderEdit()}
+function editRef(r,on){setMine(r,on);saveMine();chips();starUpd();var n=document.getElementById("ecnt");if(n)n.textContent=mineCount()}
+function editSec(k,on){cards.forEach(function(c){if(c.pk===k&&c.text)setMine(c.ref,on)});saveMine();chips();starUpd();renderEdit()}
+function renderEdit(){var el=document.getElementById("edit");
+if(!editing){el.className="hide";el.innerHTML="";return}
+var h='<div class="nt">✎ 내 모음 편집 <span class="nv">담은 구절 <span id="ecnt">'+mineCount()+'</span>개</span></div>';
+D.forEach(function(p){
+h+='<div class="sh"><b>'+p[0]+' '+esc(p[1])+'</b><button onclick="editSec(\''+p[0]+'\',true)">전체 담기</button><button onclick="editSec(\''+p[0]+'\',false)">전체 빼기</button></div>';
+cards.filter(function(c){return c.pk===p[0]&&c.text}).forEach(function(c){h+='<label class="cb"><input type="checkbox"'+(inMine(c.ref)?" checked":"")+' onchange="editRef(\''+c.ref+'\',this.checked)"> '+esc(c.ref)+' <small>'+esc(c.tp)+'</small></label>'})});
+h+='<div class="row"><button class="on" onclick="toggleEdit()">완료</button></div>';
+el.className="nb2";el.innerHTML=h}
+function checkTyping(){var u=document.getElementById("tin").value;if(!u.trim())return;tres={u:u,p:pct(u,norm(T(cur)))};render()}
+function retype(){tres=null;render()}
 function lcs(a,b){var m=a.length,n=b.length,p=new Array(n+1).fill(0);for(var i=1;i<=m;i++){var q=new Array(n+1).fill(0);for(var j=1;j<=n;j++)q[j]=a[i-1]===b[j-1]?p[j-1]+1:Math.max(p[j],q[j-1]);p=q}return p[n]}
 function finish(ok){bres=null;tres=null;blankFor=0;grade(ok)}
 function ymd(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
