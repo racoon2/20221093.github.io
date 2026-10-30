@@ -55,15 +55,16 @@ textarea{min-height:70px;resize:vertical;margin:8px 0 0}
 .nt{font-size:17px;font-weight:700;margin-bottom:10px}
 .nv{font-size:12px;color:var(--mute);font-weight:400;margin-left:8px}
 .nb ul{margin:0 0 6px;padding-left:20px;line-height:1.7;font-size:14px}
+.ne{margin-bottom:10px}
+.ne ul{margin:6px 0 4px}
+.nb details{margin:8px 0;font-size:13px;color:var(--mute)}
+.nb summary{cursor:pointer;margin-bottom:6px}
 </style>
 </head>
 <body>
 <main>
 <h1>📖 주제별 성경암송 60구절</h1>
 <div class="sub">A~E 시리즈 · 카드를 눌러 뒤집고, 외웠는지 체크하세요.</div>
-<div class="bar"><i id="bar"></i></div>
-<div class="stat"><span id="prog"></span><span id="left"></span></div>
-<div class="rec" id="rec"></div>
 <div class="tabs">
 <button id="m1" class="on" onclick="setMode('card')">카드</button>
 <button id="m2" onclick="setMode('blank')">빈칸 채우기</button>
@@ -162,13 +163,19 @@ var V={
 /* ★ 말이 없을 때 자동으로 끝나는 시간(초). 이 숫자를 바꾸면 돼요 (크롬 기준) */
 var SIL_SEC=5;
 /* ★ 버전 표시. 파일을 고칠 때마다 이 값을 올리세요 (예: v1.1) */
-var APP_VER="v1.6 · 2026-10-12";
-/* ★ 공지 내용. 수정할 때마다 아래 문장을 바꾸고 위의 APP_VER 숫자를 올리면,
-   사용자에게 공지 창이 다시 떠요. ("다시 안 보기"를 누른 사람도 새 버전이면 다시 떠요)
-   공지를 띄우고 싶지 않으면 NOTICE=[]; 로 비워 두세요. */
-var NOTICE=[
-"김다현 누나의 피드백을 반영해서 영어 빈칸 채우기와 영어 음성 암송을 추가했어요. 고마워요 🙏",
-"카카오톡 같은 앱 안 브라우저에서 열면 마이크 허용이 계속 떠요. 이럴 땐 화면 위의 '크롬으로 열기'를 눌러 주세요."
+var APP_VER="v1.10 · 2026-10-30";
+/* ★ 공지 목록 (맨 위가 최신). 수정할 때마다 맨 위에 새 항목을 "추가"하고, 위의 APP_VER 숫자를 올리세요.
+   기존 항목은 지우지 않고 그대로 두면 '이전 업데이트 보기'에 쌓여요.
+   형식: {v:"버전",d:"날짜",t:["문장1","문장2"]},
+   ("다시 안 보기"를 누른 사람도 APP_VER가 바뀌면 다시 떠요. 전부 비우려면 NOTICES=[]; ) */
+var NOTICES=[
+{v:"v1.10",d:"2026-10-30",t:["화면 위쪽의 '남은 카드'와 '오늘 학습' 표시를 없앴어요."]},
+{v:"v1.9",d:"2026-10-30",t:["위쪽의 '외운 구절' 진행 바를 없앴어요.","빈칸 채우기·음성 암송 화면에서는 'English로 연습'(한글로 연습) 버튼만 남겼어요."]},
+{v:"v1.8",d:"2026-10-30",t:["59번(선행) 구절 출처를 갈라디아서 6:9,10으로 바로잡았어요. 이 구절의 학습 진도는 새로 시작돼요."]},
+{v:"v1.7",d:"2026-10-12",t:["공지가 쌓이도록 바뀌었어요. 이전 업데이트 내용도 '이전 업데이트 보기'에서 볼 수 있어요."]},
+{v:"v1.6",d:"2026-10-12",t:["카카오톡 같은 앱 안 브라우저에서 열면 마이크 허용이 계속 떠요. 이럴 땐 화면 위의 '크롬으로 열기'를 눌러 주세요."]},
+{v:"v1.5",d:"2026-10-12",t:["김다현 누나의 피드백을 반영해서 영어 빈칸 채우기와 영어 음성 암송을 추가했어요. 고마워요 🙏","빈칸 채우기·음성 암송 화면에서 'English로 연습' 버튼을 눌러 보세요.","영어 음성 암송은 크롬에서는 바로 되고, 설치한 앱에서는 앱을 새로 설치해야 해요."]},
+{v:"v1.1",d:"2026-10-12",t:["빈칸 채우기: 보기를 끌어다 놓는 방식이고, 오답 보기가 섞여 나와요.","음성 암송: 맞은 글자는 초록, 틀린 글자는 빨강으로 보여 줘요.","모바일 웹에서 음성이 겹쳐 나오던 문제를 고쳤어요.","이 공지 창이 새로 생겼어요. 업데이트될 때마다 내용이 떠요."]}
 ];
 var KEY="tms-cards-v2";
 var D=[
@@ -193,11 +200,8 @@ document.getElementById("chips").innerHTML=h;
 function setPack(k){pack=k;chips();build()}
 function build(){queue=pool().filter(function(c){return c.box<3});if(rnd)queue.sort(function(){return Math.random()-.5});next()}
 function next(){cur=queue.shift()||null;shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
-function render(){picks();document.getElementById("rec").textContent="🔥 "+recText();
-var all=pool(),done=all.filter(function(c){return c.box>=3}).length;
-document.getElementById("bar").style.width=(all.length?done/all.length*100:0)+"%";
-document.getElementById("prog").textContent="외운 구절 "+done+" / "+all.length;
-document.getElementById("left").textContent=cur?"남은 카드 "+(queue.length+1):"";
+function render(){picks();
+var all=pool();
 var el=document.getElementById("card"),a=document.getElementById("ans");
 if(!cur){
 a.classList.add("hide");
@@ -221,7 +225,7 @@ var lang="ko",rec=null,sil=null,listening=false,vtext="",vmsg="",vacc="",vstop=f
 var bankW=[],bankOrder=[],slots=[],selB=-1,dragEl=null,dragB=-1,dx=0,dy=0,sx=0,sy=0,moved=false;
 var blanks=[],blankFor=0,bres=null,tres=null,LK="tms-log-v1";
 function norm(x){return x.toLowerCase().replace(/[\s.,;:!?'"()\-·…“”‘’]/g,"")}
-function setMode(m){mode=m;if(m==="card"&&lang==="en"){lang="ko";var b0=document.getElementById("m4");b0.classList.remove("on");b0.textContent="English로 연습"}document.getElementById("m4").style.display=m==="card"?"none":"";["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
+function setMode(m){mode=m;if(m==="card"&&lang==="en"){lang="ko";var b0=document.getElementById("m4");b0.classList.remove("on");b0.textContent="English로 연습"}document.getElementById("m4").style.display=m==="card"?"none":"";document.getElementById("t4").style.display=m==="card"?"":"none";["card","blank","type"].forEach(function(x,i){document.getElementById("m"+(i+1)).classList.toggle("on",x===m)});shown=false;bres=null;tres=null;blankFor=0;resetVoice();render()}
 function clean(x){return x.replace(/^[“"'‘(]+|[.,;:!?"“”'‘’()\-—]+$/g,"")}
 function T(c){return lang==="en"?(c.en||c.text):c.text}
 function decoys(n,ans){var seen={},same=[],other=[];ans.forEach(function(a){seen[a]=1});
@@ -295,10 +299,12 @@ window.onNativeVoice=function(a){if(typeof a==="string")a=[a];voiceDone(pickBest
 window.onNativeVoiceError=function(m){listening=false;vmsg=m;render()};
 function showNotice(force){
 var seen="";try{seen=localStorage.getItem("tms-notice-seen")||""}catch(e){}
-if(!NOTICE.length||(!force&&seen===APP_VER))return;
+if(!NOTICES.length||(!force&&seen===APP_VER))return;
 if(document.getElementById("nbox"))return;
+function blk(n){return'<div class="ne"><b>'+esc(n.v)+'</b><span class="nv">'+esc(n.d||"")+'</span><ul>'+n.t.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul></div>'}
+var old=NOTICES.slice(1);
 var d=document.createElement("div");d.id="nbox";d.className="ov";
-d.innerHTML='<div class="nb"><div class="nt">📢 업데이트 안내<span class="nv">'+esc(APP_VER)+'</span></div><ul>'+NOTICE.map(function(x){return"<li>"+esc(x)+"</li>"}).join("")+'</ul><div class="row"><button onclick="closeNotice(false)">닫기</button><button class="on" onclick="closeNotice(true)">다시 안 보기</button></div></div>';
+d.innerHTML='<div class="nb"><div class="nt">📢 업데이트 안내</div>'+blk(NOTICES[0])+(old.length?'<details><summary>이전 업데이트 '+old.length+'개 보기</summary>'+old.map(blk).join("")+'</details>':"")+'<div class="row"><button onclick="closeNotice(false)">닫기</button><button class="on" onclick="closeNotice(true)">다시 안 보기</button></div></div>';
 document.body.appendChild(d)}
 function closeNotice(never){if(never){try{localStorage.setItem("tms-notice-seen",APP_VER)}catch(e){}}var d=document.getElementById("nbox");if(d)d.remove()}
 var INAPP=typeof navigator!=="undefined"&&/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|; Line\/|DaumApps/i.test(navigator.userAgent)&&!window.AndroidSTT;
