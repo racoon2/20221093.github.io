@@ -15,6 +15,10 @@ body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 .vid{position:relative;width:100%;aspect-ratio:16/9}
 .vid #yt,.vid iframe{position:absolute;inset:0;width:100%;height:100%}
 .head{flex:none;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--line)}
+.hrow{display:flex;justify-content:space-between;align-items:center}
+.bm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.bm.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.back{display:inline-block;font-size:13px;color:var(--accent);text-decoration:none;margin-bottom:4px;font-weight:500}
 .head h1{font-size:16px;margin:0 0 2px;line-height:1.35}
 .head .meta{font-size:12.5px;color:var(--sub)}
 .tabs{flex:none;display:flex;background:var(--card);border-bottom:1px solid var(--line)}
@@ -56,6 +60,7 @@ mark{background:var(--hl);color:inherit;border-radius:3px}
 <body>
 <div class="top"><div class="vid"><div id="yt"></div></div></div>
 <div class="head">
+  <div class="hrow"><a class="back" href="sermon.html">← 말씀 클래스</a><button class="bm" id="bm">☆ 저장</button></div>
   <h1>사명을 잃으면 목적이 흐려진다</h1>
   <div class="meta">삿 14:19~15:20 · 임헌규 담임목사 · 세종월드교회 금요예배 · 2026. 11. 6</div>
 </div>
@@ -185,8 +190,17 @@ q.addEventListener('input',()=>{const k=q.value.trim();let n=0;segs.forEach((el,
 
 /* ---- 유튜브 플레이어 ---- */
 let player=null, ready=false, pending=null;
+const START=(()=>{const m=location.hash.match(/t=(\d+)/);return m?+m[1]:S[0];})();
+const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+let lastSave=0;
+function saveProg(t,force){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();const P=lsGet('sermon-progress',{});const o=P[VID]||{};const dur=(player&&player.getDuration&&player.getDuration())||END;P[VID]={t:Math.floor(t),at:Date.now(),done:o.done||t/dur>=0.9};lsSet('sermon-progress',P);}
+const bm=document.getElementById('bm');
+const drawBm=()=>{const on=lsGet('sermon-saved',[]).includes(VID);bm.classList.toggle('on',on);bm.textContent=on?'★ 저장됨':'☆ 저장';};
+bm.onclick=()=>{let s=lsGet('sermon-saved',[]);s=s.includes(VID)?s.filter(v=>v!==VID):[VID,...s];lsSet('sermon-saved',s);drawBm();};
+drawBm();
 const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
-window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{videoId:VID,playerVars:{playsinline:1,rel:0,start:S[0]},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
+window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{videoId:VID,playerVars:{playsinline:1,rel:0,start:START},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
 function seek(t){if(!ready){pending=t;return;}player.seekTo(Math.max(0,t-0.5),true);player.playVideo();}
 
 /* ---- 재생 위치에 맞춰 스크립트 따라가기 ---- */
@@ -198,12 +212,15 @@ scroller.addEventListener('wheel',()=>userScrollAt=Date.now(),{passive:true});
 function locate(t){let i=0;for(let k=0;k<S.length;k++)if(S[k]<=t)i=k;let j=0;WT[i].forEach((wt,k)=>{if(wt<=t)j=k;});return [i,j];}
 setInterval(()=>{
   if(!ready||!player.getPlayerState)return; const st=player.getPlayerState(); if(st!==1&&st!==3)return;
-  const t=player.getCurrentTime(); if(t<S[0]-1)return;
+  const t=player.getCurrentTime(); saveProg(t); if(t<S[0]-1)return;
   const [i,j]=locate(t);
   if(i!==lastI){segs.forEach(s=>s.classList.remove('now'));segs[i].classList.add('now');lastI=i;
     if(follow&&Date.now()-userScrollAt>4000&&document.getElementById('txt').classList.contains('on')){const r=segs[i].offsetTop-8;scroller.scrollTo({top:r,behavior:'smooth'});}}
   const w=segs[i].querySelector(`.w[data-j="${j}"]`); if(w!==lastW){if(lastW)lastW.classList.remove('say');if(w)w.classList.add('say');lastW=w;}
 },250);
+
+window.addEventListener('pagehide',()=>{try{if(ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
+document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
 
 /* ---- 단어·시간 누르면 그 위치부터 재생 ---- */
 list.addEventListener('click',e=>{
