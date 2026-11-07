@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>말씀 클래스 · 세종월드교회</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1b1d21;--sub:#6b7280;--mute:#9aa1ab;--line:#e6e8ec;--accent:#12a37a;--accent-d:#0b6e53;--accent-soft:#e3f5ee;--accent-mid:#a6e2cc;--thumb:#2c2c2a}
+@media (prefers-color-scheme: dark){:root{--bg:#121417;--card:#1b1e23;--ink:#eceef1;--sub:#9aa1ab;--mute:#6c737d;--line:#2b2f36;--accent:#3cc99c;--accent-d:#8fe3c4;--accent-soft:#163a2f;--accent-mid:#2b6b55}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit}
+.app{max-width:560px;margin:0 auto;min-height:100vh;padding:0 16px calc(84px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 2px 14px}
+.brand small{display:block;font-size:12.5px;color:var(--accent);font-weight:500}
+.brand h1{margin:1px 0 0;font-size:22px;letter-spacing:-.3px}
+.icon-btn{border:0;background:none;font-size:22px;color:var(--sub);padding:6px;cursor:pointer}
+.view{display:none}.view.on{display:block}
+.th{position:relative;flex:none;background:var(--thumb) center/cover no-repeat;border-radius:9px;aspect-ratio:16/9}
+.th .pl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.resume{display:flex;gap:12px;align-items:center;background:var(--accent-soft);border-radius:16px;padding:12px;text-decoration:none;color:inherit;margin-bottom:22px}
+.resume .th{width:104px}
+.resume .k{font-size:12px;color:var(--accent-d);font-weight:500;margin-bottom:3px}
+.resume .t{font-size:14.5px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.resume .r{font-size:12px;color:var(--accent-d);margin:4px 0 6px}
+.resume .bar{background:var(--accent-mid)}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 10px}
+.sec h2{font-size:17px;margin:0}
+.sec span{font-size:12.5px;color:var(--sub)}
+.week{display:flex;gap:4px;margin-bottom:6px}
+.week button{flex:1;border:0;background:var(--card);border-radius:12px;padding:8px 0 7px;cursor:pointer;color:var(--sub);font-size:14px;border:1px solid var(--line)}
+.week button small{display:block;font-size:11px;color:var(--mute);margin-top:1px}
+.week button .dt{width:5px;height:5px;border-radius:50%;background:var(--accent);margin:4px auto 0}
+.week button .dt.x{background:transparent}
+.week button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.week button.on small{color:#e3f5ee}.week button.on .dt{background:#fff}
+.week button.today:not(.on){border-color:var(--accent);color:var(--accent-d)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2px 12px;margin-top:8px}
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+.item:first-child{border-top:0}
+.item .th{width:96px}
+.item .bd{flex:1;min-width:0}
+.item .m{font-size:12px;color:var(--sub)}
+.item .t{font-size:14.5px;font-weight:500;line-height:1.38;margin:2px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item .bar{margin-top:6px}
+.ck{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent}
+.ck.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.new{display:inline-block;font-size:10.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.empty{text-align:center;color:var(--sub);font-size:14px;padding:28px 10px;line-height:1.6}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px;margin-bottom:10px}
+.search i{color:var(--mute);font-size:18px}
+.search input{flex:1;border:0;background:none;outline:none;font:inherit;font-size:15px;padding:11px 0;color:var(--ink)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:7px 14px;font-size:13.5px;cursor:pointer}
+.chips button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.month{display:flex;align-items:center;justify-content:space-between;margin:0 2px}
+.month b{font-size:17px}
+.month button{border:0;background:none;font-size:22px;color:var(--sub);padding:4px 8px;cursor:pointer}
+.month button:disabled{opacity:.25}
+.mstat{text-align:center;font-size:12.5px;color:var(--sub);margin:2px 0 4px}
+.fold{display:block;width:100%;border:0;background:none;color:var(--sub);font-size:13.5px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav .in{max-width:560px;margin:0 auto;display:flex}
+.nav button{flex:1;border:0;background:none;padding:9px 0 10px;font-size:11.5px;color:var(--mute);cursor:pointer}
+.nav button i{display:block;font-size:23px;margin-bottom:1px}
+.nav button.on{color:var(--accent-d)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><small>세종월드교회</small><h1 id="ttl">말씀 클래스</h1></div>
+    <button class="icon-btn" id="goSearch" aria-label="설교 검색"><i class="ti ti-search"></i></button>
+  </div>
+
+  <section class="view on" id="v-home">
+    <div id="resume"></div>
+    <div class="sec"><h2>이번 주 말씀</h2><span id="wkRange"></span></div>
+    <div class="week" id="week"></div>
+    <div id="dayList"></div>
+  </section>
+
+  <section class="view" id="v-arch">
+    <label class="search"><i class="ti ti-search"></i><input id="q" type="search" placeholder="제목, 성경 본문으로 찾기 (예: 사사기)"></label>
+    <div class="chips" id="chips"></div>
+    <div id="monthBox">
+      <div class="month"><button id="mPrev" aria-label="이전 달"><i class="ti ti-chevron-left"></i></button><b id="mLabel"></b><button id="mNext" aria-label="다음 달"><i class="ti ti-chevron-right"></i></button></div>
+      <div class="mstat" id="mStat"></div>
+    </div>
+    <div id="archList"></div>
+  </section>
+
+  <section class="view" id="v-saved">
+    <div class="sec"><h2>저장한 설교</h2><span id="savedN"></span></div>
+    <div id="savedList"></div>
+  </section>
+</div>
+
+<nav class="nav"><div class="in">
+  <button class="on" data-v="home"><i class="ti ti-home"></i>홈</button>
+  <button data-v="arch"><i class="ti ti-books"></i>보관함</button>
+  <button data-v="saved"><i class="ti ti-bookmark"></i>저장</button>
+</div></nav>
+
+<script>
+const DAYS=['일','월','화','수','목','금','토'];
+const TYPES=['주일예배','수요예배','금요예배','새벽예배'];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const PROG=load('sermon-progress',{}), SAVED=load('sermon-saved',[]);
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const md=s=>{const d=parse(s);return `${d.getMonth()+1}.${d.getDate()} ${DAYS[d.getDay()]}`;};
+const mins=s=>s?`${Math.round(s/60)}분`:'';
+const thumb=v=>`https://i.ytimg.com/vi/${v}/mqdefault.jpg`;
+const pct=s=>{const p=PROG[s.vid];return p&&s.dur?Math.min(100,Math.round(p.t/s.dur*100)):0;};
+const done=s=>!!(PROG[s.vid]&&PROG[s.vid].done);
+const today=new Date(); today.setHours(0,0,0,0);
+
+function item(s,opt={}){
+  const p=pct(s), isNew=(today-parse(s.date))/864e5<=2&&!PROG[s.vid];
+  return `<a class="item" href="${esc(s.url)}">
+    ${opt.noThumb?'':`<div class="th" style="background-image:url('${thumb(s.vid)}')"></div>`}
+    <div class="bd"><div class="m">${opt.showDate?md(s.date)+' · ':''}${esc(s.type)}${s.dur?' · '+mins(s.dur):''}${isNew?'<span class="new">NEW</span>':''}</div>
+      <div class="t">${esc(s.title)}</div>${opt.showText?`<div class="m">${esc(s.text)} · ${esc(s.preacher)}</div>`:''}
+      ${p&&!done(s)?`<div class="bar"><i style="width:${p}%"></i></div>`:''}</div>
+    <div class="ck ${done(s)?'done':''}"><i class="ti ti-check"></i></div></a>`;
+}
+const listBox=(rows,opt)=>`<div class="list">${rows.map(s=>item(s,opt)).join('')}</div>`;
+
+let S=[];
+fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{
+  S=d.sort((a,b)=>b.date.localeCompare(a.date)||TYPES.indexOf(a.type)-TYPES.indexOf(b.type));
+  renderHome(); initArchive(); renderSaved();
+}).catch(()=>{document.getElementById('dayList').innerHTML='<div class="empty">설교 목록을 불러오지 못했어요.<br>잠시 후 다시 열어 주세요.</div>';});
+
+/* ---------- 홈 ---------- */
+function renderHome(){
+  const rp=Object.entries(PROG).filter(([,p])=>!p.done&&p.t>30).sort((a,b)=>b[1].at-a[1].at)[0];
+  const rs=rp&&S.find(s=>s.vid===rp[0]);
+  document.getElementById('resume').innerHTML=rs?`<a class="resume" href="${esc(rs.url)}#t=${Math.floor(rp[1].t)}">
+    <div class="th" style="background-image:url('${thumb(rs.vid)}')"><span class="pl"><i class="ti ti-player-play"></i></span></div>
+    <div style="flex:1;min-width:0"><div class="k">이어서 듣기</div><div class="t">${esc(rs.title)}</div>
+    <div class="r">${md(rs.date)} ${esc(rs.type)} · ${Math.max(1,Math.round((rs.dur-rp[1].t)/60))}분 남음</div><div class="bar"><i style="width:${pct(rs)}%"></i></div></div></a>`:'';
+
+  const sun=new Date(today); sun.setDate(today.getDate()-today.getDay());
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
+  const sat=days[6];
+  document.getElementById('wkRange').textContent=`${sun.getMonth()+1}.${sun.getDate()} ~ ${sat.getMonth()+1}.${sat.getDate()}`;
+  const by=d=>S.filter(s=>s.date===ymd(d));
+  let sel=today.getDay();
+  if(!by(days[sel]).length){for(let i=sel;i>=0;i--) if(by(days[i]).length){sel=i;break;}}
+  const wk=document.getElementById('week');
+  const draw=()=>{
+    wk.innerHTML=days.map((d,i)=>`<button data-i="${i}" class="${i===sel?'on':''} ${i===today.getDay()?'today':''}">${DAYS[i]}<small>${d.getDate()}</small><div class="dt ${by(d).length?'':'x'}"></div></button>`).join('');
+    const rows=by(days[sel]); const future=days[sel]>today;
+    document.getElementById('dayList').innerHTML=rows.length?listBox(rows,{showText:true})
+      :`<div class="list"><div class="empty">${future?`${DAYS[sel]}요일 말씀은 아직 올라오지 않았어요.`:`${DAYS[sel]}요일에 올라온 설교가 없어요.`}${S.length?'<br>지난 설교는 보관함에서 볼 수 있어요.':''}</div></div>`;
+  };
+  wk.onclick=e=>{const b=e.target.closest('button');if(!b)return;sel=+b.dataset.i;draw();};
+  draw();
+}
+
+/* ---------- 보관함 ---------- */
+let type='전체', mIdx=0, months=[], openDawn=false;
+function initArchive(){
+  months=[...new Set(S.map(s=>s.date.slice(0,7)))];
+  const ch=document.getElementById('chips');
+  ch.innerHTML=['전체',...TYPES].map(t=>`<button data-t="${t}" class="${t===type?'on':''}">${t.replace('예배','')}</button>`).join('');
+  ch.onclick=e=>{const b=e.target.closest('button');if(!b)return;type=b.dataset.t;[...ch.children].forEach(x=>x.classList.toggle('on',x===b));renderArch();};
+  document.getElementById('mPrev').onclick=()=>{if(mIdx<months.length-1){mIdx++;openDawn=false;renderArch();}};
+  document.getElementById('mNext').onclick=()=>{if(mIdx>0){mIdx--;openDawn=false;renderArch();}};
+  document.getElementById('q').oninput=renderArch;
+  renderArch();
+}
+function renderArch(){
+  const k=document.getElementById('q').value.trim(), box=document.getElementById('archList');
+  const byType=s=>type==='전체'||s.type===type;
+  document.getElementById('monthBox').style.display=k?'none':'';
+  if(!S.length){box.innerHTML='<div class="list"><div class="empty">아직 올라온 설교가 없어요.</div></div>';return;}
+  if(k){
+    const rows=S.filter(s=>byType(s)&&[s.title,s.text,s.preacher,s.type].join(' ').includes(k)).slice(0,50);
+    box.innerHTML=rows.length?listBox(rows,{showDate:true,noThumb:true}):`<div class="list"><div class="empty">'${esc(k)}' 검색 결과가 없어요.</div></div>`;
+    return;
+  }
+  const ym=months[mIdx]; const [y,m]=ym.split('-');
+  document.getElementById('mLabel').textContent=`${y}년 ${+m}월`;
+  document.getElementById('mPrev').disabled=mIdx>=months.length-1;
+  document.getElementById('mNext').disabled=mIdx<=0;
+  const inM=S.filter(s=>s.date.startsWith(ym)&&byType(s));
+  document.getElementById('mStat').textContent=`설교 ${inM.length}편 · 들은 설교 ${inM.filter(done).length}편`;
+  if(!inM.length){box.innerHTML='<div class="list"><div class="empty">이 달에는 해당 설교가 없어요.</div></div>';return;}
+  if(type==='전체'){
+    const main=inM.filter(s=>s.type!=='새벽예배'), dawn=inM.filter(s=>s.type==='새벽예배');
+    box.innerHTML=`<div class="list">${main.map(s=>item(s,{showDate:true,noThumb:true})).join('')||''}
+      ${dawn.length?`<button class="fold" id="fold">새벽예배 ${dawn.length}편 ${openDawn?'접기':'펼치기'} <i class="ti ti-chevron-${openDawn?'up':'down'}"></i></button>${openDawn?dawn.map(s=>item(s,{showDate:true,noThumb:true})).join(''):''}`:''}</div>`;
+    const f=document.getElementById('fold'); if(f) f.onclick=()=>{openDawn=!openDawn;renderArch();};
+  } else box.innerHTML=listBox(inM,{showDate:true,noThumb:true});
+}
+
+/* ---------- 저장 ---------- */
+function renderSaved(){
+  const rows=SAVED.map(v=>S.find(s=>s.vid===v)).filter(Boolean);
+  document.getElementById('savedN').textContent=rows.length?`${rows.length}편`:'';
+  document.getElementById('savedList').innerHTML=rows.length?listBox(rows,{showDate:true})
+    :'<div class="list"><div class="empty">설교 화면에서 <i class="ti ti-bookmark"></i> 를 누르면<br>다시 듣고 싶은 설교가 여기 모여요.</div></div>';
+}
+
+/* ---------- 탭 ---------- */
+const navs=document.querySelectorAll('.nav button');
+function go(v){navs.forEach(b=>b.classList.toggle('on',b.dataset.v===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
+  document.getElementById('ttl').textContent={home:'말씀 클래스',arch:'보관함',saved:'저장'}[v];window.scrollTo(0,0);try{history.replaceState(null,'',v==='home'?location.pathname:'#'+v);}catch(e){}}
+navs.forEach(b=>b.onclick=()=>go(b.dataset.v));
+document.getElementById('goSearch').onclick=()=>{go('arch');setTimeout(()=>document.getElementById('q').focus(),50);};
+if(['#arch','#saved'].includes(location.hash)) go(location.hash.slice(1));
+</script>
+</body>
+</html>
