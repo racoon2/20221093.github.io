@@ -464,8 +464,23 @@ async function drawForm(editId,presetDate){
   const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
   $('fBody').oninput=cntUp; cntUp();
   const ta=$('fBody');
+  // 되돌리기용 기록 (모바일 브라우저 자체 undo가 안 되는 경우가 많아서 직접 관리)
+  const hist=[ta.value],fut=[];let ht;
+  const rec=()=>{clearTimeout(ht);if(hist[hist.length-1]!==ta.value){hist.push(ta.value);if(hist.length>200)hist.shift();fut.length=0;}};
+  ta.addEventListener('input',()=>{clearTimeout(ht);ht=setTimeout(rec,400);});
   // execCommand('insertText')를 써야 되돌리기(undo)가 동작함
-  const put=(t,s,e)=>{ta.focus();ta.setSelectionRange(s,e);if(!document.execCommand||!document.execCommand('insertText',false,t))ta.setRangeText(t,s,e,'end');};
+  // 모바일: 버튼을 누를 때 입력칸 포커스·선택이 사라지지 않게 막고, 마지막 선택 위치를 기억해 둠
+  let selS=0,selE=0;const keep=()=>{selS=ta.selectionStart;selE=ta.selectionEnd;};
+  ['select','keyup','mouseup','touchend','input','focus'].forEach(ev=>ta.addEventListener(ev,()=>setTimeout(keep,0)));
+  document.addEventListener('selectionchange',()=>{if(document.activeElement===ta)keep();});
+  $('tb').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault();});
+  $('tb').addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault();});
+  const restore=()=>{if(document.activeElement!==ta){ta.focus({preventScroll:true});ta.setSelectionRange(selS,selE);}};
+  const put=(t,s,e)=>{ta.focus({preventScroll:true});ta.setSelectionRange(s,e);
+    const want=ta.value.slice(0,s)+t+ta.value.slice(e);let ok=false;
+    try{ok=document.execCommand&&document.execCommand('insertText',false,t)&&ta.value===want;}catch(_){ok=false;}
+    if(!ok){ta.value=want;ta.setSelectionRange(s+t.length,s+t.length);}
+    keep();};
   const wrap=(a,b,ph)=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
     if(sel.startsWith(a)&&sel.endsWith(b)&&sel.length>=a.length+b.length){put(sel.slice(a.length,sel.length-b.length),s,e);return;}
     const t=sel||ph; put(a+t+b,s,e); ta.setSelectionRange(s+a.length,s+a.length+t.length);};
@@ -475,15 +490,15 @@ async function drawForm(editId,presetDate){
   const noAl=l=>l.replace(/^\[(가운데|오른쪽)\]\s?/,'');
   const noBlk=l=>l.replace(/^#{1,3}\s+|^!?>\s?|^\s*[-•*]\s+|^\s*\d+[.)]\s+|^\s*\[( |x|X)\]\s+/,'');
   const al=p=>l=>{const al0=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return (p?`[${p}] `:'')+l.slice(al0.length);};
-  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;wrap(`{${b.dataset.c}:`,'}','글자');ta.dispatchEvent(new Event('input'));};
+  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;restore();wrap(`{${b.dataset.c}:`,'}','글자');ta.dispatchEvent(new Event('input'));};
   $('tb').onclick=e=>{const b=e.target.closest('button');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
     if(a==='pv'){const on=$('fPrev').style.display==='none';$('fPrev').innerHTML=rich(ta.value)||'<span style="color:#9aa3ad">아직 내용이 없어요</span>';
       $('fPrev').style.display=on?'block':'none';ta.style.display=on?'none':'';b.classList.toggle('on',on);$('pal').hidden=true;
       $('tb').querySelectorAll('.tbr button').forEach(x=>x.disabled=on);return;}
     if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
-    $('pal').hidden=true; ta.focus();
-    if(a==='undo'){document.execCommand('undo');}
-    else if(a==='redo'){document.execCommand('redo');}
+    $('pal').hidden=true; restore();
+    if(a==='undo'){rec();if(hist.length>1){fut.push(hist.pop());ta.value=hist[hist.length-1];}cntUp();return;}
+    else if(a==='redo'){if(fut.length){const v=fut.pop();hist.push(v);ta.value=v;}cntUp();return;}
     else if(a==='b')wrap('**','**','굵게');
     else if(a==='i')wrap('*','*','기울임');
     else if(a==='u')wrap('__','__','밑줄');
@@ -502,7 +517,7 @@ async function drawForm(editId,presetDate){
     else if(a==='hr')ins('---\n');
     else if(a==='clr'){const s=ta.selectionStart,e=ta.selectionEnd;if(s===e){alert('서식을 지울 부분을 먼저 선택해 주세요.');return;}put(plain(ta.value.slice(s,e)),s,e);}
     else if(a==='tpl'){if(ta.value.trim()&&!confirm('지금 커서 위치에 양식을 넣을까요?'))return;ins('## 설교 요약\n\n\n## 본문 요점\n\n\n## 묵상과 결단\n\n');}
-    ta.dispatchEvent(new Event('input'));};
+    ta.dispatchEvent(new Event('input'));rec();};
   ta.addEventListener('focus',()=>$('pal').hidden=true);
   $('fSave').onclick=async()=>{
     const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
