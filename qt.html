@@ -83,6 +83,21 @@ input.f:focus,textarea.f:focus,select.f:focus{border-color:var(--accent)}
 .nav a{flex:1;text-align:center;padding:9px 0 10px;font-size:11.5px;color:var(--mute);text-decoration:none}
 .nav a i{display:block;font-size:23px;margin-bottom:1px}
 .nav a.on{color:var(--accent-d)}
+.week{display:flex;gap:4px;margin-bottom:12px}
+.week button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 0 7px;cursor:pointer;color:var(--sub);font-size:14px}
+.week button small{display:block;font-size:11px;color:var(--mute);margin-top:1px}
+.week button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.week button.on small{color:#e3f5ee}
+.week button.today:not(.on){border-color:var(--accent);color:var(--accent-d)}
+.srow{display:flex;gap:12px;align-items:center}
+.srow .th{flex:none;width:92px;aspect-ratio:16/9;border-radius:8px;background:#2c2c2a center/cover no-repeat}
+.srow .bd{flex:1;min-width:0}
+.srow .t{font-size:15px;margin:2px 0}
+.qc{font-size:12.5px;color:var(--accent-d);font-weight:500}
+.qc.zero{color:var(--mute);font-weight:400}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal .card{width:100%;max-width:420px;margin:0}
+.me .nm{font-size:13px;font-weight:500;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .hide{display:none!important}
 </style>
 </head>
@@ -105,7 +120,7 @@ input.f:focus,textarea.f:focus,select.f:focus{border-color:var(--accent)}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,getDocs,query,orderBy,limit,startAfter,where,serverTimestamp,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,getDocs,query,orderBy,limit,startAfter,where,serverTimestamp,increment,getCountFromServer} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app=initializeApp({
   apiKey:"AIzaSyALsUq7NOYoiDtKdc9HlfwrSkMUUI-Y2V8",
@@ -129,7 +144,10 @@ const role=()=>profile?.role||null;
 const bodyOf=p=>p.body??[['설교 요약',p.summary],['본문 요점',p.points],['묵상과 결단',p.meditation]].filter(x=>x[1]).map(x=>`[${x[0]}]\n${x[1]}`).join('\n\n');
 const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
 
-fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d;}).catch(()=>{});
+const sermonsReady=fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d.sort((a,b)=>b.date.localeCompare(a.date));}).catch(()=>{});
+const DAYS=['일','월','화','수','목','금','토'];
+const parseD=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const mdD=s=>{const d=parseD(s);return `${d.getMonth()+1}.${d.getDate()} (${DAYS[d.getDay()]})`;};
 
 /* ---------- 로그인 ---------- */
 const UA=navigator.userAgent||'';
@@ -153,36 +171,62 @@ function showInApp(){
   $('ext').onclick=openExternal;
 }
 
+let needName=false;
 onAuthStateChanged(auth,async u=>{
-  user=u; profile=null;
+  user=u; profile=null; needName=false;
   if(u){
-    const ref=doc(db,'users',u.uid);
     try{
-      let s=await getDoc(ref);
-      if(!s.exists()){
-        await setDoc(ref,{name:u.displayName||'이름 없음',email:u.email||'',photo:u.photoURL||'',role:'pending',createdAt:serverTimestamp()});
-        s=await getDoc(ref);
-      }
-      profile=s.data();
-      if(profile.role==='pending'){try{await updateDoc(ref,{role:'owner'});profile.role='owner';}catch(_){/* 상위관리자가 아니면 규칙에 막힘 */}}
+      const s=await getDoc(doc(db,'users',u.uid));
+      if(s.exists()) profile=s.data(); else needName=true;
     }catch(e){console.error(e);}
   }
   drawMe(); route();
+  if(needName) askName(true);
 });
+
+/* 처음 로그인: 이름 받기 (실명 권장) */
+function askName(first){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="card"><div class="sec" style="margin:0 0 6px"><h2>${first?'환영해요!':'이름 바꾸기'}</h2></div>
+    <div class="meta" style="line-height:1.6">발표문과 댓글에 표시될 이름이에요.<br><b>서로 알아볼 수 있게 실명을 권장해요.</b></div>
+    <input class="f" id="nmIn" maxlength="20" placeholder="예: 홍길동" value="${esc(first?(user.displayName||''):(profile?.name||''))}" style="margin-top:12px">
+    <div class="cnt" id="nmErr"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:10px">${first?'':'<button class="btn" id="nmNo">취소</button>'}<button class="btn pri" id="nmOk">${first?'시작하기':'저장'}</button></div></div>`;
+  document.body.appendChild(m);
+  const inp=$('nmIn'); inp.focus(); inp.select();
+  if(!first) $('nmNo').onclick=()=>m.remove();
+  $('nmOk').onclick=async()=>{
+    const name=inp.value.trim().replace(/\s+/g,' ');
+    if(name.length<2){$('nmErr').textContent='이름을 2글자 이상 입력해 주세요.';$('nmErr').classList.add('over');return;}
+    $('nmOk').disabled=true;
+    const ref=doc(db,'users',user.uid);
+    try{
+      if(first){
+        await setDoc(ref,{name,email:user.email||'',photo:user.photoURL||'',role:'pending',createdAt:serverTimestamp()});
+        profile={name,email:user.email,photo:user.photoURL,role:'pending'};
+        try{await updateDoc(ref,{role:'owner'});profile.role='owner';}catch(_){/* 상위관리자가 아니면 규칙에 막힘 */}
+        needName=false;
+      }else{await updateDoc(ref,{name});profile.name=name;}
+      m.remove(); drawMe(); route();
+    }catch(e){console.error(e);$('nmErr').textContent='저장하지 못했어요. 다시 시도해 주세요.';$('nmErr').classList.add('over');$('nmOk').disabled=false;}
+  };
+  inp.onkeydown=e=>{if(e.key==='Enter')$('nmOk').click();};
+}
 
 function drawMe(){
   const me=$('me'), st=$('status');
   if(!user){me.innerHTML='<button class="btn pri" id="lg"><i class="ti ti-brand-google"></i>로그인</button>';$('lg').onclick=login;st.innerHTML='';}
   else{
-    me.innerHTML=`${can.approve(role())?'<a class="btn" href="#admin" title="가입 관리"><i class="ti ti-users"></i></a>':''}<img src="${esc(user.photoURL||'')}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'"><button class="btn" id="lo">로그아웃</button>`;
+    me.innerHTML=`${can.approve(role())?'<a class="btn" href="#admin" title="가입 관리"><i class="ti ti-users"></i></a>':''}<span class="nm" id="nmBtn" title="이름 바꾸기">${esc(profile?.name||'')}</span><img src="${esc(user.photoURL||'')}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'" id="avBtn" style="cursor:pointer"><button class="btn" id="lo">로그아웃</button>`;
     $('lo').onclick=()=>signOut(auth);
+    if(profile){$('nmBtn').onclick=()=>askName(false);$('avBtn').onclick=()=>askName(false);}
     const r=role();
-    st.innerHTML=r==='pending'?`<div class="notice">${esc(user.displayName)}님, 가입 신청이 접수됐어요. 관리자가 승인하면 발표문과 댓글을 쓸 수 있어요.</div>`
+    st.innerHTML=r==='pending'?`<div class="notice">${esc(profile.name)}님, 가입 신청이 접수됐어요. 관리자가 승인하면 발표문과 댓글을 쓸 수 있어요.</div>`
       :r==='blocked'?'<div class="notice warn">글쓰기가 제한된 계정이에요. 관리자에게 문의해 주세요.</div>':'';
   }
   $('fab').classList.toggle('on',can.write(role()));
 }
-$('fab').onclick=()=>{location.hash='#write';};
+$('fab').onclick=()=>{const h=location.hash.slice(1);location.hash=h.startsWith('s-')&&h!=='s-none'?'#write-'+h.slice(2):'#write';};
 
 /* ---------- 라우팅 ---------- */
 window.addEventListener('hashchange',route);
@@ -190,42 +234,68 @@ function route(){
   const h=location.hash.slice(1);
   window.scrollTo(0,0);
   if(h==='write') return drawForm();
+  if(h.startsWith('write-')) return drawForm(null,h.slice(6));
+  if(h.startsWith('s-')) return drawSermon(h.slice(2));
   if(h==='admin') return drawAdmin();
   if(h.startsWith('edit-')) return drawForm(h.slice(5));
   if(h.startsWith('p-')) return drawPost(h.slice(2));
   drawList();
 }
 
-/* ---------- 목록 ---------- */
-let lastDoc=null;
-async function drawList(more){
-  const v=$('view');
-  if(!more){v.innerHTML='<div class="sec"><h2>모두의 발표문</h2><span class="meta" id="cnt"></span></div><div id="list"><div class="empty">불러오는 중…</div></div>';lastDoc=null;}
+/* ---------- 목록: 요일 → 설교 ---------- */
+let selDay=null;
+async function drawList(){
+  const v=$('view'); await sermonsReady;
+  const byDay=i=>sermons.filter(s=>parseD(s.date).getDay()===i);
+  if(selDay===null){selDay=new Date().getDay();if(!byDay(selDay).length&&sermons.length)selDay=parseD(sermons[0].date).getDay();}
+  const latest=i=>byDay(i)[0];
+  v.innerHTML=`<div class="week" id="wk">${DAYS.map((d,i)=>{const L=latest(i);return `<button data-i="${i}" class="${i===selDay?'on':''} ${i===new Date().getDay()?'today':''}">${d}<small>${L?mdD(L.date).split(' ')[0]:'-'}</small></button>`;}).join('')}</div>
+    <div class="sec"><h2>${DAYS[selDay]}요일 설교</h2><span class="meta">설교를 누르면 발표문이 보여요</span></div>
+    <div id="slist"></div><div id="nosermon"></div>`;
+  $('wk').onclick=e=>{const b=e.target.closest('button');if(!b)return;selDay=+b.dataset.i;drawList();};
+  const rows=byDay(selDay);
+  $('slist').innerHTML=rows.length?rows.map(s=>`<a class="card item srow" href="#s-${esc(s.vid)}"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
+      <div class="bd"><div class="meta">${mdD(s.date)} · ${esc(s.type)}</div><div class="t">${esc(s.title)}</div><span class="qc zero" data-v="${esc(s.vid)}">발표문 …</span></div></a>`).join('')
+    :`<div class="card"><div class="empty">${DAYS[selDay]}요일 설교가 아직 없어요.</div></div>`;
+  document.querySelectorAll('.qc[data-v]').forEach(async el=>{
+    try{const c=(await getCountFromServer(query(collection(db,'posts'),where('sermonVid','==',el.dataset.v)))).data().count;
+      el.textContent=c?`발표문 ${c}편`:'아직 발표문 없음';el.classList.toggle('zero',!c);}catch(e){el.textContent='';}
+  });
+  try{const c=(await getCountFromServer(query(collection(db,'posts'),where('sermonVid','==','')))).data().count;
+    if(c) $('nosermon').innerHTML=`<a class="meta" href="#s-none" style="display:block;text-align:center;margin-top:10px">설교를 고르지 않은 발표문 ${c}편 보기</a>`;}catch(e){}
+}
+
+/* ---------- 설교 하나의 발표문 목록 ---------- */
+async function drawSermon(vid){
+  const v=$('view'); await sermonsReady;
+  const none=vid==='none', s=sermons.find(x=>x.vid===vid);
+  if(!none&&!s){v.innerHTML='<div class="card"><div class="empty">설교를 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
+  if(s) selDay=parseD(s.date).getDay();
+  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>설교 목록</a>
+    ${none?'<div class="card"><div class="t" style="font-weight:500">설교를 고르지 않은 발표문</div></div>':`<div class="card srow"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
+      <div class="bd"><div class="meta">${mdD(s.date)} · ${esc(s.type)}</div><div class="t" style="font-weight:500">${esc(s.title)}</div><div class="meta">${esc(s.text)} · ${esc(s.preacher)}</div></div></div>
+    <div class="row" style="margin-bottom:14px"><a class="btn" href="${esc(s.url)}"><i class="ti ti-player-play"></i>설교 보기</a>${can.write(role())?`<a class="btn pri" href="#write-${esc(s.vid)}"><i class="ti ti-pencil"></i>이 설교로 발표문 쓰기</a>`:''}</div>`}
+    <div class="sec"><h2>발표문</h2><span class="meta" id="pc"></span></div><div id="plist"><div class="empty">불러오는 중…</div></div>`;
   try{
-    let q=query(collection(db,'posts'),orderBy('createdAt','desc'),limit(20));
-    if(more&&lastDoc) q=query(collection(db,'posts'),orderBy('createdAt','desc'),startAfter(lastDoc),limit(20));
-    const snap=await getDocs(q);
-    const list=$('list'); if(!more) list.innerHTML='';
-    $('moreBtn')?.remove();
-    if(snap.empty&&!more){list.innerHTML=`<div class="card"><div class="empty">아직 올라온 발표문이 없어요.${can.write(role())?'<br>오른쪽 아래 연필 버튼으로 첫 발표문을 올려 보세요.':user?'':'<br>로그인하고 승인받으면 발표문을 올릴 수 있어요.'}</div></div>`;return;}
-    snap.forEach(d=>{const p=d.data();list.insertAdjacentHTML('beforeend',`<a class="card item" href="#p-${d.id}">
-      ${p.sermonTitle?`<span class="tag">${esc(p.sermonTitle)}</span>`:''}
-      <div class="t">${esc(p.title)}</div>
+    const snap=await getDocs(query(collection(db,'posts'),where('sermonVid','==',none?'':vid),limit(100)));
+    const list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    $('pc').textContent=list.length?`${list.length}편`:'';
+    $('plist').innerHTML=list.length?list.map(p=>`<a class="card item" href="#p-${p.id}"><div class="t">${esc(p.title)}</div>
       <div class="ex">${esc(bodyOf(p).slice(0,120))}</div>
-      <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`);});
-    lastDoc=snap.docs[snap.docs.length-1];
-    if(snap.size===20) list.insertAdjacentHTML('afterend','<button class="btn more" id="moreBtn">더 보기</button>'), $('moreBtn').onclick=()=>drawList(true);
-  }catch(e){console.error(e);$('list').innerHTML='<div class="card"><div class="empty">목록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.</div></div>';}
+      <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`).join('')
+      :`<div class="card"><div class="empty">아직 이 설교로 쓴 발표문이 없어요.${can.write(role())?'':user?'<br>가입 승인 후 쓸 수 있어요.':'<br>로그인하고 승인받으면 쓸 수 있어요.'}</div></div>`;
+  }catch(e){console.error(e);$('plist').innerHTML='<div class="card"><div class="empty">발표문을 불러오지 못했어요.</div></div>';}
 }
 
 /* ---------- 상세 + 댓글 ---------- */
 async function drawPost(id){
+  await sermonsReady;
   const v=$('view'); v.innerHTML='<div class="empty">불러오는 중…</div>';
   let s; try{s=await getDoc(doc(db,'posts',id));}catch(e){s=null;}
   if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
   const p=s.data(), mine=user&&p.uid===user.uid;
   const sm=sermons.find(x=>x.vid===p.sermonVid);
-  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>목록</a>
+  v.innerHTML=`<a href="#s-${p.sermonVid?esc(p.sermonVid):'none'}" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>${sm?'이 설교의 발표문 목록':'목록'}</a>
   <article class="post">
     <div class="paper" id="paper">
       <div class="ph"><span>세종월드교회 · 발표문</span><span>${fmtDate(p.createdAt)}</span></div>
@@ -241,7 +311,7 @@ async function drawPost(id){
   <div id="cmForm"></div>`;
   $('prt').onclick=()=>window.print();
   requestAnimationFrame(()=>{const pp=$('paper');if(pp&&pp.scrollHeight>pp.clientHeight+2)pp.classList.add('long');});
-  if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash='';}catch(e){alert('삭제하지 못했어요.');}};
+  if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash=p.sermonVid?'#s-'+p.sermonVid:'#s-none';}catch(e){alert('삭제하지 못했어요.');}};
   loadComments(id);
   if(can.write(role())){
     $('cmForm').innerHTML='<textarea class="f" id="cmText" placeholder="댓글을 남겨 주세요" style="min-height:70px"></textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn pri" id="cmSend">댓글 등록</button></div>';
@@ -268,16 +338,17 @@ async function loadComments(id){
 }
 
 /* ---------- 쓰기 / 수정 ---------- */
-async function drawForm(editId){
+async function drawForm(editId,presetVid){
+  await sermonsReady;
   const v=$('view');
   if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
-  let p={title:'',sermonVid:'',body:''};
+  let p={title:'',sermonVid:presetVid||'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
   const opts=sermons.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.date.slice(5).replace('-','.'))} ${esc(s.type)} · ${esc(s.title)}</option>`).join('');
-  v.innerHTML=`<a href="${editId?'#p-'+editId:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
+  v.innerHTML=`<a href="${editId?'#p-'+editId:presetVid?'#s-'+presetVid:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
   <label class="f" for="fSermon">어떤 설교로 쓴 발표문인가요?</label>
-  <select class="f" id="fSermon"><option value="">선택 안 함</option>${opts}</select>
+  <select class="f" id="fSermon"><option value="">설교를 골라 주세요</option>${opts}</select>
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
   <label class="f" for="fBody">발표문</label>
@@ -288,6 +359,7 @@ async function drawForm(editId){
   const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
   $('fBody').oninput=cntUp; cntUp();
   $('fSave').onclick=async()=>{
+    if(!$('fSermon').value){alert('어떤 설교로 쓴 발표문인지 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
     const data={title,sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
