@@ -24,23 +24,23 @@ button,input,textarea,select{font:inherit;color:inherit}
 .btn:disabled{opacity:.5}
 .wbtn{text-decoration:none;width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
 .tb{display:flex;gap:4px;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
-.tb button{-webkit-tap-highlight-color:transparent;border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
-.tb button:active,.tb button.on{background:var(--line)}
+.tb .tbb{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
+.tb .tbb:active,.tb .tbb.on{background:var(--line)}
 .tb .tbr{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .tb .tbr::-webkit-scrollbar{display:none}
-.tb .tbr button{flex:none}
+.tb .tbr .tbb{flex:none}
 .tb .dv{flex:none;width:1px;background:var(--line);margin:6px 3px}
 .tb .pvb{flex:none;border-left:1px solid var(--line);border-radius:0 8px 8px 0}
-.tb button:disabled{opacity:.35}
+
 .pal{position:absolute;left:6px;right:6px;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;gap:4px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(0,0,0,.15)}
 .pal[hidden]{display:none}
-.pal button{gap:4px;font-size:13.5px}
+.pal .tbb{gap:4px;font-size:13.5px;width:auto;padding:0 10px}
 .ed{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:16px 16px 40px;min-height:340px;outline:none;font-size:15px;line-height:1.85;word-break:keep-all;position:relative;-webkit-user-select:text;user-select:text}
 .ed:focus{border-color:var(--accent)}
 .ed.empty::before{content:attr(data-ph);color:#9aa3ad;position:absolute;left:16px;right:16px;top:16px;pointer-events:none}
 .ed p,.ed div{margin:0 0 .5em}
 .rich [style*="text-align:center"],.rich [style*="text-align: center"]{text-align:center}
-.tb .tbr button.on{background:var(--line);color:var(--accent-d)}
+.tb .tbr .tbb.on{background:var(--line);color:var(--accent-d)}
 .prev{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:18px 16px;min-height:300px}
 .rich h3{font-size:1.08em;margin:1.1em 0 .35em;padding-bottom:3px;border-bottom:1px solid #e3e5e9}
 .rich h3:first-child{margin-top:0}
@@ -453,7 +453,7 @@ async function drawForm(editId,presetDate){
   if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
   let p={title:'',date:presetDate||ymd(today0()),sermonVid:'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
-  const B=(a,ic,t)=>`<button type="button" data-a="${a}" title="${t}" aria-label="${t}"><i class="ti ti-${ic}"></i></button>`;
+  const B=(a,ic,t)=>`<span class="tbb" role="button" data-a="${a}" title="${t}" aria-label="${t}"><i class="ti ti-${ic}"></i></span>`;
   v.innerHTML=`<a href="${editId?'#p-'+editId:presetDate?'#d-'+presetDate:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
   <label class="f" for="fDate">날짜</label>
@@ -473,7 +473,7 @@ async function drawForm(editId,presetDate){
     ${B('quote','quote','인용(성경 구절)')}${B('box','square-rounded-letter-b','강조 박스')}${B('insertHorizontalRule','minus','구분선')}<span class="dv"></span>
     ${B('clear','clear-formatting','서식 지우기')}${B('tpl','template','양식 넣기')}
   </div>
-  <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<button type="button" data-c="${c}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</button>`).join('')}<button type="button" data-c="#1b1d21"><i class="ti ti-circle"></i>기본</button></div>
+  <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<span class="tbb" role="button" data-c="${c}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</span>`).join('')}<span class="tbb" role="button" data-c="#1b1d21"><i class="ti ti-circle"></i>기본</span></div>
   </div>
   <div class="ed rich" id="fBody" contenteditable="true" data-ph="A4 한 장에 쓰듯 자유롭게 써 주세요. 예) 설교 요약 → 본문 요점 → 묵상과 결단"></div>
   <div class="cnt" id="fCnt"></div>
@@ -487,14 +487,13 @@ async function drawForm(editId,presetDate){
   // 선택 영역 기억 (버튼을 눌러도 선택이 풀리지 않게)
   let rng=null;
   const save=()=>{const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange();};
-  const back=()=>{if(document.activeElement!==ed)ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}};
+  const back=()=>{if(document.activeElement===ed&&getSelection().rangeCount&&ed.contains(getSelection().anchorNode))return;const y=scrollY;ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}scrollTo(0,y);};
   document.addEventListener('selectionchange',()=>{if(document.activeElement===ed){save();state();}});
-  $('tb').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault();});
-  $('tb').addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault();});
+  $('tb').addEventListener('mousedown',e=>{if(e.target.closest('.tbb'))e.preventDefault();});
   const blk=()=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&/^(P|DIV|H2|H3|BLOCKQUOTE|LI)$/.test(n.tagName))return n;n=n.parentNode;}return null;};
   const inTag=t=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&n.tagName===t)return n;n=n.parentNode;}return null;};
   const ex=(c,v=null)=>{try{return document.execCommand(c,false,v);}catch(_){return false;}};
-  const state=()=>{$('tb').querySelectorAll('.tbr button').forEach(b=>{const a=b.dataset.a;let on=false;
+  const state=()=>{$('tb').querySelectorAll('.tbr .tbb').forEach(b=>{const a=b.dataset.a;let on=false;
     try{if(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyCenter','justifyRight'].includes(a))on=document.queryCommandState(a);}catch(_){}
     if(a==='h2')on=!!inTag('H2'); if(a==='h3')on=!!inTag('H3');
     if(a==='quote'){const q=inTag('BLOCKQUOTE');on=!!q&&!q.classList.contains('box');} if(a==='box'){const q=inTag('BLOCKQUOTE');on=!!q&&q.classList.contains('box');}
@@ -502,8 +501,8 @@ async function drawForm(editId,presetDate){
   const block=(tag,cls)=>{const cur=inTag(tag.toUpperCase());
     if(cur&&(!cls||cur.classList.contains(cls))){ex('formatBlock','<p>');return;}
     ex('formatBlock',`<${tag}>`);const n=inTag(tag.toUpperCase());if(n){n.className=cls||'';if(!cls)n.removeAttribute('class');}};
-  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));};
-  $('tb').onclick=e=>{const b=e.target.closest('button');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
+  $('pal').onclick=e=>{const b=e.target.closest('.tbb');if(!b)return;$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));};
+  $('tb').onclick=e=>{const b=e.target.closest('.tbb');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
     if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
     $('pal').hidden=true; back();
     if(a==='mark'){let on=false;try{const c=document.queryCommandValue('backColor');on=/255,\s*241,\s*168|fff1a8/i.test(c);}catch(_){} if(!ex('hiliteColor',on?'transparent':'#fff1a8'))ex('backColor',on?'transparent':'#fff1a8');}
