@@ -108,6 +108,9 @@ textarea.big{min-height:60vh}
 .fz button{border:0;background:none;color:var(--ink);height:32px;padding:0 12px;cursor:pointer;font-size:14px}
 .fz button:disabled{opacity:.35}
 .fz .v{font-size:12px;color:var(--mute);min-width:38px;text-align:center}
+.lock{text-align:center;padding:30px 18px}
+.lock>i{font-size:34px;color:var(--mute);display:block;margin-bottom:8px}
+.lock .lt{color:var(--mute);margin-bottom:14px;font-size:14.5px}
 .acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .cm{padding:12px 0;border-top:1px solid var(--line)}
 .cm:first-child{border-top:0}
@@ -188,7 +191,10 @@ const auth=getAuth(app), db=getFirestore(app);
 const ROLE_NAME={owner:'상위관리자',admin:'관리자',member:'성도',pending:'승인 대기',blocked:'차단'};
 const can={write:r=>['owner','admin','member'].includes(r), mod:r=>['owner','admin'].includes(r), approve:r=>r==='owner'};
 
-let user=null, profile=null, sermons=[];
+let user=null, profile=null, sermons=[], authKnown=false;
+// 로그인 안 한 사람에게 보여 줄 잠금 안내
+const lockHtml=msg=>`<div class="card lock"><i class="ti ti-lock"></i><div class="lt">${msg||'발표문은 로그인한 성도만 볼 수 있어요'}</div><button class="btn pri" data-login><i class="ti ti-brand-google"></i>구글로 로그인</button></div>`;
+document.addEventListener('click',e=>{if(e.target.closest('[data-login]'))login();});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtDate=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
@@ -291,7 +297,7 @@ function showInApp(){
 
 let needName=false;
 onAuthStateChanged(auth,async u=>{
-  user=u; profile=null; needName=false;
+  user=u; profile=null; needName=false; authKnown=true;
   if(u){
     try{
       const s=await getDoc(doc(db,'users',u.uid));
@@ -342,7 +348,7 @@ function drawMe(){
     st.innerHTML=r==='pending'?`<div class="notice">${esc(profile.name)}님, 가입 신청이 접수됐어요. 관리자가 승인하면 발표문과 댓글을 쓸 수 있어요.</div>`
       :r==='blocked'?'<div class="notice warn">글쓰기가 제한된 계정이에요. 관리자에게 문의해 주세요.</div>':'';
   }
-  if(/^#?$|^#d-/.test(location.hash)) route();
+  if(/^#?$|^#d-|^#p-/.test(location.hash)) route();
 }
 
 /* ---------- 라우팅 ---------- */
@@ -384,7 +390,8 @@ async function drawList(){
   const fr=v.querySelector('.drow'); if(fr) fr.style.borderTop='0';
   $('wk').onclick=e=>{const b=e.target.closest('button');if(!b)return;selDay=+b.dataset.i;weeks=8;drawList();};
   if($('moreW')) $('moreW').onclick=()=>{weeks+=8;drawList();};
-  document.querySelectorAll('.qc[data-d]').forEach(async el=>{
+  if(!user){document.querySelectorAll('.qc[data-d]').forEach(el=>{el.innerHTML='<i class="ti ti-lock"></i> 로그인하면 볼 수 있어요';});}
+  else document.querySelectorAll('.qc[data-d]').forEach(async el=>{
     try{const c=(await getCountFromServer(query(collection(db,'posts'),where('date','==',el.dataset.d)))).data().count;
       el.textContent=c?`발표문 ${c}편`:'발표문 없음';el.classList.toggle('zero',!c);}catch(e){el.textContent='';}
   });
@@ -401,6 +408,8 @@ async function drawDate(d){
     ${ss.map(s=>`<a class="card item srow" href="${esc(s.url)}"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
       <div class="bd"><div class="meta">${esc(s.type)} · 설교 보기</div><div class="t">${esc(s.title)}</div><div class="meta">${esc(s.text)} · ${esc(s.preacher)}</div></div></a>`).join('')}
     <div class="sec" style="margin-top:16px"><h2>발표문</h2><span class="meta" id="pc"></span></div><div id="plist"><div class="empty">불러오는 중…</div></div>`;
+  if(!authKnown)return;
+  if(!user){$('plist').innerHTML=lockHtml();return;}
   try{
     const snap=await getDocs(query(collection(db,'posts'),where('date','==',d),limit(100)));
     const list=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
@@ -416,6 +425,8 @@ async function drawDate(d){
 async function drawPost(id){
   await sermonsReady;
   const v=$('view'); v.innerHTML='<div class="empty">불러오는 중…</div>';
+  if(!authKnown)return;
+  if(!user){v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>목록</a>`+lockHtml();return;}
   let s; try{s=await getDoc(doc(db,'posts',id));}catch(e){s=null;}
   if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
   const p=s.data(), mine=user&&p.uid===user.uid;
