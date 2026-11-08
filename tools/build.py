@@ -13,7 +13,6 @@
     "overview": "요약 3~4문장",
     "keywords": ["키워드", ...],
     "points":   [["핵심 포인트 제목", "설명"], ...],
-    "apply":    ["적용·결단 한 줄", ...],
     "chapters": [["m:ss", "구간 제목"], ...]
   }
 }
@@ -37,12 +36,10 @@ def summary_html(d):
     sm = d["summary"]
     kw = "".join(f"<span>{e(k)}</span>" for k in sm.get("keywords", []))
     pts = "".join(f"<li><b>{e(a)}</b><small>{e(b)}</small></li>" for a, b in sm.get("points", []))
-    ap = "<br>".join("· " + e(x) for x in sm.get("apply", []))
     ch = "".join(f'<a href="#" data-s="{to_sec(t)}"><time>{e(t)}</time>{e(lbl)}</a>' for t, lbl in sm.get("chapters", []))
     parts = [f'<div class="card"><h2>📝 요약</h2><p>{e(sm["overview"])}</p></div>']
     if kw: parts.append(f'<div class="card"><h2>🔑 키워드</h2><div class="kw">{kw}</div></div>')
     if pts: parts.append(f'<div class="card"><h2>📌 핵심 포인트</h2><ol class="pts">{pts}</ol></div>')
-    if ap: parts.append(f'<div class="card"><h2>🙏 적용 · 결단</h2><p>{ap}</p></div>')
     if ch: parts.append(f'<div class="card"><h2>⏱ 구간 바로가기</h2><div class="chap">{ch}</div></div>')
     return '<section id="sum" class="">\n  ' + "\n  ".join(parts) + "\n</section>"
 
