@@ -10,7 +10,6 @@
   "text": "성경 본문 (예: 삿 14:19~15:20)", "preacher": "설교자", "dur": 영상 길이(초),
   "paragraphs": [["m:ss", "문단 내용"], ...],          # 시간순, 첫 항목이 자막 시작 시점
   "summary": {
-    "overview": "요약 3~4문장",
     "keywords": ["키워드", ...],
     "points":   [["핵심 포인트 제목", "설명"], ...],
     "chapters": [["m:ss", "구간 제목"], ...]
@@ -37,7 +36,7 @@ def summary_html(d):
     kw = "".join(f"<span>{e(k)}</span>" for k in sm.get("keywords", []))
     pts = "".join(f"<li><b>{e(a)}</b><small>{e(b)}</small></li>" for a, b in sm.get("points", []))
     ch = "".join(f'<a href="#" data-s="{to_sec(t)}"><time>{e(t)}</time>{e(lbl)}</a>' for t, lbl in sm.get("chapters", []))
-    parts = [f'<div class="card"><h2>📝 요약</h2><p>{e(sm["overview"])}</p></div>']
+    parts = []
     if kw: parts.append(f'<div class="card"><h2>🔑 키워드</h2><div class="kw">{kw}</div></div>')
     if pts: parts.append(f'<div class="card"><h2>📌 핵심 포인트</h2><ol class="pts">{pts}</ol></div>')
     if ch: parts.append(f'<div class="card"><h2>⏱ 구간 바로가기</h2><div class="chap">{ch}</div></div>')
