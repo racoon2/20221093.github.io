@@ -119,7 +119,7 @@ body.mini{display:flex!important}
 <section id="txt" class="on">
   <div class="tip">💡 단어를 누르면 영상이 그 부분부터 재생돼요</div>
   <div class="tools"><input id="q" type="search" placeholder="스크립트 검색"><button class="follow on" id="follow">따라가기 ON</button><button class="gear" id="gear" aria-label="설정">⚙</button></div>
-  <div class="setp" id="setp"><div class="row"><span class="lb">글자 크기</span><div class="fsz" id="fsz"></div></div><div class="pv">하나님은 예배하는 자를 찾으십니다. 아멘.</div></div>
+  <div class="setp" id="setp"><div class="row"><span class="lb">글자 크기</span><div class="fsz" id="fsz"></div></div><div class="pv">하나님은 예배하는 자를 찾으십니다. 아멘.</div><div class="row" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><span class="lb">건너뛰기 시간</span><div class="fsz" id="skp"></div></div></div>
   <div class="count" id="cnt"></div>
   <div id="list"></div>
   <p class="note">유튜브 자동 자막__FROMNOTE__을 바탕으로 정리했습니다. 잘못 인식된 성경 인명·지명 등은 바로잡았습니다. 단어별 재생 위치는 문단 시간을 기준으로 계산한 값이라 몇 초 정도 차이가 날 수 있어요.</p>
@@ -205,8 +205,13 @@ document.getElementById('lm').onclick=()=>setMini(!document.body.classList.conta
 document.getElementById('ex').onclick=()=>setMini(false);
 ppBtn.onclick=()=>{if(!ready){pending=START;return;}const st=player.getPlayerState();if(st===1||st===3)player.pauseVideo();else player.playVideo();};
 const jump=d=>{if(!ready)return;player.seekTo(Math.max(0,player.getCurrentTime()+d),true);};
-document.getElementById('bk').onclick=()=>jump(-10);
-document.getElementById('fw').onclick=()=>jump(10);
+let SKIP=10; try{const v=parseInt(localStorage.getItem('sermon-skip'));if(v)SKIP=v;}catch(e){}
+const bkB=document.getElementById('bk'), fwB=document.getElementById('fw'), skp=document.getElementById('skp');
+function setSkip(v){SKIP=v;try{localStorage.setItem('sermon-skip',v);}catch(e){}bkB.textContent='-'+v;fwB.textContent='+'+v;bkB.setAttribute('aria-label',v+'초 뒤로');fwB.setAttribute('aria-label',v+'초 앞으로');
+  skp.innerHTML=[5,10,15,30].map(s=>`<button data-s="${s}" class="${s===SKIP?'on':''}" style="font-size:13px;min-width:46px">${s}초</button>`).join('');}
+skp.onclick=e=>{const b=e.target.closest('button');if(b)setSkip(+b.dataset.s);};
+bkB.onclick=()=>jump(-SKIP); fwB.onclick=()=>jump(SKIP);
+setSkip(SKIP);
 skEl.addEventListener('input',()=>{dragging=true;skEl.style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
 skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
 setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);skEl.style.setProperty('--p',(skEl.value/10)+'%');}},500);
