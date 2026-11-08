@@ -26,6 +26,8 @@ body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 .pbar .btns{display:flex;align-items:center;gap:16px}
 .pbar .sk{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11px;cursor:pointer}
 .pbar .pp{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:15px;cursor:pointer}
+.tabs .home{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--sub);text-decoration:none;font-size:10.5px;border-right:1px solid var(--line)}
+.tabs .home:active{color:var(--accent)}
 .mctl{display:none}
 .lm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;margin-left:6px}
 body.mini{display:flex!important;flex-direction:column;max-width:720px;height:100vh}
@@ -114,7 +116,7 @@ body.mini{display:flex!important}
   <h1>사명을 잃으면 목적이 흐려진다</h1>
   <div class="meta">삿 14:19~15:20 · 임헌규 담임목사 · 세종월드교회 금요예배 · 2026. 11. 6</div>
 </div>
-<nav class="tabs"><button class="on" data-t="txt">스크립트</button><button data-t="sum">요약</button></nav>
+<nav class="tabs"><a class="home" href="../sermon.html" aria-label="홈으로"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg><span>홈</span></a><button class="on" data-t="txt">스크립트</button><button data-t="sum">요약</button></nav>
 <div class="scroll" id="scroll">
 <section id="txt" class="on">
   <div class="tip">💡 단어를 누르면 영상이 그 부분부터 재생돼요</div>
