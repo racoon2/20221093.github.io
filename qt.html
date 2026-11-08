@@ -489,6 +489,12 @@ async function drawForm(editId,presetDate){
   const save=()=>{const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange();};
   const back=()=>{if(document.activeElement===ed&&getSelection().rangeCount&&ed.contains(getSelection().anchorNode))return;const y=scrollY;ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}scrollTo(0,y);};
   document.addEventListener('selectionchange',()=>{if(document.activeElement===ed){save();state();}});
+  // 터치: 손을 뗄 때 기본 동작(포커스 이동·키보드 닫힘·화면 이동)을 막고 직접 실행
+  let tx=0,ty=0,sy=0,lastTouch=0;
+  $('tb').addEventListener('touchstart',e=>{const t=e.touches[0];tx=t.clientX;ty=t.clientY;sy=scrollY;},{passive:true});
+  $('tb').addEventListener('touchend',e=>{const b=e.target.closest('.tbb');if(!b)return;const t=e.changedTouches[0];
+    if(Math.abs(t.clientX-tx)>10||Math.abs(t.clientY-ty)>10)return; // 옆으로 민 경우는 무시
+    e.preventDefault(); lastTouch=Date.now(); act(b); const y=sy; requestAnimationFrame(()=>scrollTo(0,y)); setTimeout(()=>scrollTo(0,y),60);},{passive:false});
   $('tb').addEventListener('mousedown',e=>{if(e.target.closest('.tbb'))e.preventDefault();});
   const blk=()=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&/^(P|DIV|H2|H3|BLOCKQUOTE|LI)$/.test(n.tagName))return n;n=n.parentNode;}return null;};
   const inTag=t=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&n.tagName===t)return n;n=n.parentNode;}return null;};
@@ -501,8 +507,10 @@ async function drawForm(editId,presetDate){
   const block=(tag,cls)=>{const cur=inTag(tag.toUpperCase());
     if(cur&&(!cls||cur.classList.contains(cls))){ex('formatBlock','<p>');return;}
     ex('formatBlock',`<${tag}>`);const n=inTag(tag.toUpperCase());if(n){n.className=cls||'';if(!cls)n.removeAttribute('class');}};
-  $('pal').onclick=e=>{const b=e.target.closest('.tbb');if(!b)return;$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));};
-  $('tb').onclick=e=>{const b=e.target.closest('.tbb');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
+  $('tb').onclick=e=>{if(Date.now()-lastTouch<700)return;const b=e.target.closest('.tbb');if(b)act(b);};
+  function act(b){
+    if(b.dataset.c){$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));return;}
+    const a=b.dataset.a;
     if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
     $('pal').hidden=true; back();
     if(a==='mark'){let on=false;try{const c=document.queryCommandValue('backColor');on=/255,\s*241,\s*168|fff1a8/i.test(c);}catch(_){} if(!ex('hiliteColor',on?'transparent':'#fff1a8'))ex('backColor',on?'transparent':'#fff1a8');}
@@ -512,7 +520,7 @@ async function drawForm(editId,presetDate){
     else if(a==='clear'){ex('removeFormat');ex('unlink');const n=blk();if(n&&/^(H2|H3|BLOCKQUOTE)$/.test(n.tagName))ex('formatBlock','<p>');ex('justifyLeft');}
     else if(a==='tpl'){ex('insertHTML','<h3>설교 요약</h3><p><br></p><h3>본문 요점</h3><p><br></p><h3>묵상과 결단</h3><p><br></p>');}
     else ex(a);
-    save();state();ed.dispatchEvent(new Event('input'));};
+    save();state();ed.dispatchEvent(new Event('input'));}
   // 붙여넣기는 글자만 (다른 곳 서식·이미지가 섞이지 않게)
   ed.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');ex('insertText',t);});
   ed.addEventListener('drop',e=>e.preventDefault());
