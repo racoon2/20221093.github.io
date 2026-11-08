@@ -80,12 +80,11 @@ button{font:inherit;color:inherit}
 
   <section class="view on" id="v-home">
     <div id="resume"></div>
-    <div class="sec"><h2>이번 주 말씀</h2><span id="wkRange"></span></div>
+    <div class="sec"><h2>요일별 최신 설교</h2><span id="wkHint"></span></div>
     <div class="week" id="week"></div>
     <div id="dayList"></div>
-  </section>
 
-  <section class="view" id="v-arch">
+    <div class="sec" id="pastHead" style="margin-top:28px"><h2>지난 설교</h2><span></span></div>
     <label class="search"><i class="ti ti-search"></i><input id="q" type="search" placeholder="제목, 성경 본문으로 찾기 (예: 사사기)"></label>
     <div class="chips" id="chips"></div>
     <div id="monthBox">
@@ -103,7 +102,6 @@ button{font:inherit;color:inherit}
 
 <nav class="nav"><div class="in">
   <button class="on" data-v="home"><i class="ti ti-home"></i>홈</button>
-  <button data-v="arch"><i class="ti ti-books"></i>보관함</button>
   <button data-v="saved"><i class="ti ti-bookmark"></i>저장</button>
 </div></nav>
 
@@ -123,10 +121,10 @@ const done=s=>!!(PROG[s.vid]&&PROG[s.vid].done);
 const today=new Date(); today.setHours(0,0,0,0);
 
 function item(s,opt={}){
-  const p=pct(s), isNew=(today-parse(s.date))/864e5<=2&&!PROG[s.vid];
+  const p=pct(s), isNew=!opt.latest&&(today-parse(s.date))/864e5<=2&&!PROG[s.vid];
   return `<a class="item" href="${esc(s.url)}">
     ${opt.noThumb?'':`<div class="th" style="background-image:url('${thumb(s.vid)}')"></div>`}
-    <div class="bd"><div class="m">${opt.showDate?md(s.date)+' · ':''}${esc(s.type)}${s.dur?' · '+mins(s.dur):''}${isNew?'<span class="new">NEW</span>':''}</div>
+    <div class="bd"><div class="m">${opt.showDate?md(s.date)+' · ':''}${esc(s.type)}${s.dur?' · '+mins(s.dur):''}${opt.latest?'<span class="new">최신</span>':''}${isNew?'<span class="new">NEW</span>':''}</div>
       <div class="t">${esc(s.title)}</div>${opt.showText?`<div class="m">${esc(s.text)} · ${esc(s.preacher)}</div>`:''}
       ${p&&!done(s)?`<div class="bar"><i style="width:${p}%"></i></div>`:''}</div>
     <div class="ck ${done(s)?'done':''}"><i class="ti ti-check"></i></div></a>`;
@@ -148,19 +146,17 @@ function renderHome(){
     <div style="flex:1;min-width:0"><div class="k">이어서 듣기</div><div class="t">${esc(rs.title)}</div>
     <div class="r">${md(rs.date)} ${esc(rs.type)} · ${Math.max(1,Math.round((rs.dur-rp[1].t)/60))}분 남음</div><div class="bar"><i style="width:${pct(rs)}%"></i></div></div></a>`:'';
 
-  const sun=new Date(today); sun.setDate(today.getDate()-today.getDay());
-  const days=[...Array(7)].map((_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
-  const sat=days[6];
-  document.getElementById('wkRange').textContent=`${sun.getMonth()+1}.${sun.getDate()} ~ ${sat.getMonth()+1}.${sat.getDate()}`;
-  const by=d=>S.filter(s=>s.date===ymd(d));
+  const ago=s=>{const n=Math.round((today-parse(s))/864e5);return n<=0?'오늘':n===1?'어제':n<7?`${n}일 전`:n<14?'지난주':`${Math.floor(n/7)}주 전`;};
+  const latestOf=i=>{const r=S.filter(s=>parse(s.date).getDay()===i);if(!r.length)return [];const d=r[0].date;return r.filter(s=>s.date===d);};
   let sel=today.getDay();
-  if(!by(days[sel]).length){for(let i=sel;i>=0;i--) if(by(days[i]).length){sel=i;break;}}
+  if(!latestOf(sel).length&&S.length) sel=parse(S[0].date).getDay();
   const wk=document.getElementById('week');
   const draw=()=>{
-    wk.innerHTML=days.map((d,i)=>`<button data-i="${i}" class="${i===sel?'on':''} ${i===today.getDay()?'today':''}">${DAYS[i]}<small>${d.getDate()}</small><div class="dt ${by(d).length?'':'x'}"></div></button>`).join('');
-    const rows=by(days[sel]); const future=days[sel]>today;
-    document.getElementById('dayList').innerHTML=rows.length?listBox(rows,{showText:true})
-      :`<div class="list"><div class="empty">${future?`${DAYS[sel]}요일 말씀은 아직 올라오지 않았어요.`:`${DAYS[sel]}요일에 올라온 설교가 없어요.`}${S.length?'<br>지난 설교는 보관함에서 볼 수 있어요.':''}</div></div>`;
+    wk.innerHTML=DAYS.map((d,i)=>{const L=latestOf(i);return `<button data-i="${i}" class="${i===sel?'on':''} ${i===today.getDay()?'today':''}">${d}<small>${L.length?md(L[0].date).split(' ')[0]:'-'}</small><div class="dt ${L.length?'':'x'}"></div></button>`;}).join('');
+    const rows=latestOf(sel);
+    document.getElementById('wkHint').textContent=rows.length?`${DAYS[sel]}요일 · ${ago(rows[0].date)}`:'';
+    document.getElementById('dayList').innerHTML=rows.length?listBox(rows,{showText:true,showDate:true,latest:true})
+      :`<div class="list"><div class="empty">${DAYS[sel]}요일에 올라온 설교가 아직 없어요.</div></div>`;
   };
   wk.onclick=e=>{const b=e.target.closest('button');if(!b)return;sel=+b.dataset.i;draw();};
   draw();
@@ -214,10 +210,10 @@ function renderSaved(){
 /* ---------- 탭 ---------- */
 const navs=document.querySelectorAll('.nav button');
 function go(v){navs.forEach(b=>b.classList.toggle('on',b.dataset.v===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
-  document.getElementById('ttl').textContent={home:'말씀 클래스',arch:'보관함',saved:'저장'}[v];window.scrollTo(0,0);try{history.replaceState(null,'',v==='home'?location.pathname:'#'+v);}catch(e){}}
+  document.getElementById('ttl').textContent={home:'말씀 클래스',saved:'저장'}[v];window.scrollTo(0,0);try{history.replaceState(null,'',v==='home'?location.pathname:'#'+v);}catch(e){}}
 navs.forEach(b=>b.onclick=()=>go(b.dataset.v));
-document.getElementById('goSearch').onclick=()=>{go('arch');setTimeout(()=>document.getElementById('q').focus(),50);};
-if(['#arch','#saved'].includes(location.hash)) go(location.hash.slice(1));
+document.getElementById('goSearch').onclick=()=>{go('home');setTimeout(()=>{const q=document.getElementById('q');window.scrollTo({top:document.getElementById('pastHead').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});q.focus({preventScroll:true});},50);};
+if(location.hash==='#saved') go('saved');
 </script>
 </body>
 </html>
