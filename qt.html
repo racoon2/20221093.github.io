@@ -24,6 +24,10 @@ button,input,textarea,select{font:inherit;color:inherit}
 .btn:disabled{opacity:.5}
 .wbtn{text-decoration:none;width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
 .tb{display:flex;gap:4px;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
+.tb.kb{position:fixed;left:0;right:0;top:auto;z-index:60;border-radius:0;border:0;border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(0,0,0,.08);padding:5px 6px}
+.tb.kb .pal{top:auto;bottom:100%;margin:0 0 4px}
+body.editing .nav{display:none}
+body.editing .ed{padding-bottom:120px}
 .tb .tbb{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
 .tb .tbb:active,.tb .tbb.on{background:var(--line)}
 .tb .tbr{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
@@ -487,14 +491,14 @@ async function drawForm(editId,presetDate){
   // 선택 영역 기억 (버튼을 눌러도 선택이 풀리지 않게)
   let rng=null;
   const save=()=>{const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange();};
-  const back=()=>{if(document.activeElement===ed&&getSelection().rangeCount&&ed.contains(getSelection().anchorNode))return;const y=scrollY;ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}scrollTo(0,y);};
+  const back=()=>{if(document.activeElement===ed&&getSelection().rangeCount&&ed.contains(getSelection().anchorNode))return;ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}};
   document.addEventListener('selectionchange',()=>{if(document.activeElement===ed){save();state();}});
   // 터치: 손을 뗄 때 기본 동작(포커스 이동·키보드 닫힘·화면 이동)을 막고 직접 실행
   let tx=0,ty=0,sy=0,lastTouch=0;
   $('tb').addEventListener('touchstart',e=>{const t=e.touches[0];tx=t.clientX;ty=t.clientY;sy=scrollY;},{passive:true});
   $('tb').addEventListener('touchend',e=>{const b=e.target.closest('.tbb');if(!b)return;const t=e.changedTouches[0];
     if(Math.abs(t.clientX-tx)>10||Math.abs(t.clientY-ty)>10)return; // 옆으로 민 경우는 무시
-    e.preventDefault(); lastTouch=Date.now(); act(b); const y=sy; requestAnimationFrame(()=>scrollTo(0,y)); setTimeout(()=>scrollTo(0,y),60);},{passive:false});
+    e.preventDefault(); lastTouch=Date.now(); act(b);},{passive:false});
   $('tb').addEventListener('mousedown',e=>{if(e.target.closest('.tbb'))e.preventDefault();});
   const blk=()=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&/^(P|DIV|H2|H3|BLOCKQUOTE|LI)$/.test(n.tagName))return n;n=n.parentNode;}return null;};
   const inTag=t=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&n.tagName===t)return n;n=n.parentNode;}return null;};
@@ -528,6 +532,15 @@ async function drawForm(editId,presetDate){
     ed.classList.toggle('empty',!ed.textContent.trim()&&!ed.querySelector('hr,li'));};
   ed.addEventListener('input',cntUp); cntUp();
   ed.addEventListener('focus',()=>$('pal').hidden=true);
+  // 폰: 쓰는 동안 도구줄을 키보드 바로 위에 붙임 (화면을 위로 올릴 필요 없게)
+  const tb=$('tb'), vv=window.visualViewport, touch=matchMedia('(pointer:coarse)').matches;
+  const place=()=>{if(!tb.classList.contains('kb'))return;const H=tb.offsetHeight;
+    const bottom=vv?vv.offsetTop+vv.height:innerHeight; tb.style.top=Math.max(0,bottom-H)+'px';};
+  const kbOn=()=>{if(!touch||tb.classList.contains('kb'))return;ed.style.marginTop=tb.offsetHeight+'px';tb.classList.add('kb');document.body.classList.add('editing');place();};
+  const kbOff=()=>{setTimeout(()=>{if(document.activeElement===ed||!$('pal').hidden)return;tb.classList.remove('kb');tb.style.top='';ed.style.marginTop='';document.body.classList.remove('editing');},150);};
+  ed.addEventListener('focus',kbOn); ed.addEventListener('blur',kbOff);
+  if(vv){vv.addEventListener('resize',place);vv.addEventListener('scroll',place);} addEventListener('scroll',place,{passive:true});
+  addEventListener('hashchange',()=>{document.body.classList.remove('editing');},{once:true});
   $('fSave').onclick=async()=>{
     const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
