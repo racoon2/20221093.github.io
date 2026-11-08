@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>발표문 · 말씀 클래스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1b1d21;--sub:#6b7280;--mute:#9aa1ab;--line:#e6e8ec;--accent:#12a37a;--accent-d:#0b6e53;--accent-soft:#e3f5ee;--danger:#c0392b;--danger-soft:#fdecea}
+@media (prefers-color-scheme: dark){:root{--bg:#121417;--card:#1b1e23;--ink:#eceef1;--sub:#9aa1ab;--mute:#6c737d;--line:#2b2f36;--accent:#3cc99c;--accent-d:#8fe3c4;--accent-soft:#163a2f;--danger:#ff8a7a;--danger-soft:#3a1d1a}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+.app{max-width:560px;margin:0 auto;min-height:100vh;padding:0 16px calc(90px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(18px + env(safe-area-inset-top)) 2px 14px}
+.brand small{display:block;font-size:12.5px;color:var(--accent);font-weight:500}
+.brand h1{margin:1px 0 0;font-size:22px;letter-spacing:-.3px}
+.me{display:flex;align-items:center;gap:8px}
+.me img{width:32px;height:32px;border-radius:50%}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.del{color:var(--danger);border-color:var(--danger)}
+.btn:disabled{opacity:.5}
+.notice{background:var(--accent-soft);color:var(--accent-d);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.6;margin-bottom:14px}
+.notice.warn{background:var(--danger-soft);color:var(--danger)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.item{display:block;text-decoration:none;color:inherit}
+.item .t{font-size:16px;font-weight:500;line-height:1.4;margin:4px 0}
+.item .ex{font-size:13.5px;color:var(--sub);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{font-size:12.5px;color:var(--sub);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.tag{display:inline-block;font-size:11.5px;color:var(--accent-d);background:var(--accent-soft);padding:2px 8px;border-radius:999px}
+.badge{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+.badge.admin{border-color:var(--accent);color:var(--accent-d)}
+.badge.owner{background:var(--accent);border-color:var(--accent);color:#fff}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px}
+.sec h2{font-size:17px;margin:0}
+.empty{text-align:center;color:var(--sub);font-size:14px;padding:28px 10px;line-height:1.7}
+.post h2{font-size:21px;margin:6px 0 8px;line-height:1.35}
+.post h3{font-size:14px;color:var(--accent-d);margin:18px 0 6px}
+.post .body{font-size:15.5px;line-height:1.85;white-space:pre-wrap;word-break:keep-all}
+.acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.cm{padding:12px 0;border-top:1px solid var(--line)}
+.cm:first-child{border-top:0}
+.cm .who{font-size:13px;font-weight:500;display:flex;gap:6px;align-items:center}
+.cm .tx{font-size:14.5px;line-height:1.7;white-space:pre-wrap;margin-top:3px}
+.cm .x{margin-left:auto;border:0;background:none;color:var(--mute);cursor:pointer;font-size:12.5px}
+label.f{display:block;font-size:13px;font-weight:500;margin:14px 0 6px}
+input.f,textarea.f,select.f{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 13px;font-size:15px;outline:none}
+textarea.f{min-height:120px;resize:vertical;line-height:1.7}
+input.f:focus,textarea.f:focus,select.f:focus{border-color:var(--accent)}
+.hint{font-size:12px;color:var(--mute);margin-top:4px}
+.row{display:flex;gap:8px;align-items:center}
+.urow{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.urow:first-child{border-top:0}
+.urow img{width:34px;height:34px;border-radius:50%;flex:none;background:var(--line)}
+.urow .nm{flex:1;min-width:0}
+.urow .nm b{display:block;font-size:14px;font-weight:500}
+.urow .nm span{font-size:12px;color:var(--sub);word-break:break-all}
+.urow select{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 8px;font-size:13px}
+.more{display:block;width:100%;margin-top:6px}
+.fab{position:fixed;right:max(16px,calc(50% - 264px));bottom:calc(76px + env(safe-area-inset-bottom));z-index:9;width:54px;height:54px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:24px;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer;display:none}
+.fab.on{display:block}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav .in{max-width:560px;margin:0 auto;display:flex}
+.nav a{flex:1;text-align:center;padding:9px 0 10px;font-size:11.5px;color:var(--mute);text-decoration:none}
+.nav a i{display:block;font-size:23px;margin-bottom:1px}
+.nav a.on{color:var(--accent-d)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><small>세종월드교회</small><h1>발표문</h1></div>
+    <div class="me" id="me"></div>
+  </div>
+  <div id="status"></div>
+  <main id="view"><div class="empty">불러오는 중…</div></main>
+</div>
+<button class="fab" id="fab" aria-label="발표문 쓰기"><i class="ti ti-pencil"></i></button>
+<nav class="nav"><div class="in">
+  <a href="sermon.html"><i class="ti ti-home"></i>홈</a>
+  <a href="qt.html" class="on"><i class="ti ti-notes"></i>발표문</a>
+  <a href="sermon.html#saved"><i class="ti ti-bookmark"></i>저장</a>
+</div></nav>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,getDocs,query,orderBy,limit,startAfter,where,serverTimestamp,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyALsUq7NOYoiDtKdc9HlfwrSkMUUI-Y2V8",
+  authDomain:"malsseum-class.firebaseapp.com",
+  projectId:"malsseum-class",
+  storageBucket:"malsseum-class.firebasestorage.app",
+  messagingSenderId:"636006225173",
+  appId:"1:636006225173:web:a63c2c4c30ac0743aa851c"
+});
+const auth=getAuth(app), db=getFirestore(app);
+
+/* 등급: owner(상위관리자) · admin(관리자/전도사) · member(일반 작성자/성도) · pending(승인 대기) · blocked(차단) */
+const ROLE_NAME={owner:'상위관리자',admin:'관리자',member:'성도',pending:'승인 대기',blocked:'차단'};
+const can={write:r=>['owner','admin','member'].includes(r), mod:r=>['owner','admin'].includes(r), approve:r=>r==='owner'};
+
+let user=null, profile=null, sermons=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
+const role=()=>profile?.role||null;
+const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
+
+fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d;}).catch(()=>{});
+
+/* ---------- 로그인 ---------- */
+async function login(){
+  const p=new GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account'});
+  try{await signInWithPopup(auth,p);}catch(e){
+    if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment'].includes(e.code)) await signInWithRedirect(auth,p);
+    else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request') alert('로그인에 실패했어요: '+e.code);
+  }
+}
+getRedirectResult(auth).catch(()=>{});
+
+onAuthStateChanged(auth,async u=>{
+  user=u; profile=null;
+  if(u){
+    const ref=doc(db,'users',u.uid);
+    try{
+      let s=await getDoc(ref);
+      if(!s.exists()){
+        await setDoc(ref,{name:u.displayName||'이름 없음',email:u.email||'',photo:u.photoURL||'',role:'pending',createdAt:serverTimestamp()});
+        s=await getDoc(ref);
+      }
+      profile=s.data();
+    }catch(e){console.error(e);}
+  }
+  drawMe(); route();
+});
+
+function drawMe(){
+  const me=$('me'), st=$('status');
+  if(!user){me.innerHTML='<button class="btn pri" id="lg"><i class="ti ti-brand-google"></i>로그인</button>';$('lg').onclick=login;st.innerHTML='';}
+  else{
+    me.innerHTML=`${can.approve(role())?'<a class="btn" href="#admin" title="가입 관리"><i class="ti ti-users"></i></a>':''}<img src="${esc(user.photoURL||'')}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'"><button class="btn" id="lo">로그아웃</button>`;
+    $('lo').onclick=()=>signOut(auth);
+    const r=role();
+    st.innerHTML=r==='pending'?`<div class="notice">${esc(user.displayName)}님, 가입 신청이 접수됐어요. 관리자가 승인하면 발표문과 댓글을 쓸 수 있어요.</div>`
+      :r==='blocked'?'<div class="notice warn">글쓰기가 제한된 계정이에요. 관리자에게 문의해 주세요.</div>':'';
+  }
+  $('fab').classList.toggle('on',can.write(role()));
+}
+$('fab').onclick=()=>{location.hash='#write';};
+
+/* ---------- 라우팅 ---------- */
+window.addEventListener('hashchange',route);
+function route(){
+  const h=location.hash.slice(1);
+  window.scrollTo(0,0);
+  if(h==='write') return drawForm();
+  if(h==='admin') return drawAdmin();
+  if(h.startsWith('edit-')) return drawForm(h.slice(5));
+  if(h.startsWith('p-')) return drawPost(h.slice(2));
+  drawList();
+}
+
+/* ---------- 목록 ---------- */
+let lastDoc=null;
+async function drawList(more){
+  const v=$('view');
+  if(!more){v.innerHTML='<div class="sec"><h2>모두의 발표문</h2><span class="meta" id="cnt"></span></div><div id="list"><div class="empty">불러오는 중…</div></div>';lastDoc=null;}
+  try{
+    let q=query(collection(db,'posts'),orderBy('createdAt','desc'),limit(20));
+    if(more&&lastDoc) q=query(collection(db,'posts'),orderBy('createdAt','desc'),startAfter(lastDoc),limit(20));
+    const snap=await getDocs(q);
+    const list=$('list'); if(!more) list.innerHTML='';
+    $('moreBtn')?.remove();
+    if(snap.empty&&!more){list.innerHTML=`<div class="card"><div class="empty">아직 올라온 발표문이 없어요.${can.write(role())?'<br>오른쪽 아래 연필 버튼으로 첫 발표문을 올려 보세요.':user?'':'<br>로그인하고 승인받으면 발표문을 올릴 수 있어요.'}</div></div>`;return;}
+    snap.forEach(d=>{const p=d.data();list.insertAdjacentHTML('beforeend',`<a class="card item" href="#p-${d.id}">
+      ${p.sermonTitle?`<span class="tag">${esc(p.sermonTitle)}</span>`:''}
+      <div class="t">${esc(p.title)}</div>
+      <div class="ex">${esc((p.summary||p.meditation||p.points||'').slice(0,120))}</div>
+      <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`);});
+    lastDoc=snap.docs[snap.docs.length-1];
+    if(snap.size===20) list.insertAdjacentHTML('afterend','<button class="btn more" id="moreBtn">더 보기</button>'), $('moreBtn').onclick=()=>drawList(true);
+  }catch(e){console.error(e);$('list').innerHTML='<div class="card"><div class="empty">목록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.</div></div>';}
+}
+
+/* ---------- 상세 + 댓글 ---------- */
+async function drawPost(id){
+  const v=$('view'); v.innerHTML='<div class="empty">불러오는 중…</div>';
+  let s; try{s=await getDoc(doc(db,'posts',id));}catch(e){s=null;}
+  if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
+  const p=s.data(), mine=user&&p.uid===user.uid;
+  const sec=(t,b)=>b?`<h3>${t}</h3><div class="body">${esc(b)}</div>`:'';
+  const sm=sermons.find(x=>x.vid===p.sermonVid);
+  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>목록</a>
+  <article class="card post">
+    ${p.sermonTitle?`<a class="tag" style="text-decoration:none" ${sm?`href="${esc(sm.url)}"`:''}>${esc(p.sermonTitle)}${sm?' · 설교 보기':''}</a>`:''}
+    <h2>${esc(p.title)}</h2>
+    <div class="meta"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span>${p.updatedAt&&p.createdAt&&p.updatedAt.seconds-p.createdAt.seconds>60?'<span>(수정됨)</span>':''}</div>
+    ${sec('설교 요약',p.summary)}${sec('본문 요점',p.points)}${sec('묵상과 결단',p.meditation)}
+    <div class="acts">${mine&&can.write(role())?`<a class="btn" href="#edit-${id}"><i class="ti ti-edit"></i>수정</a>`:''}${mine||can.mod(role())?'<button class="btn del" id="delPost"><i class="ti ti-trash"></i>삭제</button>':''}</div>
+  </article>
+  <div class="sec" style="margin-top:18px"><h2>댓글 <span id="cmN" class="meta" style="display:inline"></span></h2></div>
+  <div class="card" id="cms"><div class="empty">불러오는 중…</div></div>
+  <div id="cmForm"></div>`;
+  if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash='';}catch(e){alert('삭제하지 못했어요.');}};
+  loadComments(id);
+  if(can.write(role())){
+    $('cmForm').innerHTML='<textarea class="f" id="cmText" placeholder="댓글을 남겨 주세요" style="min-height:70px"></textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn pri" id="cmSend">댓글 등록</button></div>';
+    $('cmSend').onclick=async()=>{const t=$('cmText').value.trim();if(!t)return;$('cmSend').disabled=true;
+      try{await addDoc(collection(db,'posts',id,'comments'),{uid:user.uid,authorName:profile.name||user.displayName,text:t.slice(0,1000),createdAt:serverTimestamp()});
+        await updateDoc(doc(db,'posts',id),{commentCount:increment(1)});$('cmText').value='';loadComments(id);}catch(e){console.error(e);alert('댓글을 등록하지 못했어요.');}
+      $('cmSend').disabled=false;};
+  }else{
+    $('cmForm').innerHTML=`<div class="notice">${!user?'로그인하고 가입 승인을 받으면 댓글을 쓸 수 있어요.':'가입 승인 후 댓글을 쓸 수 있어요.'}</div>`;
+  }
+}
+async function loadComments(id){
+  const box=$('cms');
+  try{
+    const snap=await getDocs(query(collection(db,'posts',id,'comments'),orderBy('createdAt','asc'),limit(200)));
+    $('cmN').textContent=snap.size?snap.size:'';
+    if(snap.empty){box.innerHTML='<div class="empty" style="padding:14px">첫 댓글을 남겨 보세요.</div>';return;}
+    box.innerHTML='';
+    snap.forEach(d=>{const c=d.data(), del=user&&(c.uid===user.uid||can.mod(role()));
+      box.insertAdjacentHTML('beforeend',`<div class="cm"><div class="who">${esc(c.authorName)}<span class="meta">${fmtDate(c.createdAt)}</span>${del?`<button class="x" data-c="${d.id}">삭제</button>`:''}</div><div class="tx">${esc(c.text)}</div></div>`);});
+    box.querySelectorAll('.x').forEach(b=>b.onclick=async()=>{if(!confirm('댓글을 삭제할까요?'))return;
+      try{await deleteDoc(doc(db,'posts',id,'comments',b.dataset.c));await updateDoc(doc(db,'posts',id),{commentCount:increment(-1)});loadComments(id);}catch(e){alert('삭제하지 못했어요.');}});
+  }catch(e){console.error(e);box.innerHTML='<div class="empty" style="padding:14px">댓글을 불러오지 못했어요.</div>';}
+}
+
+/* ---------- 쓰기 / 수정 ---------- */
+async function drawForm(editId){
+  const v=$('view');
+  if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
+  let p={title:'',sermonVid:'',summary:'',points:'',meditation:''};
+  if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
+  const opts=sermons.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.date.slice(5).replace('-','.'))} ${esc(s.type)} · ${esc(s.title)}</option>`).join('');
+  v.innerHTML=`<a href="${editId?'#p-'+editId:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
+  <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
+  <label class="f" for="fSermon">어떤 설교로 쓴 발표문인가요?</label>
+  <select class="f" id="fSermon"><option value="">선택 안 함</option>${opts}</select>
+  <label class="f" for="fTitle">제목</label>
+  <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
+  <label class="f" for="fSum">설교 요약</label>
+  <textarea class="f" id="fSum" maxlength="5000" placeholder="설교 내용을 내 말로 정리해 보세요">${esc(p.summary)}</textarea>
+  <label class="f" for="fPts">본문 요점</label>
+  <textarea class="f" id="fPts" maxlength="5000" placeholder="본문 말씀에서 붙잡은 요점">${esc(p.points)}</textarea>
+  <label class="f" for="fMed">묵상과 결단</label>
+  <textarea class="f" id="fMed" maxlength="5000" placeholder="이번 주 내 삶에 적용할 것">${esc(p.meditation)}</textarea>
+  <div class="hint">칸마다 최대 5,000자까지 쓸 수 있어요. 비어 있는 칸은 표시되지 않아요.</div>
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn pri" id="fSave">${editId?'수정 완료':'올리기'}</button></div>`;
+  $('fSave').onclick=async()=>{
+    const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
+    const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
+    const data={title,sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',summary:$('fSum').value.trim(),points:$('fPts').value.trim(),meditation:$('fMed').value.trim(),updatedAt:serverTimestamp()};
+    $('fSave').disabled=true;
+    try{
+      if(editId){await updateDoc(doc(db,'posts',editId),data);location.hash='#p-'+editId;}
+      else{const r=await addDoc(collection(db,'posts'),{...data,uid:user.uid,authorName:profile.name||user.displayName,commentCount:0,createdAt:serverTimestamp()});location.hash='#p-'+r.id;}
+    }catch(e){console.error(e);alert('저장하지 못했어요. 잠시 후 다시 시도해 주세요.');$('fSave').disabled=false;}
+  };
+}
+
+/* ---------- 가입 관리 (상위관리자) ---------- */
+async function drawAdmin(){
+  const v=$('view');
+  if(!can.approve(role())){v.innerHTML='<div class="card"><div class="empty">상위관리자만 볼 수 있어요.</div></div>';return;}
+  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>목록</a>
+  <div class="sec" style="margin-top:8px"><h2>가입 관리</h2></div>
+  <div class="notice">승인 대기 중인 사람을 '성도'로 바꾸면 발표문과 댓글을 쓸 수 있어요. 전도사님은 '관리자'로 지정하면 다른 사람의 글과 댓글도 삭제할 수 있어요.</div>
+  <div class="card" id="ulist"><div class="empty">불러오는 중…</div></div>`;
+  try{
+    const snap=await getDocs(query(collection(db,'users'),orderBy('createdAt','desc'),limit(300)));
+    const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+    rows.sort((a,b)=>(a.role==='pending'?0:1)-(b.role==='pending'?0:1));
+    $('ulist').innerHTML=rows.map(u=>`<div class="urow"><img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'"><div class="nm"><b>${esc(u.name)} ${u.role==='pending'?'<span class="badge">대기</span>':''}</b><span>${esc(u.email)}</span></div>
+      ${u.id===user.uid?'<span class="badge owner">상위관리자</span>':`<select data-u="${u.id}">${['pending','member','admin','blocked'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${ROLE_NAME[r]}</option>`).join('')}</select>`}</div>`).join('')||'<div class="empty">가입한 사람이 없어요.</div>';
+    $('ulist').querySelectorAll('select').forEach(sel=>sel.onchange=async()=>{sel.disabled=true;
+      try{await updateDoc(doc(db,'users',sel.dataset.u),{role:sel.value});}catch(e){alert('바꾸지 못했어요.');}
+      sel.disabled=false;});
+  }catch(e){console.error(e);$('ulist').innerHTML='<div class="empty">목록을 불러오지 못했어요.</div>';}
+}
+</script>
+</body>
+</html>
