@@ -14,13 +14,18 @@ body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 .top{flex:none;background:#000}
 .vid{position:relative;width:100%;aspect-ratio:16/9}
 .vid{max-height:38vh;width:min(100%,calc(38vh*16/9));margin:0 auto}
-.pbar{flex:none;display:flex;flex-direction:column;align-items:stretch;gap:4px;background:var(--card);border-top:1px solid var(--line);padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
-.pbar .sk{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11.5px;cursor:pointer}
-.pbar .pp{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer}
-.pbar .pi{width:100%}
-.pbar .btns{display:flex;justify-content:center;align-items:center;gap:22px}
-.pbar .tm{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
-.pbar input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.pbar{flex:none;position:relative;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-top:0;padding:10px 14px calc(6px + env(safe-area-inset-bottom))}
+.pbar .seek{position:absolute;left:0;right:0;top:-7px;height:14px;margin:0;width:100%;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+.pbar .seek::-webkit-slider-runnable-track{height:3px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
+.pbar .seek::-moz-range-track{height:3px;background:var(--line)}
+.pbar .seek::-moz-range-progress{height:3px;background:var(--accent)}
+.pbar .seek::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--accent);margin-top:-5px;border:0}
+.pbar .seek::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:0}
+.pbar .t{flex:1;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.pbar .t.r{text-align:right}
+.pbar .btns{display:flex;align-items:center;gap:16px}
+.pbar .sk{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11px;cursor:pointer}
+.pbar .pp{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:15px;cursor:pointer}
 .mctl{display:none}
 .lm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;margin-left:6px}
 body.mini{display:flex!important;flex-direction:column;max-width:720px;height:100vh}
@@ -115,12 +120,14 @@ body.mini{display:flex!important}
 </section>
 </div>
 <div class="pbar">
-  <div class="pi"><input type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치"><div class="tm"><span id="tm">0:00</span><span id="td">0:00</span></div></div>
+  <input class="seek" type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치">
+  <span class="t" id="tm">0:00</span>
   <div class="btns">
     <button class="sk" id="bk" aria-label="10초 뒤로">-10</button>
     <button class="pp" id="pp" aria-label="재생/일시정지">▶</button>
     <button class="sk" id="fw" aria-label="10초 앞으로">+10</button>
   </div>
+  <span class="t r" id="td">0:00</span>
 </div>
 <script>
 const VID="T9xRBnTp9p4", END=3796;
@@ -185,9 +192,9 @@ ppBtn.onclick=()=>{if(!ready){pending=START;return;}const st=player.getPlayerSta
 const jump=d=>{if(!ready)return;player.seekTo(Math.max(0,player.getCurrentTime()+d),true);};
 document.getElementById('bk').onclick=()=>jump(-10);
 document.getElementById('fw').onclick=()=>jump(10);
-skEl.addEventListener('input',()=>{dragging=true;const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
+skEl.addEventListener('input',()=>{dragging=true;skEl.style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
 skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
-setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);}},500);
+setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);skEl.style.setProperty('--p',(skEl.value/10)+'%');}},500);
 tdEl.textContent=fmtT(END);
 if(lsGet('sermon-mini',false)) setMini(true);
 document.getElementById('mtitle').textContent=document.querySelector('.head h1').textContent;
