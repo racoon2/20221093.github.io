@@ -66,7 +66,7 @@ section{display:none;padding:10px 14px 40px}
 section.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
 .card h2{font-size:15px;margin:0 0 10px}
-.card p{margin:0;font-size:15px;line-height:1.75}
+.card p{margin:0;font-size:calc(15px * var(--fz,1));line-height:1.75}
 .kw{display:flex;flex-wrap:wrap;gap:6px}.kw span{font-size:13px;background:var(--accent-soft);color:var(--accent);padding:5px 10px;border-radius:999px}
 ol.pts{margin:0;padding:0;list-style:none;counter-reset:p}
 ol.pts li{counter-increment:p;position:relative;padding:0 0 14px 34px;font-size:15px;line-height:1.7}
@@ -86,7 +86,19 @@ ol.pts li b{display:block} ol.pts li small{color:var(--sub);font-size:13.5px}
 .av{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .who{font-size:13px;color:var(--sub);margin-bottom:3px}
 .who button{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;margin-left:6px;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
-.tx{font-size:15.5px;line-height:1.85;word-break:keep-all}
+.tx{font-size:calc(15.5px * var(--fz,1));line-height:1.85;word-break:keep-all}
+ol.pts li{font-size:calc(15px * var(--fz,1))!important}
+.gear{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.tools input{min-width:0;width:0}
+.setp .row{flex-wrap:wrap}
+.setp{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.setp.on{display:block}
+.setp .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.setp .lb{font-size:13.5px;font-weight:500}
+.fsz{display:flex;gap:4px}
+.fsz button{border:1px solid var(--line);background:none;color:var(--sub);border-radius:8px;min-width:38px;padding:6px 0;cursor:pointer;font-family:inherit}
+.fsz button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.setp .pv{margin-top:10px;font-size:calc(15.5px * var(--fz,1));line-height:1.8;color:var(--sub)}
 .w{cursor:pointer;border-radius:3px}
 .w.say{background:var(--accent);color:#fff}
 mark{background:var(--hl);color:inherit;border-radius:3px}
@@ -106,7 +118,8 @@ body.mini{display:flex!important}
 <div class="scroll" id="scroll">
 <section id="txt" class="on">
   <div class="tip">💡 단어를 누르면 영상이 그 부분부터 재생돼요</div>
-  <div class="tools"><input id="q" type="search" placeholder="스크립트 검색"><button class="follow on" id="follow">따라가기 ON</button></div>
+  <div class="tools"><input id="q" type="search" placeholder="스크립트 검색"><button class="follow on" id="follow">따라가기 ON</button><button class="gear" id="gear" aria-label="설정">⚙</button></div>
+  <div class="setp" id="setp"><div class="row"><span class="lb">글자 크기</span><div class="fsz" id="fsz"></div></div><div class="pv">하나님은 예배하는 자를 찾으십니다. 아멘.</div></div>
   <div class="count" id="cnt"></div>
   <div id="list"></div>
   <p class="note">유튜브 자동 자막__FROMNOTE__을 바탕으로 정리했습니다. 잘못 인식된 성경 인명·지명 등은 바로잡았습니다. 단어별 재생 위치는 문단 시간을 기준으로 계산한 값이라 몇 초 정도 차이가 날 수 있어요.</p>
@@ -157,6 +170,14 @@ function seek(t){if(!ready){pending=t;return;}player.seekTo(Math.max(0,t-0.5),tr
 
 /* ---- 재생 위치에 맞춰 스크립트 따라가기 ---- */
 let follow=true, lastI=-1, lastW=null, userScrollAt=0;
+/* ---- 설정: 글자 크기 ---- */
+(()=>{const sizes=[[0.88,'가',13],[1,'가',15],[1.15,'가',17],[1.3,'가',19],[1.5,'가',21]];
+  let cur=1; try{const v=parseFloat(localStorage.getItem('sermon-font'));if(v)cur=v;}catch(e){}
+  const box=document.getElementById('fsz');
+  const apply=v=>{cur=v;document.documentElement.style.setProperty('--fz',v);try{localStorage.setItem('sermon-font',v);}catch(e){}box.innerHTML=sizes.map(([z,t,px])=>`<button data-z="${z}" class="${z===cur?'on':''}" style="font-size:${px}px" aria-label="글자 크기 ${Math.round(z*100)}%">${t}</button>`).join('');};
+  box.onclick=e=>{const b=e.target.closest('button');if(b)apply(+b.dataset.z);};
+  document.getElementById('gear').onclick=()=>document.getElementById('setp').classList.toggle('on');
+  apply(cur);})();
 const fbtn=document.getElementById('follow');
 fbtn.onclick=()=>{follow=!follow;fbtn.classList.toggle('on',follow);fbtn.textContent=follow?'따라가기 ON':'따라가기 OFF';if(follow)lastI=-1;};
 scroller.addEventListener('touchmove',()=>userScrollAt=Date.now(),{passive:true});
