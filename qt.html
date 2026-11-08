@@ -37,6 +37,23 @@ button,input,textarea,select{font:inherit;color:inherit}
 .sec h2{font-size:17px;margin:0}
 .empty{text-align:center;color:var(--sub);font-size:14px;padding:28px 10px;line-height:1.7}
 .post h2{font-size:21px;margin:6px 0 8px;line-height:1.35}
+.paper{background:#fff;color:#1b1d21;border-radius:4px;box-shadow:0 2px 14px rgba(0,0,0,.12);padding:9% 8.5%;aspect-ratio:210/297;min-height:0;margin:10px 0 0;overflow:hidden}
+.paper.long{aspect-ratio:auto}
+.paper .ph{font-size:12px;color:#6b7280;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #d9dce1;padding-bottom:8px;margin-bottom:14px}
+.paper h1{font-size:clamp(17px,4.6vw,22px);text-align:center;margin:4px 0 4px;line-height:1.4}
+.paper .by{text-align:center;font-size:12.5px;color:#6b7280;margin-bottom:18px}
+.paper .doc{font-size:clamp(12.5px,3.4vw,14.5px);line-height:1.85;white-space:pre-wrap;word-break:keep-all}
+.cnt{font-size:12px;color:var(--mute);text-align:right;margin-top:4px}
+.cnt.over{color:var(--danger)}
+textarea.big{min-height:60vh}
+@media print{
+  @page{size:A4;margin:18mm 16mm}
+  body{background:#fff}
+  body *{visibility:hidden}
+  .paper,.paper *{visibility:visible}
+  .paper{position:absolute;left:0;top:0;width:100%;box-shadow:none;padding:0;aspect-ratio:auto;border-radius:0}
+  .paper .doc{font-size:11pt}
+}
 .post h3{font-size:14px;color:var(--accent-d);margin:18px 0 6px}
 .post .body{font-size:15.5px;line-height:1.85;white-space:pre-wrap;word-break:keep-all}
 .acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
@@ -109,6 +126,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtDate=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
 const role=()=>profile?.role||null;
+const bodyOf=p=>p.body??[['설교 요약',p.summary],['본문 요점',p.points],['묵상과 결단',p.meditation]].filter(x=>x[1]).map(x=>`[${x[0]}]\n${x[1]}`).join('\n\n');
 const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
 
 fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d;}).catch(()=>{});
@@ -193,7 +211,7 @@ async function drawList(more){
     snap.forEach(d=>{const p=d.data();list.insertAdjacentHTML('beforeend',`<a class="card item" href="#p-${d.id}">
       ${p.sermonTitle?`<span class="tag">${esc(p.sermonTitle)}</span>`:''}
       <div class="t">${esc(p.title)}</div>
-      <div class="ex">${esc((p.summary||p.meditation||p.points||'').slice(0,120))}</div>
+      <div class="ex">${esc(bodyOf(p).slice(0,120))}</div>
       <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`);});
     lastDoc=snap.docs[snap.docs.length-1];
     if(snap.size===20) list.insertAdjacentHTML('afterend','<button class="btn more" id="moreBtn">더 보기</button>'), $('moreBtn').onclick=()=>drawList(true);
@@ -206,19 +224,23 @@ async function drawPost(id){
   let s; try{s=await getDoc(doc(db,'posts',id));}catch(e){s=null;}
   if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
   const p=s.data(), mine=user&&p.uid===user.uid;
-  const sec=(t,b)=>b?`<h3>${t}</h3><div class="body">${esc(b)}</div>`:'';
   const sm=sermons.find(x=>x.vid===p.sermonVid);
   v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>목록</a>
-  <article class="card post">
-    ${p.sermonTitle?`<a class="tag" style="text-decoration:none" ${sm?`href="${esc(sm.url)}"`:''}>${esc(p.sermonTitle)}${sm?' · 설교 보기':''}</a>`:''}
-    <h2>${esc(p.title)}</h2>
-    <div class="meta"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span>${p.updatedAt&&p.createdAt&&p.updatedAt.seconds-p.createdAt.seconds>60?'<span>(수정됨)</span>':''}</div>
-    ${sec('설교 요약',p.summary)}${sec('본문 요점',p.points)}${sec('묵상과 결단',p.meditation)}
-    <div class="acts">${mine&&can.write(role())?`<a class="btn" href="#edit-${id}"><i class="ti ti-edit"></i>수정</a>`:''}${mine||can.mod(role())?'<button class="btn del" id="delPost"><i class="ti ti-trash"></i>삭제</button>':''}</div>
+  <article class="post">
+    <div class="paper" id="paper">
+      <div class="ph"><span>세종월드교회 · 발표문</span><span>${fmtDate(p.createdAt)}</span></div>
+      <h1>${esc(p.title)}</h1>
+      <div class="by">${esc(p.authorName)}${p.sermonTitle?' · '+esc(p.sermonTitle):''}</div>
+      <div class="doc">${esc(bodyOf(p))}</div>
+    </div>
+    <div class="meta" style="margin-top:10px">${sm?`<a class="tag" style="text-decoration:none" href="${esc(sm.url)}">설교 보기</a>`:''}${p.updatedAt&&p.createdAt&&p.updatedAt.seconds-p.createdAt.seconds>60?'<span>(수정됨)</span>':''}</div>
+    <div class="acts"><button class="btn" id="prt"><i class="ti ti-printer"></i>인쇄 / PDF</button>${mine&&can.write(role())?`<a class="btn" href="#edit-${id}"><i class="ti ti-edit"></i>수정</a>`:''}${mine||can.mod(role())?'<button class="btn del" id="delPost"><i class="ti ti-trash"></i>삭제</button>':''}</div>
   </article>
   <div class="sec" style="margin-top:18px"><h2>댓글 <span id="cmN" class="meta" style="display:inline"></span></h2></div>
   <div class="card" id="cms"><div class="empty">불러오는 중…</div></div>
   <div id="cmForm"></div>`;
+  $('prt').onclick=()=>window.print();
+  requestAnimationFrame(()=>{const pp=$('paper');if(pp&&pp.scrollHeight>pp.clientHeight+2)pp.classList.add('long');});
   if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash='';}catch(e){alert('삭제하지 못했어요.');}};
   loadComments(id);
   if(can.write(role())){
@@ -249,7 +271,7 @@ async function loadComments(id){
 async function drawForm(editId){
   const v=$('view');
   if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
-  let p={title:'',sermonVid:'',summary:'',points:'',meditation:''};
+  let p={title:'',sermonVid:'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
   const opts=sermons.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.date.slice(5).replace('-','.'))} ${esc(s.type)} · ${esc(s.title)}</option>`).join('');
   v.innerHTML=`<a href="${editId?'#p-'+editId:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
@@ -258,18 +280,18 @@ async function drawForm(editId){
   <select class="f" id="fSermon"><option value="">선택 안 함</option>${opts}</select>
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
-  <label class="f" for="fSum">설교 요약</label>
-  <textarea class="f" id="fSum" maxlength="5000" placeholder="설교 내용을 내 말로 정리해 보세요">${esc(p.summary)}</textarea>
-  <label class="f" for="fPts">본문 요점</label>
-  <textarea class="f" id="fPts" maxlength="5000" placeholder="본문 말씀에서 붙잡은 요점">${esc(p.points)}</textarea>
-  <label class="f" for="fMed">묵상과 결단</label>
-  <textarea class="f" id="fMed" maxlength="5000" placeholder="이번 주 내 삶에 적용할 것">${esc(p.meditation)}</textarea>
-  <div class="hint">칸마다 최대 5,000자까지 쓸 수 있어요. 비어 있는 칸은 표시되지 않아요.</div>
+  <label class="f" for="fBody">발표문</label>
+  <textarea class="f big" id="fBody" maxlength="8000" placeholder="A4 한 장에 쓰듯 자유롭게 써 주세요.&#10;&#10;예) 설교 요약 → 본문 요점 → 묵상과 결단">${esc(editId?bodyOf(p):'')}</textarea>
+  <div class="cnt" id="fCnt"></div>
+  <div class="hint">A4 한 장은 보통 1,500~2,000자 정도예요. 더 길게 써도 괜찮아요(최대 8,000자).</div>
   <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn pri" id="fSave">${editId?'수정 완료':'올리기'}</button></div>`;
+  const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
+  $('fBody').oninput=cntUp; cntUp();
   $('fSave').onclick=async()=>{
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
-    const data={title,sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',summary:$('fSum').value.trim(),points:$('fPts').value.trim(),meditation:$('fMed').value.trim(),updatedAt:serverTimestamp()};
+    const data={title,sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
+    if(!data.body){alert('발표문 내용을 써 주세요.');return;}
     $('fSave').disabled=true;
     try{
       if(editId){await updateDoc(doc(db,'posts',editId),data);location.hash='#p-'+editId;}
