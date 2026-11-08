@@ -45,7 +45,7 @@ def summary_html(d):
 
 def main(path):
     d = json.load(open(path, encoding="utf-8"))
-    for k in ["vid", "date", "type", "title", "text", "preacher", "dur", "paragraphs", "summary"]:
+    for k in ["vid", "date", "type", "title", "text", "preacher", "dur", "paragraphs"]:
         assert k in d and d[k], f"입력에 '{k}' 값이 없습니다"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", d["date"])
     paras = [[t, x] for t, x in d["paragraphs"] if x.strip()]
@@ -71,7 +71,6 @@ def main(path):
     tpl = open(os.path.join(ROOT, "tools", "template.html"), encoding="utf-8").read()
     page = (tpl.replace("__TITLE__", e(d["title"]))
                .replace("__METALINE__", e(f'{d["text"]} · {d["preacher"]} · 세종월드교회 {d["type"]} · {int(y)}. {int(m)}. {int(dd)}'))
-               .replace("__SUMMARY__", summary_html(d))
                .replace("__VID__", json.dumps(d["vid"]))
                .replace("__END__", str(int(d["dur"])))
                .replace("__T__", json.dumps(paras, ensure_ascii=False).replace("</", "<\\/"))
