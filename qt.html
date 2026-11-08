@@ -87,7 +87,7 @@ input.f:focus,textarea.f:focus,select.f:focus{border-color:var(--accent)}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,getDocs,query,orderBy,limit,startAfter,where,serverTimestamp,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app=initializeApp({
@@ -114,14 +114,26 @@ const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_N
 fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d;}).catch(()=>{});
 
 /* ---------- 로그인 ---------- */
+const UA=navigator.userAgent||'';
+const inApp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(UA);
+function openExternal(){
+  const url=location.href;
+  if(/KAKAOTALK/i.test(UA)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);return;}
+  if(/android/i.test(UA)){location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';return;}
+  navigator.clipboard?.writeText(url).then(()=>alert('주소를 복사했어요. 사파리나 크롬에 붙여 넣어 열어 주세요.'),()=>alert('오른쪽 위 메뉴에서 "다른 브라우저로 열기"를 눌러 주세요.'));
+}
 async function login(){
+  if(inApp){showInApp();return;}
   const p=new GoogleAuthProvider(); p.setCustomParameters({prompt:'select_account'});
   try{await signInWithPopup(auth,p);}catch(e){
-    if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment'].includes(e.code)) await signInWithRedirect(auth,p);
-    else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request') alert('로그인에 실패했어요: '+e.code);
+    if(e.code==='auth/popup-blocked') alert('로그인 창(팝업)이 막혔어요. 브라우저에서 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.');
+    else if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request') alert('로그인에 실패했어요. ('+e.code+')');
   }
 }
-getRedirectResult(auth).catch(()=>{});
+function showInApp(){
+  $('status').innerHTML='<div class="notice warn">카카오톡 같은 앱 안에서는 구글 로그인이 막혀 있어요.<br>크롬이나 사파리에서 열어 주세요.<div style="margin-top:8px"><button class="btn pri" id="ext">외부 브라우저로 열기</button></div></div>';
+  $('ext').onclick=openExternal;
+}
 
 onAuthStateChanged(auth,async u=>{
   user=u; profile=null;
@@ -134,6 +146,7 @@ onAuthStateChanged(auth,async u=>{
         s=await getDoc(ref);
       }
       profile=s.data();
+      if(profile.role==='pending'){try{await updateDoc(ref,{role:'owner'});profile.role='owner';}catch(_){/* 상위관리자가 아니면 규칙에 막힘 */}}
     }catch(e){console.error(e);}
   }
   drawMe(); route();
