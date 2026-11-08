@@ -24,7 +24,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .btn:disabled{opacity:.5}
 .wbtn{text-decoration:none;width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
 .tb{display:flex;gap:4px;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
-.tb button{border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
+.tb button{-webkit-tap-highlight-color:transparent;border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
 .tb button:active,.tb button.on{background:var(--line)}
 .tb .tbr{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .tb .tbr::-webkit-scrollbar{display:none}
@@ -35,7 +35,12 @@ button,input,textarea,select{font:inherit;color:inherit}
 .pal{position:absolute;left:6px;right:6px;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;gap:4px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(0,0,0,.15)}
 .pal[hidden]{display:none}
 .pal button{gap:4px;font-size:13.5px}
-.tb + textarea.f,.tb + textarea.f + .prev{border-top-left-radius:0;border-top-right-radius:0}
+.ed{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:16px 16px 40px;min-height:340px;outline:none;font-size:15px;line-height:1.85;word-break:keep-all;position:relative;-webkit-user-select:text;user-select:text}
+.ed:focus{border-color:var(--accent)}
+.ed.empty::before{content:attr(data-ph);color:#9aa3ad;position:absolute;left:16px;right:16px;top:16px;pointer-events:none}
+.ed p,.ed div{margin:0 0 .5em}
+.rich [style*="text-align:center"],.rich [style*="text-align: center"]{text-align:center}
+.tb .tbr button.on{background:var(--line);color:var(--accent-d)}
 .prev{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:18px 16px;min-height:300px}
 .rich h3{font-size:1.08em;margin:1.1em 0 .35em;padding-bottom:3px;border-bottom:1px solid #e3e5e9}
 .rich h3:first-child{margin-top:0}
@@ -202,6 +207,40 @@ function rich(src){
 }
 const plain=s=>String(s).replace(/^\[(가운데|오른쪽)\]\s?/gm,'').replace(/^#{1,3}\s+|^!?>\s?|^\s*[-•*]\s+|^\s*\[( |x|X)\]\s+|^-{3,}\s*$/gm,'')
   .replace(/\{(?:빨강|파랑|초록|회색):(.+?)\}/g,'$1').replace(/\*\*|==|__|~~|\*/g,'');
+// 저장된 HTML은 허용한 태그·스타일만 남기고 모두 지움 (보안)
+const OK_TAGS=new Set(['P','DIV','BR','B','STRONG','I','EM','U','S','STRIKE','DEL','MARK','SPAN','FONT','H2','H3','UL','OL','LI','BLOCKQUOTE','HR']);
+const DROP=new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','LINK','META','SVG','MATH','IMG','VIDEO','AUDIO','FORM','INPUT','BUTTON','TEXTAREA','SELECT','TEMPLATE','NOSCRIPT','CANVAS']);
+const okColor=c=>/^(#[0-9a-f]{3,8}|rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*(,\s*[\d.]+\s*)?\)|transparent)$/i.test(c.trim());
+function cleanHtml(html){
+  const t=document.createElement('template'); t.innerHTML=String(html);
+  const walk=node=>{[...node.childNodes].forEach(n=>{
+    if(n.nodeType===3)return;
+    if(n.nodeType!==1){n.remove();return;}
+    const tg=n.tagName;
+    if(DROP.has(tg)){n.remove();return;}
+    walk(n);
+    if(!OK_TAGS.has(tg)){n.replaceWith(...n.childNodes);return;}
+    const st=n.style, keep=[];
+    const col=tg==='FONT'?n.getAttribute('color'):st.color, bg=st.backgroundColor, ta=st.textAlign;
+    if(col&&okColor(col))keep.push('color:'+col.trim());
+    if(bg&&okColor(bg)&&bg!=='transparent')keep.push('background-color:'+bg.trim());
+    if(/^(center|right|left|justify)$/.test(ta||'')&&ta!=='left')keep.push('text-align:'+ta);
+    if(/^(bold|[6-9]00)$/.test(st.fontWeight||''))keep.push('font-weight:bold');
+    if(st.fontStyle==='italic')keep.push('font-style:italic');
+    const td=(st.textDecorationLine||st.textDecoration||'');['underline','line-through'].forEach(x=>{if(td.includes(x))keep.push('text-decoration:'+x);});
+    const cls=n.getAttribute('class')||'', okc=cls.split(/\s+/).filter(c=>/^(box|c|r|chk)$/.test(c)).join(' ');
+    [...n.attributes].forEach(at=>n.removeAttribute(at.name));
+    let el=n;
+    if(tg==='FONT'){el=document.createElement('span');el.append(...n.childNodes);n.replaceWith(el);}
+    if(keep.length)el.setAttribute('style',[...new Set(keep)].join(';'));
+    if(okc)el.setAttribute('class',okc);
+    if(el.tagName==='SPAN'&&!el.attributes.length)el.replaceWith(...el.childNodes);
+  });};
+  walk(t.content); return t.innerHTML;
+}
+const isHtml=s=>/^\s*<(p|div|h2|h3|ul|ol|blockquote|hr|b|i|u|s|span|br|strong|em|mark)\b/i.test(s||'');
+const docHtml=s=>isHtml(s)?cleanHtml(s):rich(s);
+const textOf=s=>{if(!isHtml(s))return plain(s);const t=document.createElement('template');t.innerHTML=cleanHtml(String(s).replace(/<\/(p|div|h2|h3|li|blockquote)>/gi,'$& '));return t.content.textContent.replace(/\s+/g,' ').trim();};
 const bodyOf=p=>p.body??[['설교 요약',p.summary],['본문 요점',p.points],['묵상과 결단',p.meditation]].filter(x=>x[1]).map(x=>`[${x[0]}]\n${x[1]}`).join('\n\n');
 const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
 
@@ -351,7 +390,7 @@ async function drawDate(d){
     const list=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     $('pc').textContent=list.length?`${list.length}편`:'';
     $('plist').innerHTML=list.length?list.map(p=>`<a class="card item" href="#p-${p.id}">${p.sermonTitle?`<span class="tag">${esc(p.sermonTitle)}</span>`:''}<div class="t">${esc(p.title)}</div>
-      <div class="ex">${esc(plain(bodyOf(p)).slice(0,120))}</div>
+      <div class="ex">${esc(textOf(bodyOf(p)).slice(0,120))}</div>
       <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`).join('')
       :`<div class="card"><div class="empty">이날 올라온 발표문이 없어요.${can.write(role())?'':user?'<br>가입 승인 후 쓸 수 있어요.':'<br>로그인하고 승인받으면 쓸 수 있어요.'}</div></div>`;
   }catch(e){console.error(e);$('plist').innerHTML='<div class="card"><div class="empty">발표문을 불러오지 못했어요.</div></div>';}
@@ -371,7 +410,7 @@ async function drawPost(id){
       <div class="ph"><span>세종월드교회 · 발표문</span><span>${p.date?p.date.replace(/-/g,'.')+' ('+DAYS[parseD(p.date).getDay()]+')':fmtDate(p.createdAt)}</span></div>
       <h1>${esc(p.title)}</h1>
       <div class="by">${esc(p.authorName)}${p.sermonTitle?' · '+esc(p.sermonTitle):''}</div>
-      <div class="doc rich">${rich(bodyOf(p))}</div>
+      <div class="doc rich">${docHtml(bodyOf(p))}</div>
     </div>
     <div class="meta" style="margin-top:10px">${sm?`<a class="tag" style="text-decoration:none" href="${esc(sm.url)}">설교 보기</a>`:''}${p.updatedAt&&p.createdAt&&p.updatedAt.seconds-p.createdAt.seconds>60?'<span>(수정됨)</span>':''}</div>
     <div class="acts"><button class="btn" id="prt"><i class="ti ti-printer"></i>인쇄 / PDF</button>${mine&&can.write(role())?`<a class="btn" href="#edit-${id}"><i class="ti ti-edit"></i>수정</a>`:''}${mine||can.mod(role())?'<button class="btn del" id="delPost"><i class="ti ti-trash"></i>삭제</button>':''}</div>
@@ -414,6 +453,7 @@ async function drawForm(editId,presetDate){
   if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
   let p={title:'',date:presetDate||ymd(today0()),sermonVid:'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
+  const B=(a,ic,t)=>`<button type="button" data-a="${a}" title="${t}" aria-label="${t}"><i class="ti ti-${ic}"></i></button>`;
   v.innerHTML=`<a href="${editId?'#p-'+editId:presetDate?'#d-'+presetDate:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
   <label class="f" for="fDate">날짜</label>
@@ -423,108 +463,72 @@ async function drawForm(editId,presetDate){
   <div class="hint">사이트에 올라간 설교만 보여요. 없으면 '선택 안 함'으로 두면 돼요.</div>
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
-  <label class="f" for="fBody">발표문</label>
+  <label class="f">발표문</label>
   <div class="tb" id="tb"><div class="tbr">
-    <button type="button" data-a="undo" title="되돌리기"><i class="ti ti-arrow-back-up"></i></button>
-    <button type="button" data-a="redo" title="다시 하기"><i class="ti ti-arrow-forward-up"></i></button>
-    <span class="dv"></span>
-    <button type="button" data-a="h1" title="큰 제목"><i class="ti ti-h-1"></i></button>
-    <button type="button" data-a="h" title="소제목"><i class="ti ti-h-2"></i></button>
-    <button type="button" data-a="b" title="굵게"><i class="ti ti-bold"></i></button>
-    <button type="button" data-a="i" title="기울임"><i class="ti ti-italic"></i></button>
-    <button type="button" data-a="u" title="밑줄"><i class="ti ti-underline"></i></button>
-    <button type="button" data-a="s" title="취소선"><i class="ti ti-strikethrough"></i></button>
-    <button type="button" data-a="m" title="형광펜"><i class="ti ti-highlight"></i></button>
-    <button type="button" data-a="color" title="글자색"><i class="ti ti-palette"></i></button>
-    <span class="dv"></span>
-    <button type="button" data-a="al" title="왼쪽 정렬"><i class="ti ti-align-left"></i></button>
-    <button type="button" data-a="ac" title="가운데 정렬"><i class="ti ti-align-center"></i></button>
-    <button type="button" data-a="ar" title="오른쪽 정렬"><i class="ti ti-align-right"></i></button>
-    <span class="dv"></span>
-    <button type="button" data-a="ul" title="글머리 목록"><i class="ti ti-list"></i></button>
-    <button type="button" data-a="ol" title="번호 목록"><i class="ti ti-list-numbers"></i></button>
-    <button type="button" data-a="ck" title="체크 목록"><i class="ti ti-list-check"></i></button>
-    <button type="button" data-a="q" title="인용(성경 구절)"><i class="ti ti-quote"></i></button>
-    <button type="button" data-a="box" title="강조 박스"><i class="ti ti-square-rounded-letter-b"></i></button>
-    <button type="button" data-a="hr" title="구분선"><i class="ti ti-minus"></i></button>
-    <button type="button" data-a="clr" title="서식 지우기"><i class="ti ti-clear-formatting"></i></button>
-    <button type="button" data-a="tpl" title="양식 넣기"><i class="ti ti-template"></i></button>
-    </div>
-    <button type="button" data-a="pv" id="pvBtn" class="pvb" title="미리보기"><i class="ti ti-eye"></i></button>
-    <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<button type="button" data-c="${n}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</button>`).join('')}</div>
+    ${B('undo','arrow-back-up','되돌리기')}${B('redo','arrow-forward-up','다시 하기')}<span class="dv"></span>
+    ${B('bold','bold','굵게')}${B('italic','italic','기울임')}${B('underline','underline','밑줄')}${B('strikeThrough','strikethrough','취소선')}
+    ${B('mark','highlight','형광펜')}${B('color','palette','글자색')}<span class="dv"></span>
+    ${B('justifyLeft','align-left','왼쪽 정렬')}${B('justifyCenter','align-center','가운데 정렬')}${B('justifyRight','align-right','오른쪽 정렬')}<span class="dv"></span>
+    ${B('h2','h-1','큰 제목')}${B('h3','h-2','소제목')}${B('insertUnorderedList','list','글머리 목록')}${B('insertOrderedList','list-numbers','번호 목록')}
+    ${B('quote','quote','인용(성경 구절)')}${B('box','square-rounded-letter-b','강조 박스')}${B('insertHorizontalRule','minus','구분선')}<span class="dv"></span>
+    ${B('clear','clear-formatting','서식 지우기')}${B('tpl','template','양식 넣기')}
   </div>
-  <textarea class="f big" id="fBody" maxlength="8000" placeholder="A4 한 장에 쓰듯 자유롭게 써 주세요.&#10;&#10;예) 설교 요약 → 본문 요점 → 묵상과 결단">${esc(editId?bodyOf(p):'')}</textarea>
-  <div class="prev rich" id="fPrev" style="display:none"></div>
+  <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<button type="button" data-c="${c}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</button>`).join('')}<button type="button" data-c="#1b1d21"><i class="ti ti-circle"></i>기본</button></div>
+  </div>
+  <div class="ed rich" id="fBody" contenteditable="true" data-ph="A4 한 장에 쓰듯 자유롭게 써 주세요. 예) 설교 요약 → 본문 요점 → 묵상과 결단"></div>
   <div class="cnt" id="fCnt"></div>
-  <div class="hint">도구줄은 옆으로 밀면 더 있어요. 글자를 선택하고 누르면 그 부분에 적용돼요. 오른쪽 👁 로 A4 모양 미리보기.</div>
-  <div class="hint">A4 한 장은 보통 1,500~2,000자 정도예요. 더 길게 써도 괜찮아요(최대 8,000자).</div>
+  <div class="hint">글자를 선택하고 도구를 누르면 바로 적용돼요. 도구줄은 옆으로 밀면 더 있어요. A4 한 장은 보통 1,500~2,000자예요.</div>
   <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn pri" id="fSave">${editId?'수정 완료':'올리기'}</button></div>`;
   const fillS=()=>{const d=$('fDate').value, ss=sermonsOn(d);$('fSermon').innerHTML='<option value="">선택 안 함</option>'+ss.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.type)} · ${esc(s.title)}</option>`).join('');};
   $('fDate').onchange=fillS; fillS();
-  const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
-  $('fBody').oninput=cntUp; cntUp();
-  const ta=$('fBody');
-  // 되돌리기용 기록 (모바일 브라우저 자체 undo가 안 되는 경우가 많아서 직접 관리)
-  const hist=[ta.value],fut=[];let ht;
-  const rec=()=>{clearTimeout(ht);if(hist[hist.length-1]!==ta.value){hist.push(ta.value);if(hist.length>200)hist.shift();fut.length=0;}};
-  ta.addEventListener('input',()=>{clearTimeout(ht);ht=setTimeout(rec,400);});
-  // execCommand('insertText')를 써야 되돌리기(undo)가 동작함
-  // 모바일: 버튼을 누를 때 입력칸 포커스·선택이 사라지지 않게 막고, 마지막 선택 위치를 기억해 둠
-  let selS=0,selE=0;const keep=()=>{selS=ta.selectionStart;selE=ta.selectionEnd;};
-  ['select','keyup','mouseup','touchend','input','focus'].forEach(ev=>ta.addEventListener(ev,()=>setTimeout(keep,0)));
-  document.addEventListener('selectionchange',()=>{if(document.activeElement===ta)keep();});
+  const ed=$('fBody');
+  ed.innerHTML=editId?docHtml(bodyOf(p)):'';
+  try{document.execCommand('defaultParagraphSeparator',false,'p');document.execCommand('styleWithCSS',false,false);}catch(_){}
+  // 선택 영역 기억 (버튼을 눌러도 선택이 풀리지 않게)
+  let rng=null;
+  const save=()=>{const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange();};
+  const back=()=>{if(document.activeElement!==ed)ed.focus({preventScroll:true});if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng);}};
+  document.addEventListener('selectionchange',()=>{if(document.activeElement===ed){save();state();}});
   $('tb').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault();});
   $('tb').addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault();});
-  const restore=()=>{if(document.activeElement!==ta){ta.focus({preventScroll:true});ta.setSelectionRange(selS,selE);}};
-  const put=(t,s,e)=>{ta.focus({preventScroll:true});ta.setSelectionRange(s,e);
-    const want=ta.value.slice(0,s)+t+ta.value.slice(e);let ok=false;
-    try{ok=document.execCommand&&document.execCommand('insertText',false,t)&&ta.value===want;}catch(_){ok=false;}
-    if(!ok){ta.value=want;ta.setSelectionRange(s+t.length,s+t.length);}
-    keep();};
-  const wrap=(a,b,ph)=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
-    if(sel.startsWith(a)&&sel.endsWith(b)&&sel.length>=a.length+b.length){put(sel.slice(a.length,sel.length-b.length),s,e);return;}
-    const t=sel||ph; put(a+t+b,s,e); ta.setSelectionRange(s+a.length,s+a.length+t.length);};
-  const lines=(fn,ph)=>{let s=ta.selectionStart,e=ta.selectionEnd;s=ta.value.lastIndexOf('\n',s-1)+1;const ne=ta.value.indexOf('\n',e);e=ne<0?ta.value.length:ne;
-    const seg=ta.value.slice(s,e)||ph; const r=seg.split('\n').map(fn).join('\n'); put(r,s,e); ta.setSelectionRange(s+r.length,s+r.length);};
-  const ins=t=>{const s=ta.selectionStart;const pre=s&&ta.value[s-1]!=='\n'?'\n':'';put(pre+t,s,ta.selectionEnd);};
-  const noAl=l=>l.replace(/^\[(가운데|오른쪽)\]\s?/,'');
-  const noBlk=l=>l.replace(/^#{1,3}\s+|^!?>\s?|^\s*[-•*]\s+|^\s*\d+[.)]\s+|^\s*\[( |x|X)\]\s+/,'');
-  const al=p=>l=>{const al0=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return (p?`[${p}] `:'')+l.slice(al0.length);};
-  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;restore();wrap(`{${b.dataset.c}:`,'}','글자');ta.dispatchEvent(new Event('input'));};
+  const blk=()=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&/^(P|DIV|H2|H3|BLOCKQUOTE|LI)$/.test(n.tagName))return n;n=n.parentNode;}return null;};
+  const inTag=t=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&n.tagName===t)return n;n=n.parentNode;}return null;};
+  const ex=(c,v=null)=>{try{return document.execCommand(c,false,v);}catch(_){return false;}};
+  const state=()=>{$('tb').querySelectorAll('.tbr button').forEach(b=>{const a=b.dataset.a;let on=false;
+    try{if(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyCenter','justifyRight'].includes(a))on=document.queryCommandState(a);}catch(_){}
+    if(a==='h2')on=!!inTag('H2'); if(a==='h3')on=!!inTag('H3');
+    if(a==='quote'){const q=inTag('BLOCKQUOTE');on=!!q&&!q.classList.contains('box');} if(a==='box'){const q=inTag('BLOCKQUOTE');on=!!q&&q.classList.contains('box');}
+    b.classList.toggle('on',on);});};
+  const block=(tag,cls)=>{const cur=inTag(tag.toUpperCase());
+    if(cur&&(!cls||cur.classList.contains(cls))){ex('formatBlock','<p>');return;}
+    ex('formatBlock',`<${tag}>`);const n=inTag(tag.toUpperCase());if(n){n.className=cls||'';if(!cls)n.removeAttribute('class');}};
+  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));};
   $('tb').onclick=e=>{const b=e.target.closest('button');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
-    if(a==='pv'){const on=$('fPrev').style.display==='none';$('fPrev').innerHTML=rich(ta.value)||'<span style="color:#9aa3ad">아직 내용이 없어요</span>';
-      $('fPrev').style.display=on?'block':'none';ta.style.display=on?'none':'';b.classList.toggle('on',on);$('pal').hidden=true;
-      $('tb').querySelectorAll('.tbr button').forEach(x=>x.disabled=on);return;}
     if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
-    $('pal').hidden=true; restore();
-    if(a==='undo'){rec();if(hist.length>1){fut.push(hist.pop());ta.value=hist[hist.length-1];}cntUp();return;}
-    else if(a==='redo'){if(fut.length){const v=fut.pop();hist.push(v);ta.value=v;}cntUp();return;}
-    else if(a==='b')wrap('**','**','굵게');
-    else if(a==='i')wrap('*','*','기울임');
-    else if(a==='u')wrap('__','__','밑줄');
-    else if(a==='s')wrap('~~','~~','취소선');
-    else if(a==='m')wrap('==','==','강조');
-    else if(a==='h1')lines(l=>{const p=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return p+'# '+noBlk(noAl(l));},'큰 제목');
-    else if(a==='h')lines(l=>{const p=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return p+'## '+noBlk(noAl(l));},'소제목');
-    else if(a==='al')lines(al(''),'');
-    else if(a==='ac')lines(al('가운데'),'가운데 정렬할 글');
-    else if(a==='ar')lines(al('오른쪽'),'오른쪽 정렬할 글');
-    else if(a==='ul')lines(l=>'- '+noBlk(l),'항목');
-    else if(a==='ol'){let n=0;lines(l=>`${++n}. `+noBlk(l),'항목');}
-    else if(a==='ck')lines(l=>'[ ] '+noBlk(l),'할 일');
-    else if(a==='q')lines(l=>'> '+noBlk(l),'말씀 구절 (책 장:절)');
-    else if(a==='box')lines(l=>'!> '+noBlk(l),'꼭 기억할 내용');
-    else if(a==='hr')ins('---\n');
-    else if(a==='clr'){const s=ta.selectionStart,e=ta.selectionEnd;if(s===e){alert('서식을 지울 부분을 먼저 선택해 주세요.');return;}put(plain(ta.value.slice(s,e)),s,e);}
-    else if(a==='tpl'){if(ta.value.trim()&&!confirm('지금 커서 위치에 양식을 넣을까요?'))return;ins('## 설교 요약\n\n\n## 본문 요점\n\n\n## 묵상과 결단\n\n');}
-    ta.dispatchEvent(new Event('input'));rec();};
-  ta.addEventListener('focus',()=>$('pal').hidden=true);
+    $('pal').hidden=true; back();
+    if(a==='mark'){let on=false;try{const c=document.queryCommandValue('backColor');on=/255,\s*241,\s*168|fff1a8/i.test(c);}catch(_){} if(!ex('hiliteColor',on?'transparent':'#fff1a8'))ex('backColor',on?'transparent':'#fff1a8');}
+    else if(a==='h2'||a==='h3')block(a);
+    else if(a==='quote')block('blockquote');
+    else if(a==='box')block('blockquote','box');
+    else if(a==='clear'){ex('removeFormat');ex('unlink');const n=blk();if(n&&/^(H2|H3|BLOCKQUOTE)$/.test(n.tagName))ex('formatBlock','<p>');ex('justifyLeft');}
+    else if(a==='tpl'){ex('insertHTML','<h3>설교 요약</h3><p><br></p><h3>본문 요점</h3><p><br></p><h3>묵상과 결단</h3><p><br></p>');}
+    else ex(a);
+    save();state();ed.dispatchEvent(new Event('input'));};
+  // 붙여넣기는 글자만 (다른 곳 서식·이미지가 섞이지 않게)
+  ed.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');ex('insertText',t);});
+  ed.addEventListener('drop',e=>e.preventDefault());
+  const cntUp=()=>{const n=ed.innerText.replace(/\n/g,'').length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);
+    ed.classList.toggle('empty',!ed.textContent.trim()&&!ed.querySelector('hr,li'));};
+  ed.addEventListener('input',cntUp); cntUp();
+  ed.addEventListener('focus',()=>$('pal').hidden=true);
   $('fSave').onclick=async()=>{
     const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
+    if(!ed.textContent.trim()){alert('발표문 내용을 써 주세요.');return;}
+    const body=cleanHtml(ed.innerHTML).replace(/(<p><br><\/p>)+$/,'');
+    if(body.length>8000){alert(`서식을 포함한 길이가 너무 길어요 (${body.length.toLocaleString()} / 8,000). 내용을 조금 줄이거나 서식을 줄여 주세요.`);return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
-    const data={title,date,dow:parseD(date).getDay(),sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
-    if(!data.body){alert('발표문 내용을 써 주세요.');return;}
+    const data={title,date,dow:parseD(date).getDay(),sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body,updatedAt:serverTimestamp()};
     $('fSave').disabled=true;
     try{
       if(editId){await updateDoc(doc(db,'posts',editId),data);location.hash='#p-'+editId;}
