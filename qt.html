@@ -147,6 +147,8 @@ const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_N
 const sermonsReady=fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{sermons=d.sort((a,b)=>b.date.localeCompare(a.date));}).catch(()=>{});
 const DAYS=['일','월','화','수','목','금','토'];
 const parseD=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
 const mdD=s=>{const d=parseD(s);return `${d.getMonth()+1}.${d.getDate()} (${DAYS[d.getDay()]})`;};
 
 /* ---------- 로그인 ---------- */
@@ -226,7 +228,7 @@ function drawMe(){
   }
   $('fab').classList.toggle('on',can.write(role()));
 }
-$('fab').onclick=()=>{const h=location.hash.slice(1);location.hash=h.startsWith('s-')&&h!=='s-none'?'#write-'+h.slice(2):'#write';};
+$('fab').onclick=()=>{const h=location.hash.slice(1);location.hash=h.startsWith('d-')?'#write-'+h:'#write';};
 
 /* ---------- 라우팅 ---------- */
 window.addEventListener('hashchange',route);
@@ -234,56 +236,59 @@ function route(){
   const h=location.hash.slice(1);
   window.scrollTo(0,0);
   if(h==='write') return drawForm();
-  if(h.startsWith('write-')) return drawForm(null,h.slice(6));
-  if(h.startsWith('s-')) return drawSermon(h.slice(2));
+  if(h.startsWith('write-d-')) return drawForm(null,h.slice(8));
+  if(h.startsWith('d-')) return drawDate(h.slice(2));
+  if(h.startsWith('s-')){const s=sermons.find(x=>x.vid===h.slice(2));location.replace(s?'#d-'+s.date:'#');return;}
   if(h==='admin') return drawAdmin();
   if(h.startsWith('edit-')) return drawForm(h.slice(5));
   if(h.startsWith('p-')) return drawPost(h.slice(2));
   drawList();
 }
 
-/* ---------- 목록: 요일 → 설교 ---------- */
-let selDay=null;
+/* ---------- 목록: 요일 → 날짜 ---------- */
+let selDay=null, weeks=8;
+const sermonsOn=d=>sermons.filter(s=>s.date===d);
 async function drawList(){
   const v=$('view'); await sermonsReady;
-  const byDay=i=>sermons.filter(s=>parseD(s.date).getDay()===i);
-  if(selDay===null){selDay=new Date().getDay();if(!byDay(selDay).length&&sermons.length)selDay=parseD(sermons[0].date).getDay();}
-  const latest=i=>byDay(i)[0];
-  v.innerHTML=`<div class="week" id="wk">${DAYS.map((d,i)=>{const L=latest(i);return `<button data-i="${i}" class="${i===selDay?'on':''} ${i===new Date().getDay()?'today':''}">${d}<small>${L?mdD(L.date).split(' ')[0]:'-'}</small></button>`;}).join('')}</div>
-    <div class="sec"><h2>${DAYS[selDay]}요일 설교</h2><span class="meta">설교를 누르면 발표문이 보여요</span></div>
-    <div id="slist"></div><div id="nosermon"></div>`;
-  $('wk').onclick=e=>{const b=e.target.closest('button');if(!b)return;selDay=+b.dataset.i;drawList();};
-  const rows=byDay(selDay);
-  $('slist').innerHTML=rows.length?rows.map(s=>`<a class="card item srow" href="#s-${esc(s.vid)}"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
-      <div class="bd"><div class="meta">${mdD(s.date)} · ${esc(s.type)}</div><div class="t">${esc(s.title)}</div><span class="qc zero" data-v="${esc(s.vid)}">발표문 …</span></div></a>`).join('')
-    :`<div class="card"><div class="empty">${DAYS[selDay]}요일 설교가 아직 없어요.</div></div>`;
-  document.querySelectorAll('.qc[data-v]').forEach(async el=>{
-    try{const c=(await getCountFromServer(query(collection(db,'posts'),where('sermonVid','==',el.dataset.v)))).data().count;
-      el.textContent=c?`발표문 ${c}편`:'아직 발표문 없음';el.classList.toggle('zero',!c);}catch(e){el.textContent='';}
+  if(selDay===null) selDay=new Date().getDay();
+  // 고른 요일의 가장 최근 날짜(오늘 포함)부터 거꾸로
+  const t=today0(), first=new Date(t); first.setDate(t.getDate()-((t.getDay()-selDay+7)%7));
+  const dates=[...Array(weeks)].map((_,i)=>{const d=new Date(first);d.setDate(first.getDate()-7*i);return ymd(d);});
+  v.innerHTML=`<div class="week" id="wk">${DAYS.map((d,i)=>`<button data-i="${i}" class="${i===selDay?'on':''} ${i===t.getDay()?'today':''}">${d}</button>`).join('')}</div>
+    <div class="sec"><h2>${DAYS[selDay]}요일</h2><span class="meta">날짜를 누르면 그날 발표문이 보여요</span></div>
+    <div class="card" style="padding:4px 14px">${dates.map(d=>{const ss=sermonsOn(d);return `<a class="item drow" href="#d-${d}" style="display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
+      <div style="flex:none;width:64px"><div style="font-size:16px;font-weight:500">${mdD(d).split(' ')[0]}</div><div class="meta">${d.slice(0,4)}</div></div>
+      <div style="flex:1;min-width:0"><div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ss.length?ss.map(s=>esc(s.type+' · '+s.title)).join(' / '):'올라온 설교 영상 없음'}</div>
+      <span class="qc zero" data-d="${d}">…</span></div><i class="ti ti-chevron-right" style="color:var(--mute)"></i></a>`;}).join('')}</div>
+    <button class="btn more" id="moreW">이전 날짜 더 보기</button>`;
+  v.querySelector('.drow').style.borderTop='0';
+  $('wk').onclick=e=>{const b=e.target.closest('button');if(!b)return;selDay=+b.dataset.i;weeks=8;drawList();};
+  $('moreW').onclick=()=>{weeks+=8;drawList();};
+  document.querySelectorAll('.qc[data-d]').forEach(async el=>{
+    try{const c=(await getCountFromServer(query(collection(db,'posts'),where('date','==',el.dataset.d)))).data().count;
+      el.textContent=c?`발표문 ${c}편`:'발표문 없음';el.classList.toggle('zero',!c);}catch(e){el.textContent='';}
   });
-  try{const c=(await getCountFromServer(query(collection(db,'posts'),where('sermonVid','==','')))).data().count;
-    if(c) $('nosermon').innerHTML=`<a class="meta" href="#s-none" style="display:block;text-align:center;margin-top:10px">설교를 고르지 않은 발표문 ${c}편 보기</a>`;}catch(e){}
 }
 
-/* ---------- 설교 하나의 발표문 목록 ---------- */
-async function drawSermon(vid){
+/* ---------- 날짜 하나의 발표문 목록 ---------- */
+async function drawDate(d){
   const v=$('view'); await sermonsReady;
-  const none=vid==='none', s=sermons.find(x=>x.vid===vid);
-  if(!none&&!s){v.innerHTML='<div class="card"><div class="empty">설교를 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
-  if(s) selDay=parseD(s.date).getDay();
-  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>설교 목록</a>
-    ${none?'<div class="card"><div class="t" style="font-weight:500">설교를 고르지 않은 발표문</div></div>':`<div class="card srow"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
-      <div class="bd"><div class="meta">${mdD(s.date)} · ${esc(s.type)}</div><div class="t" style="font-weight:500">${esc(s.title)}</div><div class="meta">${esc(s.text)} · ${esc(s.preacher)}</div></div></div>
-    <div class="row" style="margin-bottom:14px"><a class="btn" href="${esc(s.url)}"><i class="ti ti-player-play"></i>설교 보기</a>${can.write(role())?`<a class="btn pri" href="#write-${esc(s.vid)}"><i class="ti ti-pencil"></i>이 설교로 발표문 쓰기</a>`:''}</div>`}
-    <div class="sec"><h2>발표문</h2><span class="meta" id="pc"></span></div><div id="plist"><div class="empty">불러오는 중…</div></div>`;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){location.replace('#');return;}
+  selDay=parseD(d).getDay();
+  const ss=sermonsOn(d);
+  v.innerHTML=`<a href="#" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>${DAYS[selDay]}요일 목록</a>
+    <div class="sec"><h2>${d.slice(0,4)}. ${mdD(d)}</h2>${can.write(role())?`<a class="btn pri" href="#write-d-${d}"><i class="ti ti-pencil"></i>이날 발표문 쓰기</a>`:''}</div>
+    ${ss.map(s=>`<a class="card item srow" href="${esc(s.url)}"><div class="th" style="background-image:url('https://i.ytimg.com/vi/${esc(s.vid)}/mqdefault.jpg')"></div>
+      <div class="bd"><div class="meta">${esc(s.type)} · 설교 보기</div><div class="t">${esc(s.title)}</div><div class="meta">${esc(s.text)} · ${esc(s.preacher)}</div></div></a>`).join('')}
+    <div class="sec" style="margin-top:16px"><h2>발표문</h2><span class="meta" id="pc"></span></div><div id="plist"><div class="empty">불러오는 중…</div></div>`;
   try{
-    const snap=await getDocs(query(collection(db,'posts'),where('sermonVid','==',none?'':vid),limit(100)));
-    const list=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const snap=await getDocs(query(collection(db,'posts'),where('date','==',d),limit(100)));
+    const list=snap.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     $('pc').textContent=list.length?`${list.length}편`:'';
-    $('plist').innerHTML=list.length?list.map(p=>`<a class="card item" href="#p-${p.id}"><div class="t">${esc(p.title)}</div>
+    $('plist').innerHTML=list.length?list.map(p=>`<a class="card item" href="#p-${p.id}">${p.sermonTitle?`<span class="tag">${esc(p.sermonTitle)}</span>`:''}<div class="t">${esc(p.title)}</div>
       <div class="ex">${esc(bodyOf(p).slice(0,120))}</div>
-      <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span>${fmtDate(p.createdAt)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`).join('')
-      :`<div class="card"><div class="empty">아직 이 설교로 쓴 발표문이 없어요.${can.write(role())?'':user?'<br>가입 승인 후 쓸 수 있어요.':'<br>로그인하고 승인받으면 쓸 수 있어요.'}</div></div>`;
+      <div class="meta" style="margin-top:8px"><span>${esc(p.authorName)}</span><span><i class="ti ti-message"></i> ${p.commentCount||0}</span></div></a>`).join('')
+      :`<div class="card"><div class="empty">이날 올라온 발표문이 없어요.${can.write(role())?'':user?'<br>가입 승인 후 쓸 수 있어요.':'<br>로그인하고 승인받으면 쓸 수 있어요.'}</div></div>`;
   }catch(e){console.error(e);$('plist').innerHTML='<div class="card"><div class="empty">발표문을 불러오지 못했어요.</div></div>';}
 }
 
@@ -295,10 +300,10 @@ async function drawPost(id){
   if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
   const p=s.data(), mine=user&&p.uid===user.uid;
   const sm=sermons.find(x=>x.vid===p.sermonVid);
-  v.innerHTML=`<a href="#s-${p.sermonVid?esc(p.sermonVid):'none'}" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>${sm?'이 설교의 발표문 목록':'목록'}</a>
+  v.innerHTML=`<a href="${p.date?'#d-'+p.date:'#'}" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>${p.date?mdD(p.date)+' 발표문 목록':'목록'}</a>
   <article class="post">
     <div class="paper" id="paper">
-      <div class="ph"><span>세종월드교회 · 발표문</span><span>${fmtDate(p.createdAt)}</span></div>
+      <div class="ph"><span>세종월드교회 · 발표문</span><span>${p.date?p.date.replace(/-/g,'.')+' ('+DAYS[parseD(p.date).getDay()]+')':fmtDate(p.createdAt)}</span></div>
       <h1>${esc(p.title)}</h1>
       <div class="by">${esc(p.authorName)}${p.sermonTitle?' · '+esc(p.sermonTitle):''}</div>
       <div class="doc">${esc(bodyOf(p))}</div>
@@ -311,7 +316,7 @@ async function drawPost(id){
   <div id="cmForm"></div>`;
   $('prt').onclick=()=>window.print();
   requestAnimationFrame(()=>{const pp=$('paper');if(pp&&pp.scrollHeight>pp.clientHeight+2)pp.classList.add('long');});
-  if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash=p.sermonVid?'#s-'+p.sermonVid:'#s-none';}catch(e){alert('삭제하지 못했어요.');}};
+  if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash=p.date?'#d-'+p.date:'#';}catch(e){alert('삭제하지 못했어요.');}};
   loadComments(id);
   if(can.write(role())){
     $('cmForm').innerHTML='<textarea class="f" id="cmText" placeholder="댓글을 남겨 주세요" style="min-height:70px"></textarea><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn pri" id="cmSend">댓글 등록</button></div>';
@@ -338,17 +343,19 @@ async function loadComments(id){
 }
 
 /* ---------- 쓰기 / 수정 ---------- */
-async function drawForm(editId,presetVid){
+async function drawForm(editId,presetDate){
   await sermonsReady;
   const v=$('view');
   if(!can.write(role())){v.innerHTML=`<div class="card"><div class="empty">${!user?'로그인이 필요해요.':'가입 승인 후 발표문을 쓸 수 있어요.'}<br><a href="#">목록으로</a></div></div>`;return;}
-  let p={title:'',sermonVid:presetVid||'',body:''};
+  let p={title:'',date:presetDate||ymd(today0()),sermonVid:'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
-  const opts=sermons.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.date.slice(5).replace('-','.'))} ${esc(s.type)} · ${esc(s.title)}</option>`).join('');
-  v.innerHTML=`<a href="${editId?'#p-'+editId:presetVid?'#s-'+presetVid:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
+  v.innerHTML=`<a href="${editId?'#p-'+editId:presetDate?'#d-'+presetDate:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
-  <label class="f" for="fSermon">어떤 설교로 쓴 발표문인가요?</label>
-  <select class="f" id="fSermon"><option value="">설교를 골라 주세요</option>${opts}</select>
+  <label class="f" for="fDate">날짜</label>
+  <input class="f" type="date" id="fDate" value="${esc(p.date||ymd(today0()))}" max="${ymd(today0())}">
+  <label class="f" for="fSermon">연결할 설교 (선택)</label>
+  <select class="f" id="fSermon"></select>
+  <div class="hint">사이트에 올라간 설교만 보여요. 없으면 '선택 안 함'으로 두면 돼요.</div>
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
   <label class="f" for="fBody">발표문</label>
@@ -356,13 +363,15 @@ async function drawForm(editId,presetVid){
   <div class="cnt" id="fCnt"></div>
   <div class="hint">A4 한 장은 보통 1,500~2,000자 정도예요. 더 길게 써도 괜찮아요(최대 8,000자).</div>
   <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn pri" id="fSave">${editId?'수정 완료':'올리기'}</button></div>`;
+  const fillS=()=>{const d=$('fDate').value, ss=sermonsOn(d);$('fSermon').innerHTML='<option value="">선택 안 함</option>'+ss.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.type)} · ${esc(s.title)}</option>`).join('');};
+  $('fDate').onchange=fillS; fillS();
   const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
   $('fBody').oninput=cntUp; cntUp();
   $('fSave').onclick=async()=>{
-    if(!$('fSermon').value){alert('어떤 설교로 쓴 발표문인지 골라 주세요.');return;}
+    const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('날짜를 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
-    const data={title,sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
+    const data={title,date,dow:parseD(date).getDay(),sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
     if(!data.body){alert('발표문 내용을 써 주세요.');return;}
     $('fSave').disabled=true;
     try{
