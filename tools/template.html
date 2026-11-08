@@ -14,13 +14,11 @@ body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 .top{flex:none;background:#000}
 .vid{position:relative;width:100%;aspect-ratio:16/9}
 .vid{max-height:38vh;width:min(100%,calc(38vh*16/9));margin:0 auto}
-.pbar{flex:none;position:relative;display:flex;align-items:center;justify-content:space-between;background:var(--card);border-top:0;padding:10px 14px calc(6px + env(safe-area-inset-bottom))}
-.pbar .seek{position:absolute;left:0;right:0;top:-7px;height:14px;margin:0;width:100%;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
-.pbar .seek::-webkit-slider-runnable-track{height:3px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
-.pbar .seek::-moz-range-track{height:3px;background:var(--line)}
-.pbar .seek::-moz-range-progress{height:3px;background:var(--accent)}
-.pbar .seek::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--accent);margin-top:-5px;border:0}
-.pbar .seek::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:0}
+.pbar{flex:none;position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:14px 14px calc(6px + env(safe-area-inset-bottom))}
+.pbar .line{position:absolute;left:0;right:0;top:0;height:3px;background:var(--line);pointer-events:none}
+.pbar .line i{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:var(--accent)}
+.pbar .line b{position:absolute;top:50%;left:var(--p,0%);width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--accent)}
+.pbar .seek{position:absolute;left:0;right:0;top:-2px;height:20px;width:100%;margin:0;padding:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;touch-action:none}
 .pbar .t{flex:1;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
 .pbar .t.r{text-align:right}
 .pbar .btns{display:flex;align-items:center;gap:16px}
@@ -63,7 +61,7 @@ body.mini .scroll{flex:1}
 .tabs{flex:none;display:flex;background:var(--card);border-bottom:1px solid var(--line)}
 .tabs button{flex:1;border:0;background:none;padding:11px 0;font:inherit;font-size:14.5px;color:var(--sub);border-bottom:2px solid transparent;cursor:pointer}
 .tabs button.on{color:var(--ink);font-weight:700;border-color:var(--accent)}
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+.scroll{flex:1;overflow-y:auto;position:relative}
 section{display:none;padding:10px 14px 40px}
 section.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
@@ -129,6 +127,7 @@ body.mini{display:flex!important}
 __SUMMARY__
 </div>
 <div class="pbar">
+  <div class="line" id="line"><i></i><b></b></div>
   <input class="seek" type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치">
   <span class="t" id="tm">0:00</span>
   <div class="btns">
@@ -214,9 +213,9 @@ function setSkip(v){SKIP=v;try{localStorage.setItem('sermon-skip',v);}catch(e){}
 skp.onclick=e=>{const b=e.target.closest('button');if(b)setSkip(+b.dataset.s);};
 bkB.onclick=()=>jump(-SKIP); fwB.onclick=()=>jump(SKIP);
 setSkip(SKIP);
-skEl.addEventListener('input',()=>{dragging=true;skEl.style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
+skEl.addEventListener('input',()=>{dragging=true;document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
 skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
-setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);skEl.style.setProperty('--p',(skEl.value/10)+'%');}},500);
+setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');}},500);
 tdEl.textContent=fmtT(END);
 if(lsGet('sermon-mini',false)) setMini(true);
 document.getElementById('mtitle').textContent=document.querySelector('.head h1').textContent;
