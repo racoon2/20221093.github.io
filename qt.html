@@ -247,23 +247,27 @@ function route(){
 
 /* ---------- 목록: 요일 → 날짜 ---------- */
 let selDay=null, weeks=8;
+const START='2026-11-08'; // 발표문 시작일: 이 날짜 이전은 목록에 안 보임
 const sermonsOn=d=>sermons.filter(s=>s.date===d);
 async function drawList(){
   const v=$('view'); await sermonsReady;
   if(selDay===null) selDay=new Date().getDay();
   // 고른 요일의 가장 최근 날짜(오늘 포함)부터 거꾸로
   const t=today0(), first=new Date(t); first.setDate(t.getDate()-((t.getDay()-selDay+7)%7));
-  const dates=[...Array(weeks)].map((_,i)=>{const d=new Date(first);d.setDate(first.getDate()-7*i);return ymd(d);});
+  const all=[...Array(weeks+1)].map((_,i)=>{const d=new Date(first);d.setDate(first.getDate()-7*i);return ymd(d);}).filter(d=>d>=START);
+  const hasMore=all.length>weeks, dates=all.slice(0,weeks);
+  const nx=new Date(parseD(START));nx.setDate(nx.getDate()+((selDay-nx.getDay()+7)%7));
   v.innerHTML=`<div class="week" id="wk">${DAYS.map((d,i)=>`<button data-i="${i}" class="${i===selDay?'on':''} ${i===t.getDay()?'today':''}">${d}</button>`).join('')}</div>
     <div class="sec"><h2>${DAYS[selDay]}요일</h2><span class="meta">날짜를 누르면 그날 발표문이 보여요</span></div>
-    <div class="card" style="padding:4px 14px">${dates.map(d=>{const ss=sermonsOn(d);return `<a class="item drow" href="#d-${d}" style="display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
+    ${dates.length?'':`<div class="card"><div class="empty">${mdD(ymd(nx))}부터 발표문을 올릴 수 있어요.</div></div>`}
+    <div class="card" style="padding:4px 14px;${dates.length?'':'display:none'}">${dates.map(d=>{const ss=sermonsOn(d);return `<a class="item drow" href="#d-${d}" style="display:flex;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
       <div style="flex:none;width:64px"><div style="font-size:16px;font-weight:500">${mdD(d).split(' ')[0]}</div><div class="meta">${d.slice(0,4)}</div></div>
       <div style="flex:1;min-width:0"><div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ss.length?ss.map(s=>esc(s.type+' · '+s.title)).join(' / '):'올라온 설교 영상 없음'}</div>
       <span class="qc zero" data-d="${d}">…</span></div><i class="ti ti-chevron-right" style="color:var(--mute)"></i></a>`;}).join('')}</div>
-    <button class="btn more" id="moreW">이전 날짜 더 보기</button>`;
-  v.querySelector('.drow').style.borderTop='0';
+    ${hasMore?'<button class="btn more" id="moreW">이전 날짜 더 보기</button>':''}`;
+  const fr=v.querySelector('.drow'); if(fr) fr.style.borderTop='0';
   $('wk').onclick=e=>{const b=e.target.closest('button');if(!b)return;selDay=+b.dataset.i;weeks=8;drawList();};
-  $('moreW').onclick=()=>{weeks+=8;drawList();};
+  if($('moreW')) $('moreW').onclick=()=>{weeks+=8;drawList();};
   document.querySelectorAll('.qc[data-d]').forEach(async el=>{
     try{const c=(await getCountFromServer(query(collection(db,'posts'),where('date','==',el.dataset.d)))).data().count;
       el.textContent=c?`발표문 ${c}편`:'발표문 없음';el.classList.toggle('zero',!c);}catch(e){el.textContent='';}
@@ -352,7 +356,7 @@ async function drawForm(editId,presetDate){
   v.innerHTML=`<a href="${editId?'#p-'+editId:presetDate?'#d-'+presetDate:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
   <label class="f" for="fDate">날짜</label>
-  <input class="f" type="date" id="fDate" value="${esc(p.date||ymd(today0()))}" max="${ymd(today0())}">
+  <input class="f" type="date" id="fDate" value="${esc(p.date||ymd(today0()))}" min="${START}" max="${ymd(today0())}">
   <label class="f" for="fSermon">연결할 설교 (선택)</label>
   <select class="f" id="fSermon"></select>
   <div class="hint">사이트에 올라간 설교만 보여요. 없으면 '선택 안 함'으로 두면 돼요.</div>
@@ -368,7 +372,7 @@ async function drawForm(editId,presetDate){
   const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
   $('fBody').oninput=cntUp; cntUp();
   $('fSave').onclick=async()=>{
-    const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('날짜를 골라 주세요.');return;}
+    const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
     const data={title,date,dow:parseD(date).getDay(),sermonVid:vid,sermonTitle:sm?`${sm.date.slice(5).replace('-','.')} ${sm.type} · ${sm.title}`:'',body:$('fBody').value.trim(),updatedAt:serverTimestamp()};
