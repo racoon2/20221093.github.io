@@ -25,7 +25,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 .wbtn{text-decoration:none;width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
 .tb{display:flex;gap:4px;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
 .tb.kb{position:fixed;left:0;right:0;top:auto;z-index:60;border-radius:0;border:0;border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(0,0,0,.08);padding:5px 6px}
-.tb.kb .pal{top:auto;bottom:100%;margin:0 0 4px}
+.tb.kb .pop{top:auto;bottom:100%;margin:0 0 4px}
 body.editing .nav{display:none}
 body.editing .ed{padding-bottom:120px}
 .tb .tbb{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
@@ -36,9 +36,15 @@ body.editing .ed{padding-bottom:120px}
 .tb .dv{flex:none;width:1px;background:var(--line);margin:6px 3px}
 .tb .pvb{flex:none;border-left:1px solid var(--line);border-radius:0 8px 8px 0}
 
-.pal{position:absolute;left:6px;right:6px;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;gap:4px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(0,0,0,.15)}
-.pal[hidden]{display:none}
-.pal .tbb{gap:4px;font-size:13.5px;width:auto;padding:0 10px}
+.pop{position:absolute;left:6px;right:6px;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:4px;box-shadow:0 6px 18px rgba(0,0,0,.15);z-index:5}
+.pop[hidden]{display:none}
+.pop .pt{grid-column:1/-1;font-size:12px;color:var(--mute);padding:0 4px 2px}
+.tb .pop .pi{justify-content:flex-start;gap:7px;height:42px;padding:0 10px;font-size:14px;width:auto}
+.tb .pop .pi span{color:var(--ink)}
+.tb .gb{flex-direction:column;gap:0;height:42px;min-width:44px;padding:0 6px}
+.tb .gb small{font-size:10px;line-height:1;margin-top:2px;color:var(--mute)}
+.tb .gb.open{background:var(--line)}
+.tb.cp .tbr{-webkit-mask-image:none;justify-content:space-between}
 .ed{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:16px 16px 40px;min-height:340px;outline:none;font-size:15px;line-height:1.85;word-break:keep-all;position:relative;-webkit-user-select:text;user-select:text}
 .ed:focus{border-color:var(--accent)}
 .ed.empty::before{content:attr(data-ph);color:#9aa3ad;position:absolute;left:16px;right:16px;top:16px;pointer-events:none}
@@ -55,6 +61,7 @@ body.editing .ed{padding-bottom:120px}
 .rich mark{background:#fff1a8;padding:0 2px}
 .rich h2{font-size:1.3em;margin:1em 0 .45em;line-height:1.4}
 .rich h2:first-child{margin-top:0}
+.rich [style*="justify"]{word-break:normal}
 .rich .c{text-align:center}.rich .r{text-align:right}
 .rich blockquote.box{border:1px solid #c9dccd;border-left:4px solid #2f8f5b;background:#eef7f0;color:#1b1d21;border-radius:6px}
 .rich ul.chk{list-style:none;padding-left:.2em}
@@ -81,7 +88,7 @@ body.editing .ed{padding-bottom:120px}
 .paper .ph{font-size:12px;color:#6b7280;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #d9dce1;padding-bottom:8px;margin-bottom:14px}
 .paper h1{font-size:clamp(17px,4.6vw,22px);text-align:center;margin:4px 0 4px;line-height:1.4}
 .paper .by{text-align:center;font-size:12.5px;color:#6b7280;margin-bottom:18px}
-.paper .doc{font-size:clamp(12.5px,3.4vw,14.5px);line-height:1.85;word-break:keep-all}
+.paper .doc{font-size:calc(clamp(12.5px,3.4vw,14.5px) * var(--dz,1));line-height:1.85;word-break:keep-all}
 .prev.rich{font-size:14.5px;line-height:1.85;word-break:keep-all}
 .cnt{font-size:12px;color:var(--mute);text-align:right;margin-top:4px}
 .cnt.over{color:var(--danger)}
@@ -96,6 +103,11 @@ textarea.big{min-height:60vh}
 }
 .post h3{font-size:14px;color:var(--accent-d);margin:18px 0 6px}
 .post .body{font-size:15.5px;line-height:1.85;white-space:pre-wrap;word-break:keep-all}
+.fzr{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.fz{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden}
+.fz button{border:0;background:none;color:var(--ink);height:32px;padding:0 12px;cursor:pointer;font-size:14px}
+.fz button:disabled{opacity:.35}
+.fz .v{font-size:12px;color:var(--mute);min-width:38px;text-align:center}
 .acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .cm{padding:12px 0;border-top:1px solid var(--line)}
 .cm:first-child{border-top:0}
@@ -408,7 +420,8 @@ async function drawPost(id){
   if(!s||!s.exists()){v.innerHTML='<div class="card"><div class="empty">발표문을 찾을 수 없어요.<br><a href="#">목록으로</a></div></div>';return;}
   const p=s.data(), mine=user&&p.uid===user.uid;
   const sm=sermons.find(x=>x.vid===p.sermonVid);
-  v.innerHTML=`<a href="${p.date?'#d-'+p.date:'#'}" class="meta" style="text-decoration:none;margin-bottom:10px;display:inline-flex"><i class="ti ti-chevron-left"></i>${p.date?mdD(p.date)+' 발표문 목록':'목록'}</a>
+  v.innerHTML=`<div class="fzr"><a href="${p.date?'#d-'+p.date:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>${p.date?mdD(p.date)+' 발표문 목록':'목록'}</a>
+    <span class="fz" aria-label="글자 크기"><button id="fzm" aria-label="글자 작게">가<small>−</small></button><span class="v" id="fzv"></span><button id="fzp" aria-label="글자 크게"><b>가</b>+</button></span></div>
   <article class="post">
     <div class="paper" id="paper">
       <div class="ph"><span>세종월드교회 · 발표문</span><span>${p.date?p.date.replace(/-/g,'.')+' ('+DAYS[parseD(p.date).getDay()]+')':fmtDate(p.createdAt)}</span></div>
@@ -423,7 +436,13 @@ async function drawPost(id){
   <div class="card" id="cms"><div class="empty">불러오는 중…</div></div>
   <div id="cmForm"></div>`;
   $('prt').onclick=()=>window.print();
-  requestAnimationFrame(()=>{const pp=$('paper');if(pp&&pp.scrollHeight>pp.clientHeight+2)pp.classList.add('long');});
+  // 읽기 글자 크기 (기기에 저장)
+  const FZ=[0.85,1,1.15,1.3,1.5,1.75];
+  let fi=(()=>{try{const v=+localStorage.getItem('qt-fz');return FZ.includes(v)?FZ.indexOf(v):1;}catch(_){return 1;}})();
+  const fit=()=>{const pp=$('paper');if(!pp)return;pp.classList.remove('long');requestAnimationFrame(()=>{if(pp.scrollHeight>pp.clientHeight+2)pp.classList.add('long');});};
+  const setFz=i=>{fi=Math.max(0,Math.min(FZ.length-1,i));$('paper').style.setProperty('--dz',FZ[fi]);$('fzv').textContent=Math.round(FZ[fi]*100)+'%';
+    $('fzm').disabled=fi===0;$('fzp').disabled=fi===FZ.length-1;try{localStorage.setItem('qt-fz',FZ[fi]);}catch(_){} fit();};
+  $('fzm').onclick=()=>setFz(fi-1); $('fzp').onclick=()=>setFz(fi+1); setFz(fi);
   if($('delPost')) $('delPost').onclick=async()=>{if(!confirm('이 발표문을 삭제할까요? 되돌릴 수 없어요.'))return;try{await deleteDoc(doc(db,'posts',id));location.hash=p.date?'#d-'+p.date:'#';}catch(e){alert('삭제하지 못했어요.');}};
   loadComments(id);
   if(can.write(role())){
@@ -458,6 +477,19 @@ async function drawForm(editId,presetDate){
   let p={title:'',date:presetDate||ymd(today0()),sermonVid:'',body:''};
   if(editId){const s=await getDoc(doc(db,'posts',editId));if(!s.exists()||s.data().uid!==user.uid){v.innerHTML='<div class="card"><div class="empty">본인이 쓴 글만 수정할 수 있어요.</div></div>';return;}p=s.data();}
   const B=(a,ic,t)=>`<span class="tbb" role="button" data-a="${a}" title="${t}" aria-label="${t}"><i class="ti ti-${ic}"></i></span>`;
+  // 비슷한 도구는 묶음으로: 폰에서는 묶음 버튼 하나 → 눌러서 고르기
+  const GROUPS=[
+    {id:'txt',ic:'typography',t:'글자',keep:1,items:[['bold','bold','굵게'],['italic','italic','기울임'],['underline','underline','밑줄'],['strikeThrough','strikethrough','취소선']]},
+    {id:'col',ic:'palette',t:'색',items:[...Object.entries(COLORS).map(([n,c])=>['c:'+c,'circle-filled',n,c]),['c:#1b1d21','circle','기본색'],['mark','highlight','형광펜']]},
+    {id:'al',ic:'align-left',t:'정렬',items:[['justifyLeft','align-left','왼쪽'],['justifyCenter','align-center','가운데'],['justifyRight','align-right','오른쪽'],['justifyFull','align-justified','양쪽']]},
+    {id:'hd',ic:'heading',t:'제목',items:[['h2','h-1','큰 제목'],['h3','h-2','소제목'],['p','pilcrow','본문']]},
+    {id:'ls',ic:'list',t:'목록',items:[['insertUnorderedList','list','글머리 목록'],['insertOrderedList','list-numbers','번호 목록']]},
+    {id:'ins',ic:'square-plus',t:'넣기',items:[['quote','quote','인용(성경 구절)'],['box','square-rounded-letter-b','강조 박스'],['insertHorizontalRule','minus','구분선'],['tpl','template','양식 넣기']]}];
+  const compact=matchMedia('(max-width:700px), (pointer:coarse)').matches;
+  const GB=g=>`<span class="tbb gb" role="button" data-g="${g.id}" title="${g.t}" aria-label="${g.t}"><i class="ti ti-${g.ic}"></i><small>${g.t}</small></span>`;
+  const DV='<span class="dv"></span>';
+  const tbHtml=B('undo','arrow-back-up','되돌리기')+B('redo','arrow-forward-up','다시 하기')+DV+
+    (compact?GROUPS.map(GB).join(''):GROUPS.map(g=>g.id==='col'?GB(g):g.items.map(i=>B(...i)).join('')).join(DV))+DV+B('clear','clear-formatting','서식 지우기');
   v.innerHTML=`<a href="${editId?'#p-'+editId:presetDate?'#d-'+presetDate:'#'}" class="meta" style="text-decoration:none;display:inline-flex"><i class="ti ti-chevron-left"></i>취소</a>
   <div class="sec" style="margin-top:8px"><h2>${editId?'발표문 수정':'발표문 쓰기'}</h2></div>
   <label class="f" for="fDate">날짜</label>
@@ -468,16 +500,8 @@ async function drawForm(editId,presetDate){
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
   <label class="f">발표문</label>
-  <div class="tb" id="tb"><div class="tbr">
-    ${B('undo','arrow-back-up','되돌리기')}${B('redo','arrow-forward-up','다시 하기')}<span class="dv"></span>
-    ${B('bold','bold','굵게')}${B('italic','italic','기울임')}${B('underline','underline','밑줄')}${B('strikeThrough','strikethrough','취소선')}
-    ${B('mark','highlight','형광펜')}${B('color','palette','글자색')}<span class="dv"></span>
-    ${B('justifyLeft','align-left','왼쪽 정렬')}${B('justifyCenter','align-center','가운데 정렬')}${B('justifyRight','align-right','오른쪽 정렬')}<span class="dv"></span>
-    ${B('h2','h-1','큰 제목')}${B('h3','h-2','소제목')}${B('insertUnorderedList','list','글머리 목록')}${B('insertOrderedList','list-numbers','번호 목록')}
-    ${B('quote','quote','인용(성경 구절)')}${B('box','square-rounded-letter-b','강조 박스')}${B('insertHorizontalRule','minus','구분선')}<span class="dv"></span>
-    ${B('clear','clear-formatting','서식 지우기')}${B('tpl','template','양식 넣기')}
-  </div>
-  <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<span class="tbb" role="button" data-c="${c}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</span>`).join('')}<span class="tbb" role="button" data-c="#1b1d21"><i class="ti ti-circle"></i>기본</span></div>
+  <div class="tb${compact?' cp':''}" id="tb"><div class="tbr">${tbHtml}</div>
+  <div class="pop" id="pop" hidden></div>
   </div>
   <div class="ed rich" id="fBody" contenteditable="true" data-ph="A4 한 장에 쓰듯 자유롭게 써 주세요. 예) 설교 요약 → 본문 요점 → 묵상과 결단"></div>
   <div class="cnt" id="fCnt"></div>
@@ -503,20 +527,29 @@ async function drawForm(editId,presetDate){
   const blk=()=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&/^(P|DIV|H2|H3|BLOCKQUOTE|LI)$/.test(n.tagName))return n;n=n.parentNode;}return null;};
   const inTag=t=>{let n=getSelection().anchorNode;while(n&&n!==ed){if(n.nodeType===1&&n.tagName===t)return n;n=n.parentNode;}return null;};
   const ex=(c,v=null)=>{try{return document.execCommand(c,false,v);}catch(_){return false;}};
-  const state=()=>{$('tb').querySelectorAll('.tbr .tbb').forEach(b=>{const a=b.dataset.a;let on=false;
-    try{if(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyCenter','justifyRight'].includes(a))on=document.queryCommandState(a);}catch(_){}
-    if(a==='h2')on=!!inTag('H2'); if(a==='h3')on=!!inTag('H3');
-    if(a==='quote'){const q=inTag('BLOCKQUOTE');on=!!q&&!q.classList.contains('box');} if(a==='box'){const q=inTag('BLOCKQUOTE');on=!!q&&q.classList.contains('box');}
-    b.classList.toggle('on',on);});};
+  const onOf=a=>{try{if(['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyCenter','justifyRight','justifyFull'].includes(a))return document.queryCommandState(a);}catch(_){}
+    if(a==='justifyLeft'){try{return !['justifyCenter','justifyRight','justifyFull'].some(x=>document.queryCommandState(x));}catch(_){return false;}}
+    if(a==='h2')return !!inTag('H2'); if(a==='h3')return !!inTag('H3'); if(a==='p')return !inTag('H2')&&!inTag('H3')&&!inTag('BLOCKQUOTE');
+    if(a==='quote'){const q=inTag('BLOCKQUOTE');return !!q&&!q.classList.contains('box');} if(a==='box'){const q=inTag('BLOCKQUOTE');return !!q&&q.classList.contains('box');}
+    return false;};
+  const state=()=>{$('tb').querySelectorAll('.tbb[data-a]').forEach(b=>b.classList.toggle('on',onOf(b.dataset.a)));
+    $('tb').querySelectorAll('.gb').forEach(b=>{const g=GROUPS.find(x=>x.id===b.dataset.g);
+      if(g.id==='al'){const cur=g.items.find(i=>i[0]!=='justifyLeft'&&onOf(i[0]));b.querySelector('i').className='ti ti-'+(cur?cur[1]:'align-left');b.classList.toggle('on',!!cur);}
+      else if(g.id==='txt'||g.id==='ls'||g.id==='hd')b.classList.toggle('on',g.items.some(i=>i[0]!=='p'&&onOf(i[0])));});};
   const block=(tag,cls)=>{const cur=inTag(tag.toUpperCase());
     if(cur&&(!cls||cur.classList.contains(cls))){ex('formatBlock','<p>');return;}
     ex('formatBlock',`<${tag}>`);const n=inTag(tag.toUpperCase());if(n){n.className=cls||'';if(!cls)n.removeAttribute('class');}};
   $('tb').onclick=e=>{if(Date.now()-lastTouch<700)return;const b=e.target.closest('.tbb');if(b)act(b);};
+  let openG=null; const pop=$('pop');
+  const closePop=()=>{pop.hidden=true;openG=null;$('tb').querySelectorAll('.gb').forEach(x=>x.classList.remove('open'));};
+  const drawPop=g=>{pop.innerHTML=`<div class="pt">${g.t}</div>`+g.items.map(([a,ic,t,c])=>`<span class="tbb pi" role="button" data-a="${a}" title="${t}"${c?` style="color:${c}"`:''}><i class="ti ti-${ic}"></i><span>${t}</span></span>`).join('');state();};
   function act(b){
-    if(b.dataset.c){$('pal').hidden=true;back();ex('foreColor',b.dataset.c);ed.dispatchEvent(new Event('input'));return;}
-    const a=b.dataset.a;
-    if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
-    $('pal').hidden=true; back();
+    if(b.dataset.g){const g=GROUPS.find(x=>x.id===b.dataset.g);if(openG===g.id){closePop();return;}closePop();openG=g.id;b.classList.add('open');drawPop(g);pop.hidden=false;return;}
+    const a=b.dataset.a, g=GROUPS.find(x=>x.id===openG);
+    if(!(g&&g.keep&&b.classList.contains('pi')))closePop();
+    back();
+    if(a.startsWith('c:')){ex('foreColor',a.slice(2));}
+    else if(a==='p'){if(inTag('H2')||inTag('H3')||inTag('BLOCKQUOTE'))ex('formatBlock','<p>');}
     if(a==='mark'){let on=false;try{const c=document.queryCommandValue('backColor');on=/255,\s*241,\s*168|fff1a8/i.test(c);}catch(_){} if(!ex('hiliteColor',on?'transparent':'#fff1a8'))ex('backColor',on?'transparent':'#fff1a8');}
     else if(a==='h2'||a==='h3')block(a);
     else if(a==='quote')block('blockquote');
@@ -525,19 +558,19 @@ async function drawForm(editId,presetDate){
     else if(a==='tpl'){ex('insertHTML','<h3>설교 요약</h3><p><br></p><h3>본문 요점</h3><p><br></p><h3>묵상과 결단</h3><p><br></p>');}
     else ex(a);
     save();state();ed.dispatchEvent(new Event('input'));}
+  document.addEventListener('pointerdown',e=>{if(!pop.hidden&&!e.target.closest('#tb'))closePop();});
   // 붙여넣기는 글자만 (다른 곳 서식·이미지가 섞이지 않게)
   ed.addEventListener('paste',e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData('text/plain');ex('insertText',t);});
   ed.addEventListener('drop',e=>e.preventDefault());
   const cntUp=()=>{const n=ed.innerText.replace(/\n/g,'').length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);
     ed.classList.toggle('empty',!ed.textContent.trim()&&!ed.querySelector('hr,li'));};
   ed.addEventListener('input',cntUp); cntUp();
-  ed.addEventListener('focus',()=>$('pal').hidden=true);
   // 폰: 쓰는 동안 도구줄을 키보드 바로 위에 붙임 (화면을 위로 올릴 필요 없게)
   const tb=$('tb'), vv=window.visualViewport, touch=matchMedia('(pointer:coarse)').matches;
   const place=()=>{if(!tb.classList.contains('kb'))return;const H=tb.offsetHeight;
     const bottom=vv?vv.offsetTop+vv.height:innerHeight; tb.style.top=Math.max(0,bottom-H)+'px';};
   const kbOn=()=>{if(!touch||tb.classList.contains('kb'))return;ed.style.marginTop=tb.offsetHeight+'px';tb.classList.add('kb');document.body.classList.add('editing');place();};
-  const kbOff=()=>{setTimeout(()=>{if(document.activeElement===ed||!$('pal').hidden)return;tb.classList.remove('kb');tb.style.top='';ed.style.marginTop='';document.body.classList.remove('editing');},150);};
+  const kbOff=()=>{setTimeout(()=>{if(document.activeElement===ed||!pop.hidden)return;tb.classList.remove('kb');tb.style.top='';ed.style.marginTop='';document.body.classList.remove('editing');},150);};
   ed.addEventListener('focus',kbOn); ed.addEventListener('blur',kbOff);
   if(vv){vv.addEventListener('resize',place);vv.addEventListener('scroll',place);} addEventListener('scroll',place,{passive:true});
   addEventListener('hashchange',()=>{document.body.classList.remove('editing');},{once:true});
