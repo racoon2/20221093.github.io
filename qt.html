@@ -22,11 +22,19 @@ button,input,textarea,select{font:inherit;color:inherit}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.del{color:var(--danger);border-color:var(--danger)}
 .btn:disabled{opacity:.5}
-.wbtn{width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
-.tb{display:flex;gap:4px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
+.wbtn{text-decoration:none;width:100%;justify-content:center;padding:12px;font-size:15px;margin:2px 0 14px}
+.tb{display:flex;gap:4px;align-items:center;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:var(--card);padding:6px;position:sticky;top:0;z-index:3}
 .tb button{border:0;background:none;color:var(--ink);min-width:36px;height:34px;border-radius:8px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
 .tb button:active,.tb button.on{background:var(--line)}
-.tb .sp{flex:1}
+.tb .tbr{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.tb .tbr::-webkit-scrollbar{display:none}
+.tb .tbr button{flex:none}
+.tb .dv{flex:none;width:1px;background:var(--line);margin:6px 3px}
+.tb .pvb{flex:none;border-left:1px solid var(--line);border-radius:0 8px 8px 0}
+.tb button:disabled{opacity:.35}
+.pal{position:absolute;left:6px;right:6px;top:100%;margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;gap:4px;flex-wrap:wrap;box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.pal[hidden]{display:none}
+.pal button{gap:4px;font-size:13.5px}
 .tb + textarea.f,.tb + textarea.f + .prev{border-top-left-radius:0;border-top-right-radius:0}
 .prev{border:1px solid var(--line);border-radius:0 0 12px 12px;background:#fff;color:#1b1d21;padding:18px 16px;min-height:300px}
 .rich h3{font-size:1.08em;margin:1.1em 0 .35em;padding-bottom:3px;border-bottom:1px solid #e3e5e9}
@@ -36,6 +44,14 @@ button,input,textarea,select{font:inherit;color:inherit}
 .rich blockquote{margin:.2em 0 .7em;padding:.4em .9em;border-left:3px solid #9aa3ad;background:#f4f5f7;color:#3d4249}
 .rich hr{border:0;border-top:1px solid #d9dce1;margin:1em 0}
 .rich mark{background:#fff1a8;padding:0 2px}
+.rich h2{font-size:1.3em;margin:1em 0 .45em;line-height:1.4}
+.rich h2:first-child{margin-top:0}
+.rich .c{text-align:center}.rich .r{text-align:right}
+.rich blockquote.box{border:1px solid #c9dccd;border-left:4px solid #2f8f5b;background:#eef7f0;color:#1b1d21;border-radius:6px}
+.rich ul.chk{list-style:none;padding-left:.2em}
+.rich ul.chk .cb{display:inline-block;width:.9em;height:.9em;border:1.5px solid #6b7280;border-radius:3px;margin-right:.45em;vertical-align:-.1em;position:relative}
+.rich ul.chk .cb.on{background:#2f8f5b;border-color:#2f8f5b}
+.rich ul.chk .cb.on::after{content:'';position:absolute;left:.26em;top:.06em;width:.22em;height:.45em;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
 .notice{background:var(--accent-soft);color:var(--accent-d);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.6;margin-bottom:14px}
 .notice.warn{background:var(--danger-soft);color:var(--danger)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
@@ -156,26 +172,36 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtDate=ts=>{if(!ts)return '';const d=ts.toDate?ts.toDate():new Date(ts);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;};
 const role=()=>profile?.role||null;
-// 간단 서식: ## 소제목, **굵게**, ==형광펜==, - 목록, 1. 목록, > 인용, --- 구분선
+// 간단 서식: # 큰 제목, ## 소제목, **굵게**, *기울임*, __밑줄__, ~~취소선~~, ==형광펜==, {빨강:글자}/{파랑:글자}/{초록:글자}
+// [가운데] / [오른쪽] 줄 정렬, - 목록, 1. 목록, [ ] / [x] 체크, > 인용, !> 강조 박스, --- 구분선
+const COLORS={'빨강':'#d1343b','파랑':'#2563c9','초록':'#1f8a4c','회색':'#7a828c'};
 function rich(src){
-  const il=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/__(.+?)__/g,'<u>$1</u>');
-  const out=[];let para=[],list=null,quote=[];
+  const il=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g,'$1<i>$2</i>')
+    .replace(/~~(.+?)~~/g,'<s>$1</s>').replace(/==(.+?)==/g,'<mark>$1</mark>').replace(/__(.+?)__/g,'<u>$1</u>')
+    .replace(/\{(빨강|파랑|초록|회색):(.+?)\}/g,(_,c,t)=>`<span style="color:${COLORS[c]}">${t}</span>`);
+  const out=[];let para=[],list=null,quote=null;
   const flush=()=>{if(para.length){out.push('<p>'+para.map(il).join('<br>')+'</p>');para=[];}
-    if(list){out.push(`<${list.t}>${list.items.map(x=>'<li>'+il(x)+'</li>').join('')}</${list.t}>`);list=null;}
-    if(quote.length){out.push('<blockquote>'+quote.map(il).join('<br>')+'</blockquote>');quote=[];}};
-  for(const ln of String(src).split('\n')){
-    let m;
+    if(list){out.push(`<${list.t}${list.t==='ul'&&list.chk?' class="chk"':''}>${list.items.map(x=>'<li>'+x+'</li>').join('')}</${list.t}>`);list=null;}
+    if(quote){out.push(`<blockquote${quote.box?' class="box"':''}>`+quote.l.map(il).join('<br>')+'</blockquote>');quote=null;}};
+  for(let ln of String(src).split('\n')){
+    let m, al='';
     if(!ln.trim()){flush();continue;}
-    if(/^#{1,3}\s+/.test(ln)){flush();out.push('<h3>'+il(ln.replace(/^#{1,3}\s+/,''))+'</h3>');continue;}
+    if((m=ln.match(/^\[(가운데|오른쪽)\]\s?/))){al=m[1]==='가운데'?' class="c"':' class="r"';ln=ln.slice(m[0].length);}
+    if((m=ln.match(/^(#{1,3})\s+(.*)$/))){flush();const t=m[1].length===1?'h2':'h3';out.push(`<${t}${al}>${il(m[2])}</${t}>`);continue;}
     if(/^-{3,}\s*$/.test(ln)){flush();out.push('<hr>');continue;}
-    if((m=ln.match(/^>\s?(.*)$/))){if(para.length||list)flush();quote.push(m[1]);continue;}
+    if((m=ln.match(/^(!?)>\s?(.*)$/))){const box=!!m[1];if(para.length||list||(quote&&quote.box!==box))flush();if(!quote)quote={box,l:[]};quote.l.push(m[2]);continue;}
+    if((m=ln.match(/^\s*\[( |x|X)\]\s+(.*)$/))){if(para.length||quote||(list&&!list.chk))flush();if(!list)list={t:'ul',chk:1,items:[]};
+      list.items.push(`<span class="cb${m[1]===' '?'':' on'}"></span>${il(m[2])}`);continue;}
     if((m=ln.match(/^\s*[-•*]\s+(.*)$/))||(m=ln.match(/^\s*\d+[.)]\s+(.*)$/))){const t=/^\s*\d/.test(ln)?'ol':'ul';
-      if(para.length||quote.length||(list&&list.t!==t))flush(); if(!list)list={t,items:[]}; list.items.push(m[1]);continue;}
-    if(list||quote.length)flush(); para.push(ln);
+      if(para.length||quote||(list&&(list.t!==t||list.chk)))flush(); if(!list)list={t,items:[]}; list.items.push(il(m[1]));continue;}
+    if(list||quote)flush();
+    if(al){flush();out.push(`<p${al}>${il(ln)}</p>`);continue;}
+    para.push(ln);
   }
   flush(); return out.join('');
 }
-const plain=s=>String(s).replace(/^#{1,3}\s+|^>\s?|^\s*[-•*]\s+|^-{3,}\s*$/gm,'').replace(/\*\*|==|__/g,'');
+const plain=s=>String(s).replace(/^\[(가운데|오른쪽)\]\s?/gm,'').replace(/^#{1,3}\s+|^!?>\s?|^\s*[-•*]\s+|^\s*\[( |x|X)\]\s+|^-{3,}\s*$/gm,'')
+  .replace(/\{(?:빨강|파랑|초록|회색):(.+?)\}/g,'$1').replace(/\*\*|==|__|~~|\*/g,'');
 const bodyOf=p=>p.body??[['설교 요약',p.summary],['본문 요점',p.points],['묵상과 결단',p.meditation]].filter(x=>x[1]).map(x=>`[${x[0]}]\n${x[1]}`).join('\n\n');
 const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
 
@@ -398,22 +424,39 @@ async function drawForm(editId,presetDate){
   <label class="f" for="fTitle">제목</label>
   <input class="f" id="fTitle" maxlength="100" value="${esc(p.title)}" placeholder="예: 용서는 남보다 더 하는 것">
   <label class="f" for="fBody">발표문</label>
-  <div class="tb" id="tb">
-    <button type="button" data-a="h" title="소제목"><i class="ti ti-heading"></i></button>
+  <div class="tb" id="tb"><div class="tbr">
+    <button type="button" data-a="undo" title="되돌리기"><i class="ti ti-arrow-back-up"></i></button>
+    <button type="button" data-a="redo" title="다시 하기"><i class="ti ti-arrow-forward-up"></i></button>
+    <span class="dv"></span>
+    <button type="button" data-a="h1" title="큰 제목"><i class="ti ti-h-1"></i></button>
+    <button type="button" data-a="h" title="소제목"><i class="ti ti-h-2"></i></button>
     <button type="button" data-a="b" title="굵게"><i class="ti ti-bold"></i></button>
+    <button type="button" data-a="i" title="기울임"><i class="ti ti-italic"></i></button>
+    <button type="button" data-a="u" title="밑줄"><i class="ti ti-underline"></i></button>
+    <button type="button" data-a="s" title="취소선"><i class="ti ti-strikethrough"></i></button>
     <button type="button" data-a="m" title="형광펜"><i class="ti ti-highlight"></i></button>
+    <button type="button" data-a="color" title="글자색"><i class="ti ti-palette"></i></button>
+    <span class="dv"></span>
+    <button type="button" data-a="al" title="왼쪽 정렬"><i class="ti ti-align-left"></i></button>
+    <button type="button" data-a="ac" title="가운데 정렬"><i class="ti ti-align-center"></i></button>
+    <button type="button" data-a="ar" title="오른쪽 정렬"><i class="ti ti-align-right"></i></button>
+    <span class="dv"></span>
     <button type="button" data-a="ul" title="글머리 목록"><i class="ti ti-list"></i></button>
     <button type="button" data-a="ol" title="번호 목록"><i class="ti ti-list-numbers"></i></button>
+    <button type="button" data-a="ck" title="체크 목록"><i class="ti ti-list-check"></i></button>
     <button type="button" data-a="q" title="인용(성경 구절)"><i class="ti ti-quote"></i></button>
+    <button type="button" data-a="box" title="강조 박스"><i class="ti ti-square-rounded-letter-b"></i></button>
     <button type="button" data-a="hr" title="구분선"><i class="ti ti-minus"></i></button>
+    <button type="button" data-a="clr" title="서식 지우기"><i class="ti ti-clear-formatting"></i></button>
     <button type="button" data-a="tpl" title="양식 넣기"><i class="ti ti-template"></i></button>
-    <span class="sp"></span>
-    <button type="button" data-a="pv" id="pvBtn" title="미리보기"><i class="ti ti-eye"></i></button>
+    </div>
+    <button type="button" data-a="pv" id="pvBtn" class="pvb" title="미리보기"><i class="ti ti-eye"></i></button>
+    <div class="pal" id="pal" hidden>${Object.entries(COLORS).map(([n,c])=>`<button type="button" data-c="${n}" style="color:${c}"><i class="ti ti-circle-filled"></i>${n}</button>`).join('')}</div>
   </div>
   <textarea class="f big" id="fBody" maxlength="8000" placeholder="A4 한 장에 쓰듯 자유롭게 써 주세요.&#10;&#10;예) 설교 요약 → 본문 요점 → 묵상과 결단">${esc(editId?bodyOf(p):'')}</textarea>
   <div class="prev rich" id="fPrev" style="display:none"></div>
   <div class="cnt" id="fCnt"></div>
-  <div class="hint">도구: 소제목 · 굵게 · 형광펜 · 목록 · 인용(성경 구절) · 구분선 · 양식(설교 요약/본문 요점/묵상과 결단). 👁 로 A4 모양 미리보기.</div>
+  <div class="hint">도구줄은 옆으로 밀면 더 있어요. 글자를 선택하고 누르면 그 부분에 적용돼요. 오른쪽 👁 로 A4 모양 미리보기.</div>
   <div class="hint">A4 한 장은 보통 1,500~2,000자 정도예요. 더 길게 써도 괜찮아요(최대 8,000자).</div>
   <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn pri" id="fSave">${editId?'수정 완료':'올리기'}</button></div>`;
   const fillS=()=>{const d=$('fDate').value, ss=sermonsOn(d);$('fSermon').innerHTML='<option value="">선택 안 함</option>'+ss.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.type)} · ${esc(s.title)}</option>`).join('');};
@@ -421,25 +464,46 @@ async function drawForm(editId,presetDate){
   const cntUp=()=>{const n=$('fBody').value.length;$('fCnt').textContent=`${n.toLocaleString()}자${n>2000?' · A4 한 장을 넘어요':''}`;$('fCnt').classList.toggle('over',n>2000);};
   $('fBody').oninput=cntUp; cntUp();
   const ta=$('fBody');
-  const wrap=(a,b,ph)=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e)||ph;
-    ta.setRangeText(a+sel+b,s,e,'select'); ta.selectionStart=s+a.length; ta.selectionEnd=s+a.length+sel.length;};
+  // execCommand('insertText')를 써야 되돌리기(undo)가 동작함
+  const put=(t,s,e)=>{ta.focus();ta.setSelectionRange(s,e);if(!document.execCommand||!document.execCommand('insertText',false,t))ta.setRangeText(t,s,e,'end');};
+  const wrap=(a,b,ph)=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e);
+    if(sel.startsWith(a)&&sel.endsWith(b)&&sel.length>=a.length+b.length){put(sel.slice(a.length,sel.length-b.length),s,e);return;}
+    const t=sel||ph; put(a+t+b,s,e); ta.setSelectionRange(s+a.length,s+a.length+t.length);};
   const lines=(fn,ph)=>{let s=ta.selectionStart,e=ta.selectionEnd;s=ta.value.lastIndexOf('\n',s-1)+1;const ne=ta.value.indexOf('\n',e);e=ne<0?ta.value.length:ne;
-    const seg=ta.value.slice(s,e)||ph; const r=seg.split('\n').map(fn).join('\n'); ta.setRangeText(r,s,e,'end');};
-  const ins=t=>{const s=ta.selectionStart;const pre=s&&ta.value[s-1]!=='\n'?'\n':'';ta.setRangeText(pre+t,s,ta.selectionEnd,'end');};
-  $('tb').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+    const seg=ta.value.slice(s,e)||ph; const r=seg.split('\n').map(fn).join('\n'); put(r,s,e); ta.setSelectionRange(s+r.length,s+r.length);};
+  const ins=t=>{const s=ta.selectionStart;const pre=s&&ta.value[s-1]!=='\n'?'\n':'';put(pre+t,s,ta.selectionEnd);};
+  const noAl=l=>l.replace(/^\[(가운데|오른쪽)\]\s?/,'');
+  const noBlk=l=>l.replace(/^#{1,3}\s+|^!?>\s?|^\s*[-•*]\s+|^\s*\d+[.)]\s+|^\s*\[( |x|X)\]\s+/,'');
+  const al=p=>l=>{const al0=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return (p?`[${p}] `:'')+l.slice(al0.length);};
+  $('pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('pal').hidden=true;wrap(`{${b.dataset.c}:`,'}','글자');ta.dispatchEvent(new Event('input'));};
+  $('tb').onclick=e=>{const b=e.target.closest('button');if(!b||b.closest('#pal'))return;const a=b.dataset.a;
     if(a==='pv'){const on=$('fPrev').style.display==='none';$('fPrev').innerHTML=rich(ta.value)||'<span style="color:#9aa3ad">아직 내용이 없어요</span>';
-      $('fPrev').style.display=on?'block':'none';ta.style.display=on?'none':'';b.classList.toggle('on',on);
-      $('tb').querySelectorAll('button:not(#pvBtn)').forEach(x=>x.disabled=on);return;}
-    ta.focus();
-    if(a==='b')wrap('**','**','굵게');
+      $('fPrev').style.display=on?'block':'none';ta.style.display=on?'none':'';b.classList.toggle('on',on);$('pal').hidden=true;
+      $('tb').querySelectorAll('.tbr button').forEach(x=>x.disabled=on);return;}
+    if(a==='color'){$('pal').hidden=!$('pal').hidden;return;}
+    $('pal').hidden=true; ta.focus();
+    if(a==='undo'){document.execCommand('undo');}
+    else if(a==='redo'){document.execCommand('redo');}
+    else if(a==='b')wrap('**','**','굵게');
+    else if(a==='i')wrap('*','*','기울임');
+    else if(a==='u')wrap('__','__','밑줄');
+    else if(a==='s')wrap('~~','~~','취소선');
     else if(a==='m')wrap('==','==','강조');
-    else if(a==='h')lines(l=>'## '+l.replace(/^#{1,3}\s+/,''),'소제목');
-    else if(a==='ul')lines(l=>'- '+l.replace(/^\s*[-•*]\s+/,''),'항목');
-    else if(a==='ol'){let n=0;lines(l=>`${++n}. `+l.replace(/^\s*\d+[.)]\s+/,''),'항목');}
-    else if(a==='q')lines(l=>'> '+l.replace(/^>\s?/,''),'말씀 구절 (책 장:절)');
+    else if(a==='h1')lines(l=>{const p=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return p+'# '+noBlk(noAl(l));},'큰 제목');
+    else if(a==='h')lines(l=>{const p=(l.match(/^\[(가운데|오른쪽)\]\s?/)||[''])[0];return p+'## '+noBlk(noAl(l));},'소제목');
+    else if(a==='al')lines(al(''),'');
+    else if(a==='ac')lines(al('가운데'),'가운데 정렬할 글');
+    else if(a==='ar')lines(al('오른쪽'),'오른쪽 정렬할 글');
+    else if(a==='ul')lines(l=>'- '+noBlk(l),'항목');
+    else if(a==='ol'){let n=0;lines(l=>`${++n}. `+noBlk(l),'항목');}
+    else if(a==='ck')lines(l=>'[ ] '+noBlk(l),'할 일');
+    else if(a==='q')lines(l=>'> '+noBlk(l),'말씀 구절 (책 장:절)');
+    else if(a==='box')lines(l=>'!> '+noBlk(l),'꼭 기억할 내용');
     else if(a==='hr')ins('---\n');
+    else if(a==='clr'){const s=ta.selectionStart,e=ta.selectionEnd;if(s===e){alert('서식을 지울 부분을 먼저 선택해 주세요.');return;}put(plain(ta.value.slice(s,e)),s,e);}
     else if(a==='tpl'){if(ta.value.trim()&&!confirm('지금 커서 위치에 양식을 넣을까요?'))return;ins('## 설교 요약\n\n\n## 본문 요점\n\n\n## 묵상과 결단\n\n');}
     ta.dispatchEvent(new Event('input'));};
+  ta.addEventListener('focus',()=>$('pal').hidden=true);
   $('fSave').onclick=async()=>{
     const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
