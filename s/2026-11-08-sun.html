@@ -14,6 +14,12 @@ body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
 .top{flex:none;background:#000}
 .vid{position:relative;width:100%;aspect-ratio:16/9}
 .vid{max-height:38vh;width:min(100%,calc(38vh*16/9));margin:0 auto}
+.pbar{flex:none;display:flex;align-items:center;gap:10px;background:var(--card);border-top:1px solid var(--line);padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+.pbar .sk{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11.5px;cursor:pointer}
+.pbar .pp{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer}
+.pbar .pi{flex:1;min-width:0}
+.pbar .tm{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
+.pbar input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0}
 .mctl{display:none}
 .lm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;margin-left:6px}
 body.mini{display:flex!important;flex-direction:column;max-width:720px;height:100vh}
@@ -29,7 +35,8 @@ body.mini .scroll{flex:1}
 .mctl .tm{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;flex:1}
 .mctl .ex{flex:none;border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
 @media (min-width:900px){
-  body{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(400px,1fr);grid-template-rows:auto auto minmax(0,1fr);height:100vh;column-gap:0}
+  .pbar{grid-column:1/3;grid-row:4}
+  body{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(400px,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;column-gap:0}
   .top{grid-column:1;grid-row:1/3;background:#000;display:flex;align-items:center;justify-content:center}
   .vid{max-height:none;width:100%}
   .head{grid-column:1;grid-row:3;align-self:start;border-bottom:0;padding:14px 18px}
@@ -83,7 +90,7 @@ body.mini{display:flex!important}
 </style>
 </head>
 <body>
-<div class="top"><div class="vid"><div id="yt"></div></div><div class="mctl"><div class="mt"><a href="../sermon.html" style="color:var(--accent);text-decoration:none;margin-right:6px" aria-label="말씀 클래스로">←</a><span id="mtitle"></span></div><div class="mr"><button class="pp" id="pp" aria-label="재생/일시정지">▶</button><span class="tm" id="tm">0:00</span><button class="ex" id="ex">영상 크게</button></div></div></div>
+<div class="top"><div class="vid"><div id="yt"></div></div><div class="mctl"><div class="mt"><a href="../sermon.html" style="color:var(--accent);text-decoration:none;margin-right:6px" aria-label="말씀 클래스로">←</a><span id="mtitle"></span></div><div class="mr"><button class="ex" id="ex">영상 크게</button></div></div></div>
 <div class="head">
   <div class="hrow"><a class="back" href="../sermon.html">← 말씀 클래스</a><span><button class="bm" id="bm">☆ 저장</button><button class="lm" id="lm">🎧 듣기 모드</button></span></div>
   <h1>용서</h1>
@@ -105,6 +112,12 @@ body.mini{display:flex!important}
   <div class="card"><h2>🙏 적용 · 결단</h2><p>· 옆 사람에게 &#x27;네가 잘돼야 내가 좋다&#x27;며 잘되기를 빌어 주기<br>· 먼저 본 사람이 먼저 인사하고 섬기기<br>· 교회 일 때문에 가정과 일상의 책임을 미루지 않기<br>· 가족이 베푸는 것을 감사히 받고, 살아 계실 때 안아 주고 잘하기</p></div>
   <div class="card"><h2>⏱ 구간 바로가기</h2><div class="chap"><a href="#" data-s="0"><time>0:00</time>용서, 내 이야기로 들으라</a><a href="#" data-s="196"><time>3:16</time>원수 사랑: 남보다 더 하는 것이 무엇이냐</a><a href="#" data-s="465"><time>7:45</time>예수 믿으면 달라져야 한다</a><a href="#" data-s="962"><time>16:02</time>가고 싶은 교회, 만나면 좋은 친구</a><a href="#" data-s="1385"><time>23:05</time>새벽예배와 아침밥 초대</a><a href="#" data-s="2072"><time>34:32</time>하나님 믿는 기쁨: 나누고 교제하기</a><a href="#" data-s="2475"><time>41:15</time>사랑이 있으면 용서가 쉬워진다</a><a href="#" data-s="2826"><time>47:06</time>선한 사마리아인처럼 실천하라</a><a href="#" data-s="3264"><time>54:24</time>식당과 가정에서 보이는 신앙</a><a href="#" data-s="3450"><time>57:30</time>감사히 받고, 살아 계실 때 잘하라</a></div></div>
 </section>
+</div>
+<div class="pbar">
+  <button class="sk" id="bk" aria-label="10초 뒤로">-10</button>
+  <button class="pp" id="pp" aria-label="재생/일시정지">▶</button>
+  <button class="sk" id="fw" aria-label="10초 앞으로">+10</button>
+  <div class="pi"><div class="tm"><span id="tm">0:00</span><span id="td">0:00</span></div><input type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치"></div>
 </div>
 <script>
 const VID="T9xRBnTp9p4", END=3796;
@@ -160,12 +173,19 @@ document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&ready)
 
 /* ---- 듣기 모드: 영상은 작게, 자막은 크게 ---- */
 const fmtT=s=>{s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`;};
-const ppBtn=document.getElementById('pp'), tmEl=document.getElementById('tm');
+const ppBtn=document.getElementById('pp'), tmEl=document.getElementById('tm'), tdEl=document.getElementById('td'), skEl=document.getElementById('sk');
+let dragging=false;
 function setMini(on){document.body.classList.toggle('mini',on);lsSet('sermon-mini',on);document.getElementById('lm').textContent=on?'🎬 영상 크게':'🎧 듣기 모드';}
 document.getElementById('lm').onclick=()=>setMini(!document.body.classList.contains('mini'));
 document.getElementById('ex').onclick=()=>setMini(false);
-ppBtn.onclick=()=>{if(!ready)return;const st=player.getPlayerState();if(st===1||st===3)player.pauseVideo();else player.playVideo();};
-setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';tmEl.textContent=`${fmtT(player.getCurrentTime())} / ${fmtT(player.getDuration()||END)}`;},500);
+ppBtn.onclick=()=>{if(!ready){pending=START;return;}const st=player.getPlayerState();if(st===1||st===3)player.pauseVideo();else player.playVideo();};
+const jump=d=>{if(!ready)return;player.seekTo(Math.max(0,player.getCurrentTime()+d),true);};
+document.getElementById('bk').onclick=()=>jump(-10);
+document.getElementById('fw').onclick=()=>jump(10);
+skEl.addEventListener('input',()=>{dragging=true;const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
+skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
+setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);}},500);
+tdEl.textContent=fmtT(END);
 if(lsGet('sermon-mini',false)) setMini(true);
 document.getElementById('mtitle').textContent=document.querySelector('.head h1').textContent;
 
