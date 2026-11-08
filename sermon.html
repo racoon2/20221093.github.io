@@ -50,6 +50,10 @@ button{font:inherit;color:inherit}
 .ck{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent}
 .ck.done{background:var(--accent);border-color:var(--accent);color:#fff}
 .new{display:inline-block;font-size:10.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+.item.hl{background:var(--accent-soft);margin:6px -8px;padding:12px 8px;border-radius:12px;border-top:0}
+.item.hl+.item{border-top:0}
+.more{display:block;width:100%;border:0;background:none;color:var(--sub);font-size:13.5px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.week button.dim{opacity:.45}
 .empty{text-align:center;color:var(--sub);font-size:14px;padding:28px 10px;line-height:1.6}
 .search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px;margin-bottom:10px}
 .search i{color:var(--mute);font-size:18px}
@@ -80,18 +84,10 @@ button{font:inherit;color:inherit}
 
   <section class="view on" id="v-home">
     <div id="resume"></div>
-    <div class="sec"><h2>요일별 최신 설교</h2><span id="wkHint"></span></div>
+    <label class="search" id="sbox" style="display:none"><i class="ti ti-search"></i><input id="q" type="search" placeholder="제목, 성경 본문으로 찾기 (예: 사사기)"></label>
     <div class="week" id="week"></div>
+    <div class="sec" style="margin-top:14px"><h2 id="dayTitle"></h2><span id="dayCount"></span></div>
     <div id="dayList"></div>
-
-    <div class="sec" id="pastHead" style="margin-top:28px"><h2>지난 설교</h2><span></span></div>
-    <label class="search"><i class="ti ti-search"></i><input id="q" type="search" placeholder="제목, 성경 본문으로 찾기 (예: 사사기)"></label>
-    <div class="chips" id="chips"></div>
-    <div id="monthBox">
-      <div class="month"><button id="mPrev" aria-label="이전 달"><i class="ti ti-chevron-left"></i></button><b id="mLabel"></b><button id="mNext" aria-label="다음 달"><i class="ti ti-chevron-right"></i></button></div>
-      <div class="mstat" id="mStat"></div>
-    </div>
-    <div id="archList"></div>
   </section>
 
   <section class="view" id="v-saved">
@@ -121,10 +117,10 @@ const done=s=>!!(PROG[s.vid]&&PROG[s.vid].done);
 const today=new Date(); today.setHours(0,0,0,0);
 
 function item(s,opt={}){
-  const p=pct(s), isNew=!opt.latest&&(today-parse(s.date))/864e5<=2&&!PROG[s.vid];
-  return `<a class="item" href="${esc(s.url)}">
+  const p=pct(s), isNew=!opt.hl&&(today-parse(s.date))/864e5<=2&&!PROG[s.vid];
+  return `<a class="item ${opt.hl?'hl':''}" href="${esc(s.url)}">
     ${opt.noThumb?'':`<div class="th" style="background-image:url('${thumb(s.vid)}')"></div>`}
-    <div class="bd"><div class="m">${opt.showDate?md(s.date)+' · ':''}${esc(s.type)}${s.dur?' · '+mins(s.dur):''}${opt.latest?'<span class="new">최신</span>':''}${isNew?'<span class="new">NEW</span>':''}</div>
+    <div class="bd"><div class="m">${opt.showDate?md(s.date)+' · ':''}${esc(s.type)}${s.dur?' · '+mins(s.dur):''}${opt.hl?'<span class="new">최신</span>':''}${isNew?'<span class="new">NEW</span>':''}</div>
       <div class="t">${esc(s.title)}</div>${opt.showText?`<div class="m">${esc(s.text)} · ${esc(s.preacher)}</div>`:''}
       ${p&&!done(s)?`<div class="bar"><i style="width:${p}%"></i></div>`:''}</div>
     <div class="ck ${done(s)?'done':''}"><i class="ti ti-check"></i></div></a>`;
@@ -134,7 +130,7 @@ const listBox=(rows,opt)=>`<div class="list">${rows.map(s=>item(s,opt)).join('')
 let S=[];
 fetch('sermons.json',{cache:'no-cache'}).then(r=>r.json()).then(d=>{
   S=d.sort((a,b)=>b.date.localeCompare(a.date)||TYPES.indexOf(a.type)-TYPES.indexOf(b.type));
-  renderHome(); initArchive(); renderSaved();
+  renderHome(); renderSaved();
 }).catch(()=>{document.getElementById('dayList').innerHTML='<div class="empty">설교 목록을 불러오지 못했어요.<br>잠시 후 다시 열어 주세요.</div>';});
 
 /* ---------- 홈 ---------- */
@@ -146,57 +142,24 @@ function renderHome(){
     <div style="flex:1;min-width:0"><div class="k">이어서 듣기</div><div class="t">${esc(rs.title)}</div>
     <div class="r">${md(rs.date)} ${esc(rs.type)} · ${Math.max(1,Math.round((rs.dur-rp[1].t)/60))}분 남음</div><div class="bar"><i style="width:${pct(rs)}%"></i></div></div></a>`:'';
 
-  const ago=s=>{const n=Math.round((today-parse(s))/864e5);return n<=0?'오늘':n===1?'어제':n<7?`${n}일 전`:n<14?'지난주':`${Math.floor(n/7)}주 전`;};
-  const latestOf=i=>{const r=S.filter(s=>parse(s.date).getDay()===i);if(!r.length)return [];const d=r[0].date;return r.filter(s=>s.date===d);};
-  let sel=today.getDay();
-  if(!latestOf(sel).length&&S.length) sel=parse(S[0].date).getDay();
-  const wk=document.getElementById('week');
+  const latestDate=i=>{const r=S.find(s=>parse(s.date).getDay()===i);return r?r.date:null;};
+  let sel=today.getDay(), shown=20;
+  if(!latestDate(sel)&&S.length) sel=parse(S[0].date).getDay();
+  const wk=document.getElementById('week'), q=document.getElementById('q');
   const draw=()=>{
-    wk.innerHTML=DAYS.map((d,i)=>{const L=latestOf(i);return `<button data-i="${i}" class="${i===sel?'on':''} ${i===today.getDay()?'today':''}">${d}<small>${L.length?md(L[0].date).split(' ')[0]:'-'}</small><div class="dt ${L.length?'':'x'}"></div></button>`;}).join('');
-    const rows=latestOf(sel);
-    document.getElementById('wkHint').textContent=rows.length?`${DAYS[sel]}요일 · ${ago(rows[0].date)}`:'';
-    document.getElementById('dayList').innerHTML=rows.length?listBox(rows,{showText:true,showDate:true,latest:true})
-      :`<div class="list"><div class="empty">${DAYS[sel]}요일에 올라온 설교가 아직 없어요.</div></div>`;
+    const k=q.value.trim();
+    wk.innerHTML=DAYS.map((d,i)=>{const L=latestDate(i);return `<button data-i="${i}" class="${!k&&i===sel?'on':''} ${i===today.getDay()?'today':''} ${k?'dim':''}">${d}<small>${L?md(L).split(' ')[0]:'-'}</small><div class="dt ${L?'':'x'}"></div></button>`;}).join('');
+    const rows=k?S.filter(s=>[s.title,s.text,s.preacher,s.type].join(' ').includes(k)):S.filter(s=>parse(s.date).getDay()===sel);
+    document.getElementById('dayTitle').textContent=k?`'${k}' 검색 결과`:`${DAYS[sel]}요일 설교`;
+    document.getElementById('dayCount').textContent=rows.length?`${rows.length}편`:'';
+    if(!rows.length){document.getElementById('dayList').innerHTML=`<div class="list"><div class="empty">${k?'검색 결과가 없어요.':`${DAYS[sel]}요일에 올라온 설교가 아직 없어요.`}</div></div>`;return;}
+    const top=rows[0].date;
+    document.getElementById('dayList').innerHTML=`<div class="list">${rows.slice(0,shown).map((s,i)=>item(s,{showDate:true,showText:i<2&&s.date===top,hl:!k&&s.date===top,noThumb:!(s.date===top)})).join('')}${rows.length>shown?`<button class="more" id="more">더 보기 (${rows.length-shown}편 더)</button>`:''}</div>`;
+    const mb=document.getElementById('more'); if(mb) mb.onclick=()=>{shown+=20;draw();};
   };
-  wk.onclick=e=>{const b=e.target.closest('button');if(!b)return;sel=+b.dataset.i;draw();};
+  wk.onclick=e=>{const b=e.target.closest('button');if(!b)return;sel=+b.dataset.i;shown=20;q.value='';draw();};
+  q.oninput=()=>{shown=20;draw();};
   draw();
-}
-
-/* ---------- 보관함 ---------- */
-let type='전체', mIdx=0, months=[], openDawn=false;
-function initArchive(){
-  months=[...new Set(S.map(s=>s.date.slice(0,7)))];
-  const ch=document.getElementById('chips');
-  ch.innerHTML=['전체',...TYPES].map(t=>`<button data-t="${t}" class="${t===type?'on':''}">${t.replace('예배','')}</button>`).join('');
-  ch.onclick=e=>{const b=e.target.closest('button');if(!b)return;type=b.dataset.t;[...ch.children].forEach(x=>x.classList.toggle('on',x===b));renderArch();};
-  document.getElementById('mPrev').onclick=()=>{if(mIdx<months.length-1){mIdx++;openDawn=false;renderArch();}};
-  document.getElementById('mNext').onclick=()=>{if(mIdx>0){mIdx--;openDawn=false;renderArch();}};
-  document.getElementById('q').oninput=renderArch;
-  renderArch();
-}
-function renderArch(){
-  const k=document.getElementById('q').value.trim(), box=document.getElementById('archList');
-  const byType=s=>type==='전체'||s.type===type;
-  document.getElementById('monthBox').style.display=k?'none':'';
-  if(!S.length){box.innerHTML='<div class="list"><div class="empty">아직 올라온 설교가 없어요.</div></div>';return;}
-  if(k){
-    const rows=S.filter(s=>byType(s)&&[s.title,s.text,s.preacher,s.type].join(' ').includes(k)).slice(0,50);
-    box.innerHTML=rows.length?listBox(rows,{showDate:true,noThumb:true}):`<div class="list"><div class="empty">'${esc(k)}' 검색 결과가 없어요.</div></div>`;
-    return;
-  }
-  const ym=months[mIdx]; const [y,m]=ym.split('-');
-  document.getElementById('mLabel').textContent=`${y}년 ${+m}월`;
-  document.getElementById('mPrev').disabled=mIdx>=months.length-1;
-  document.getElementById('mNext').disabled=mIdx<=0;
-  const inM=S.filter(s=>s.date.startsWith(ym)&&byType(s));
-  document.getElementById('mStat').textContent=`설교 ${inM.length}편 · 들은 설교 ${inM.filter(done).length}편`;
-  if(!inM.length){box.innerHTML='<div class="list"><div class="empty">이 달에는 해당 설교가 없어요.</div></div>';return;}
-  if(type==='전체'){
-    const main=inM.filter(s=>s.type!=='새벽예배'), dawn=inM.filter(s=>s.type==='새벽예배');
-    box.innerHTML=`<div class="list">${main.map(s=>item(s,{showDate:true,noThumb:true})).join('')||''}
-      ${dawn.length?`<button class="fold" id="fold">새벽예배 ${dawn.length}편 ${openDawn?'접기':'펼치기'} <i class="ti ti-chevron-${openDawn?'up':'down'}"></i></button>${openDawn?dawn.map(s=>item(s,{showDate:true,noThumb:true})).join(''):''}`:''}</div>`;
-    const f=document.getElementById('fold'); if(f) f.onclick=()=>{openDawn=!openDawn;renderArch();};
-  } else box.innerHTML=listBox(inM,{showDate:true,noThumb:true});
 }
 
 /* ---------- 저장 ---------- */
@@ -212,7 +175,7 @@ const navs=document.querySelectorAll('.nav button');
 function go(v){navs.forEach(b=>b.classList.toggle('on',b.dataset.v===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));
   document.getElementById('ttl').textContent={home:'말씀 클래스',saved:'저장'}[v];window.scrollTo(0,0);try{history.replaceState(null,'',v==='home'?location.pathname:'#'+v);}catch(e){}}
 navs.forEach(b=>b.onclick=()=>go(b.dataset.v));
-document.getElementById('goSearch').onclick=()=>{go('home');setTimeout(()=>{const q=document.getElementById('q');window.scrollTo({top:document.getElementById('pastHead').getBoundingClientRect().top+scrollY-12,behavior:'smooth'});q.focus({preventScroll:true});},50);};
+document.getElementById('goSearch').onclick=()=>{go('home');const sb=document.getElementById('sbox'),q=document.getElementById('q');const open=sb.style.display==='none';sb.style.display=open?'':'none';if(open)q.focus();else if(q.value){q.value='';q.dispatchEvent(new Event('input'));}};
 if(location.hash==='#saved') go('saved');
 </script>
 </body>
