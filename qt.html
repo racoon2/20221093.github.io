@@ -260,9 +260,9 @@ function cleanHtml(html){
   });};
   walk(t.content); return t.innerHTML;
 }
-const isHtml=s=>/^\s*<(p|div|h2|h3|ul|ol|blockquote|hr|b|i|u|s|span|br|strong|em|mark)\b/i.test(s||'');
+const isHtml=s=>/<\/?(p|div|h2|h3|ul|ol|li|blockquote|hr|b|i|u|s|span|br|strong|em|mark|font)\b[^>]*>/i.test(s||'');
 const docHtml=s=>isHtml(s)?cleanHtml(s):rich(s);
-const textOf=s=>{if(!isHtml(s))return plain(s);const t=document.createElement('template');t.innerHTML=cleanHtml(String(s).replace(/<\/(p|div|h2|h3|li|blockquote)>/gi,'$& '));return t.content.textContent.replace(/\s+/g,' ').trim();};
+const textOf=s=>{if(!isHtml(s))return plain(s);const t=document.createElement('template');t.innerHTML=cleanHtml(String(s).replace(/<\/?(p|div|h2|h3|li|blockquote|br)\b[^>]*>/gi,' $& '));return t.content.textContent.replace(/\s+/g,' ').trim();};
 const bodyOf=p=>p.body??[['설교 요약',p.summary],['본문 요점',p.points],['묵상과 결단',p.meditation]].filter(x=>x[1]).map(x=>`[${x[0]}]\n${x[1]}`).join('\n\n');
 const badge=r=>r&&r!=='member'&&r!=='pending'?`<span class="badge ${r}">${ROLE_NAME[r]}</span>`:'';
 
@@ -521,7 +521,7 @@ async function drawForm(editId,presetDate){
   const fillS=()=>{const d=$('fDate').value, ss=sermonsOn(d);$('fSermon').innerHTML='<option value="">선택 안 함</option>'+ss.map(s=>`<option value="${esc(s.vid)}" ${s.vid===p.sermonVid?'selected':''}>${esc(s.type)} · ${esc(s.title)}</option>`).join('');};
   $('fDate').onchange=fillS; fillS();
   const ed=$('fBody');
-  ed.innerHTML=editId?docHtml(bodyOf(p)):'';
+  ed.innerHTML=editId?docHtml(bodyOf(p)):'<p><br></p>';
   try{document.execCommand('defaultParagraphSeparator',false,'p');document.execCommand('styleWithCSS',false,false);}catch(_){}
   // 선택 영역 기억 (버튼을 눌러도 선택이 풀리지 않게)
   let rng=null;
@@ -589,6 +589,10 @@ async function drawForm(editId,presetDate){
     const date=$('fDate').value; if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<START||date>ymd(today0())){alert('날짜를 다시 골라 주세요.');return;}
     const title=$('fTitle').value.trim(); if(!title){alert('제목을 입력해 주세요.');return;}
     if(!ed.textContent.trim()){alert('발표문 내용을 써 주세요.');return;}
+    // 첫 줄처럼 문단 태그 없이 남은 글자는 <p>로 감싸서 저장
+    [...ed.childNodes].forEach(n=>{if(n.nodeType===3&&n.textContent.trim()||n.nodeType===1&&/^(B|I|U|S|SPAN|FONT|STRONG|EM|MARK|BR)$/.test(n.tagName)){
+      const p=document.createElement('p');n.before(p);let x=p.nextSibling;
+      while(x&&(x.nodeType===3||/^(B|I|U|S|SPAN|FONT|STRONG|EM|MARK|BR)$/.test(x.tagName))){const nx=x.nextSibling;p.append(x);x=nx;}}});
     const body=cleanHtml(ed.innerHTML).replace(/(<p><br><\/p>)+$/,'');
     if(body.length>8000){alert(`서식을 포함한 길이가 너무 길어요 (${body.length.toLocaleString()} / 8,000). 내용을 조금 줄이거나 서식을 줄여 주세요.`);return;}
     const vid=$('fSermon').value, sm=sermons.find(s=>s.vid===vid);
