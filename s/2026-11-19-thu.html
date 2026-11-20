@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시험을 이겨라 · 말씀 클래스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1b1d21;--sub:#6b7280;--line:#e6e8ec;--accent:#12a37a;--accent-soft:#e7f6f1;--hl:#fff3b0}
+@media (prefers-color-scheme: dark){:root{--bg:#121417;--card:#1c1f24;--ink:#eceef1;--sub:#9aa1ab;--line:#2b2f36;--accent:#3cc99c;--accent-soft:#183a30;--hl:#5a4d10}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;height:100dvh;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
+.top{flex:none;background:#000}
+.vid{position:relative;width:100%;aspect-ratio:16/9}
+.vid{max-height:38vh;width:min(100%,calc(38vh*16/9));margin:0 auto}
+.pbar{flex:none;position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:14px 14px calc(6px + env(safe-area-inset-bottom))}
+.pbar .line{position:absolute;left:0;right:0;top:0;height:3px;background:var(--line);pointer-events:none}
+.pbar .line i{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:var(--accent)}
+.pbar .line b{position:absolute;top:50%;left:var(--p,0%);width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--accent)}
+.pbar .seek{position:absolute;left:0;right:0;top:-2px;height:20px;width:100%;margin:0;padding:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;touch-action:none}
+.pbar .t{flex:1;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.pbar .t.r{text-align:right}
+.pbar .btns{display:flex;align-items:center;gap:16px}
+.pbar .sk{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11px;cursor:pointer}
+.pbar .pp{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:15px;cursor:pointer}
+.tabs .home{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--sub);text-decoration:none;font-size:10.5px;border-right:1px solid var(--line)}
+.tabs .home:active{color:var(--accent)}
+.mctl{display:none}
+.lm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;margin-left:6px}
+body.mini{display:flex!important;flex-direction:column;max-width:720px;height:100%;height:100dvh}
+body.mini .top{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+body.mini .vid{flex:none;width:200px!important;background:#000;max-height:none;margin:0;border-radius:8px;overflow:hidden}
+body.mini .mctl{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+body.mini .head{display:none}
+body.mini .tabs,body.mini .scroll{border-left:0;margin:0}
+body.mini .scroll{flex:1}
+.mctl .mt{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mctl .mr{display:flex;align-items:center;gap:8px}
+.mctl .pp{flex:none;width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:14px;cursor:pointer}
+.mctl .tm{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;flex:1}
+.mctl .ex{flex:none;border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+@media (min-width:900px){
+  .pbar{grid-column:1/3;grid-row:4}
+  body{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(400px,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;height:100dvh;column-gap:0}
+  .top{grid-column:1;grid-row:1/3;background:#000;display:flex;align-items:center;justify-content:center}
+  .vid{max-height:none;width:100%}
+  .head{grid-column:1;grid-row:3;align-self:start;border-bottom:0;padding:14px 18px}
+  .head h1{font-size:20px}
+  .tabs{grid-column:2;grid-row:1;border-left:1px solid var(--line)}
+  .scroll{grid-column:2;grid-row:2/4;border-left:1px solid var(--line);background:var(--bg)}
+}
+.vid #yt,.vid iframe{position:absolute;inset:0;width:100%;height:100%}
+.head{flex:none;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--line)}
+.hrow{display:flex;justify-content:space-between;align-items:center}
+.bm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.bm.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.back{display:inline-block;font-size:13px;color:var(--accent);text-decoration:none;margin-bottom:4px;font-weight:500}
+.head h1{font-size:16px;margin:0 0 2px;line-height:1.35}
+.head .meta{font-size:12.5px;color:var(--sub)}
+.tabs{flex:none;display:flex;background:var(--card);border-bottom:1px solid var(--line)}
+.tabs button{flex:1;border:0;background:none;padding:11px 0;font:inherit;font-size:14.5px;color:var(--sub);border-bottom:2px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--ink);font-weight:700;border-color:var(--accent)}
+.scroll{flex:1;overflow-y:auto;position:relative}
+section{display:none;padding:10px 14px 40px}
+section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 10px}
+.card p{margin:0;font-size:calc(15px * var(--fz,1));line-height:1.75}
+.kw{display:flex;flex-wrap:wrap;gap:6px}.kw span{font-size:13px;background:var(--accent-soft);color:var(--accent);padding:5px 10px;border-radius:999px}
+ol.pts{margin:0;padding:0;list-style:none;counter-reset:p}
+ol.pts li{counter-increment:p;position:relative;padding:0 0 14px 34px;font-size:15px;line-height:1.7}
+ol.pts li::before{content:counter(p);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+ol.pts li b{display:block} ol.pts li small{color:var(--sub);font-size:13.5px}
+.chap a{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14.5px}
+.chap a:first-child{border-top:0}
+.chap time{color:var(--accent);min-width:44px;font-weight:500;font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:8px;align-items:center;padding:0 0 8px}
+.tools input{flex:1;font:inherit;font-size:15px;padding:10px 13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);outline:none}
+.follow{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.follow.on{color:var(--accent);border-color:var(--accent)}
+.count{font-size:12.5px;color:var(--sub);min-height:0}
+.tip{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin-bottom:6px}
+.seg{display:flex;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line);border-radius:10px}
+.seg.now{background:var(--accent-soft)}
+.av{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.who{font-size:13px;color:var(--sub);margin-bottom:3px}
+.who button{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;margin-left:6px;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
+.tx{font-size:calc(15.5px * var(--fz,1));line-height:1.85;word-break:keep-all}
+ol.pts li{font-size:calc(15px * var(--fz,1))!important}
+.gear{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.tools input{min-width:0;width:0}
+.setp .row{flex-wrap:wrap}
+.setp{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.setp.on{display:block}
+.setp .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.setp .lb{font-size:13.5px;font-weight:500}
+.fsz{display:flex;gap:4px}
+.fsz button{border:1px solid var(--line);background:none;color:var(--sub);border-radius:8px;min-width:38px;padding:6px 0;cursor:pointer;font-family:inherit}
+.fsz button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.setp .pv{margin-top:10px;font-size:calc(15.5px * var(--fz,1));line-height:1.8;color:var(--sub)}
+.w{cursor:pointer;border-radius:3px}
+.w.say{background:var(--accent);color:#fff}
+mark{background:var(--hl);color:inherit;border-radius:3px}
+.hide{display:none}
+.note{font-size:12.5px;color:var(--sub);line-height:1.6;padding:14px 4px 0}
+body.mini{display:flex!important}
+</style>
+</head>
+<body>
+<div class="top"><div class="vid"><div id="yt"></div></div><div class="mctl"><div class="mt"><a href="../sermon.html" style="color:var(--accent);text-decoration:none;margin-right:6px" aria-label="말씀 클래스로">←</a><span id="mtitle"></span></div><div class="mr"><button class="ex" id="ex">영상 크게</button></div></div></div>
+<div class="head">
+  <div class="hrow"><a class="back" href="../sermon.html">← 말씀 클래스</a><span><button class="bm" id="bm">☆ 저장</button><button class="lm" id="lm">🎧 듣기 모드</button></span></div>
+  <h1>시험을 이겨라</h1>
+  <div class="meta">마 4:1~11 · 임헌규 담임목사 · 세종월드교회 목요예배 · 2026. 11. 19</div>
+</div>
+<nav class="tabs"><a class="home" href="../sermon.html" aria-label="홈으로"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg><span>홈</span></a><button class="on" data-t="txt">스크립트</button></nav>
+<div class="scroll" id="scroll">
+<section id="txt" class="on">
+  <div class="tip">💡 단어를 누르면 영상이 그 부분부터 재생돼요</div>
+  <div class="tools"><input id="q" type="search" placeholder="스크립트 검색"><button class="follow on" id="follow">따라가기 ON</button><button class="gear" id="gear" aria-label="설정">⚙</button></div>
+  <div class="setp" id="setp"><div class="row"><span class="lb">글자 크기</span><div class="fsz" id="fsz"></div></div><div class="pv">하나님은 예배하는 자를 찾으십니다. 아멘.</div><div class="row" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><span class="lb">건너뛰기 시간</span><div class="fsz" id="skp"></div></div></div>
+  <div class="count" id="cnt"></div>
+  <div id="list"></div>
+  <p class="note">유튜브 자동 자막을 바탕으로 정리했습니다. 잘못 인식된 성경 인명·지명 등은 바로잡았습니다. 단어별 재생 위치는 문단 시간을 기준으로 계산한 값이라 몇 초 정도 차이가 날 수 있어요.</p>
+</section>
+
+</div>
+<div class="pbar">
+  <div class="line" id="line"><i></i><b></b></div>
+  <input class="seek" type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치">
+  <span class="t" id="tm">0:00</span>
+  <div class="btns">
+    <button class="sk" id="bk" aria-label="10초 뒤로">-10</button>
+    <button class="pp" id="pp" aria-label="재생/일시정지">▶</button>
+    <button class="sk" id="fw" aria-label="10초 앞으로">+10</button>
+  </div>
+  <span class="t r" id="td">0:00</span>
+</div>
+<script>
+const VID="9az8avziBWc", END=2358;
+const T=[["0:00", "시험을 이겨라라는 제목으로 하나님 말씀을 증거하도록 하겠습니다. 여러분 시험은 예전에도 제가 여러분 얘기했지만 두 가지 특징이 있습니다. 하나는 테스트라는게 있고요. 하나는 템테이션이라는게 있습니다. 테스트는 하나님이 우리를 성장시키기 위한 시험입니다. 근데 템테이션은 마귀가 우리를 넘어지게 하는 시험입니다. 근데 성경에서는 하나님이 우리에게 시험되어 있지만은 마귀가 우리에게 유혹하는게 훨씬 더 많습니다. 그 유혹의 시험은 우리를 넘어뜨리기 위한 의도가 있습니다. 그 안에는. 그러니까 테스트는 우리를 성장시키기 하는 의도가 있지만 템테이션은 우리를 무너뜨리게 하는 의도가 있다는 겁니다. 두 가지는 너무 다른 거죠. 그죠? 근데 우리가 거의 대부분이 성도들 볼 때 여러분들 스스로를 느껴보면 가장 많이 받는게 여러분 테스트라고 생각해요? 템테이션이라고 생각해요?"], ["0:56", "템테이션이에요. 왜냐면 우리의 행동 하나하나에 하나님께서 우리에게 주시는 건 테스트지만 마귀가 주는 것은 템테이션 유혹입니다. 근데 우리는 늘 우리의 삶의 모든 유혹이 어디서 많이 오냐면 마귀한테만 온다는 걸 여러분 아셔야 됩니다. 그래서 내가 오늘 하루를 살아가는데 하나님의 이끌린 바 되어서 살아가느냐 아니면 마귀에게 계속 우리가 짓눌려서 살아가느냐 둘 중에 하나입니다. 근데 대부분의 성도들의 모습들이 성령 충만하지 않으면 대부분 마귀에게 눌려 삽니다. 저녁에 잠 안 오는 것도 똑같습니다. 하나님을 믿는 자들에게는 하나님은 뭐 사랑하는 자에게 잠을 주시느니라. 근데 하나님은 잠을 안 오는 걸로 테스트를 하신 적이 없습니다. 그러면 저녁에 잠이 안 온다 할 때는 템테이션 유혹입니다. 왜 그런지 아십니까? 저녁에 우리가 잠자지 않고 뭘 하느냐를 생각해 보세요. 내 발전적인 일을 하나 아니면 내 소모적인 일을 하고 있나?"], ["1:59", "그죠? 여러분들 또 그런 것도 있죠. 저녁에 밤새 일하고 와 가지고 자려고 할 때 잠이 올 때까지는 피곤해요. 근데 집에 와서 씻고 누워 있으면 잠이 안 옵니다. 그때부터 뭐 하기 시작하죠? 핸드폰 만지기 시작하죠. 그게 다 템테이션, 유혹입니다. 그런 것들을 테스트라고 하지 않습니다. 왜? 오늘 내가 지금 빨리 잘되거든요. 그리 그다음에 얼렁얼렁 시간을 지켜서 일어나는 거 아닙니까? 근데 그 일을 잘 못 해요. 왜 못 하냐면 자꾸 유혹의 시작입니다. 유혹에 시달려요. 유혹에 엄청 시달립니다. 그래서 그 유혹에 시달릴 때 사람들은 대부분이 무너지고 넘어지는 경우가 되게 많습니다. 특별한 경우가 어떤 거냐면요. 보통 교회에서 아무것도 안 하는 사람들은 사실은 유혹이 별로 없습니다. 왜 없냐면요. 그 사람들 자체가 유혹이에요. 근데 우리가 교회에서 뭘 맡겨져서 앞에 세워질 때에 그 사람에 대한 유혹은 굉장히 큽니다. 왜 큰 줄 아십니까?"], ["2:58", "마귀는 우리를 이 앞에 서지 못하게 합니다. 찬양인도 못 하게 하고요. 설교 못 하게 하고요. 섬기는 거 못 하게 하고 교사 못 하게 하고 주님이 기뻐하는 거를 못하게 하는 것은 마귀의 사명입니다. 그니까 우리가 신앙생활하면서 뭔가 잘해보려고 노력할 때 그때 꼭 뭐가 있죠? 유혹이 있습니다. 어떤 유혹인지 아십니까? 하나님의 거룩한 일에 저촉되는 유혹을 받습니다. 그럼 그 유혹이 이길 수 있냐? 대부분 집니다. 그러다 결국 뭐죠? 나도 내가 왜 이렇게 되는지 모르겠어라는 결론을 만듭니다. 왜 그럴까요? 대부분 유혹입니다. 여러분들 우리가 신앙생활하면서 자꾸 넘어지고 또 넘어지고 넘어진 이유가 유혹에 걸려서 넘어질 때가 대부분입니다. 그리고 우리가 더 잘해 보려고 할 때는요."], ["3:47", "유혹이 훨씬 더 심합니다. 그리고 더 안 하려고 할 때는 이미 유혹에 빠진 겁니다. 안 하려고 할 때는 하기 싫다. 오늘 성경 읽고 싶어요. 근데 뭡니까? 뭐가 찾아오죠? 유혹이 찾아옵니다. 어떤 유혹이 찾아올까요? 성경을 읽지 못하잖아요. 오늘 기도하고 싶습니다. 거기에도 게으름의 유혹이 쫓아옵니다. 그 자꾸 뭐가 되죠? 하나님 앞에 더 가까이 가는 거를 방해하는 것이 템테이션 유혹입니다. 그게 엄청납니다. 어떤 사람은 물질의 유혹도 있죠. 돈의 유혹도 있습니다. 그리고 또 뭡니까? 어떤 물건의 유혹도 있고 그 뭐 하나 사고 싶을 때 그거 못 사면 견디지 못하는 사람들 그것 때문에 거기에 집중해서 다른 거 아무것도 못하는 사람들 특별히 예수 믿으면서 신앙생활하고 사역자들에게 걸려 있는 유혹 중에 하나가 뭔지 아십니까?"], ["4:38", "예배 시간에 조는 거예요. 피곤해서 조는 거라고요? 정말요? 왜? 나가서 졸도 해야 돼요. 여기서 피곤해서 졸면 나가서 죽어야 돼요. 아니 졸도 해야 돼요. 근데 여기서 끝나자마자 나가면 생생하죠. 유혹 걸린 거예요. 그러니까 그 사람 피곤하지 않아요. 근데 뭐 할까요? 예배 때만 되면 마귀가 그를 유혹해요. 어떻게 유혹하는지 아십니까? 자꾸 하나님 말씀을 듣지 못하도록 졸게 만들어. 졸게 졸게 만든다고요. 그래 갖고 뭡니까? 계속 예배 시간을 졸게 만들고 딴 생각하게 만들고 집중 못하게 해요. 그 마귀는 우리에게 예배드릴 때 가장 많은 유혹을 합니다. 어떤 유혹을요? 하나님 말씀을 듣지 못하게 하는 그래서 자기도 항상 뭡니까? 어디 앉아야 되는 것에 마음이 불편하면 자꾸 내가 앉아서 은혜 받는 자들을 추구하는 게 아니라 자꾸 은혜에서 멀어지는 자들을 추구해요. 제가 뒤에서 설교해 봐요. 여기까지 있을 걸 아마. 그죠? 왜 그럴까요? 자꾸 거리가 멀게 느껴지게 만들어요."], ["5:40", "거리가 멀게 느껴지게. 그럼 평소에 내 자리가 그 자리다가 하는 거는 별로 문제가 없습니다. 그런데 내 상황에 따라 자리를 옮겨져요. 가장 가운데서 오늘 은혜받고 싶어. 그런 사람하고 아 오늘은 좀 쉬고 싶은데 괜히 왔다. 그럼 결국엔 뭡니까? 가장자리 앉게 됩니다. 스스로가 말씀을 안 들으려고 하는 것에 저촉되는 일들에 마귀가 유혹합니다. 특별히 사역자들한테 유혹은 뭡니까? 예배 시간 조는 거거든요. 그래서 우리 교회도 그렇지만 다른 교회도 마찬가지예요. 제가 있었던 모교회도 동일합니다. 사역자들의 가장 큰 유혹이 예배 시간 자는 거예요. 예배 시간에 자는 거. 예배 시간에 자게 되면 어떤 일을 보는지 아십니까? 당신이 설교하지 말아야 돼요. 왜? 듣는 사람들이 다 자요. 무슨 얘긴지 아십니까? 듣는 사람들이 다 자요. 당신이 졸면서 예배드리는 그 순간에 당신은 조는 병이 들어와 가지고 수많은 사람을 졸리게 해요."], ["6:37", "수많은 사람들을. 그래서 당신이 설교할 때 자기는 잘한 거 같죠? 남들은 하나도 안 듣습니다. 왜 안 들을까요? 이미 당신의 영적으로 소모된 거예요. 영적으로 다 소모된 거예요. 그리고 소모전에서 이미 진 거예요. 이미. 그래서 자꾸 뭐가 되죠? 기도하다가 중간에 중단되고 성경 중간에 중단되고 뭐 하다가 뭡니까? 큐티 중간에 중간에 중단되고 왜 그럴까요? 소모전에서 진 거예요. 소모전에서 진 거예요. 그 사람들 영적으로 완전 KO당한 거예요. 그 KO당한 사람들의 약점이 뭔지 아십니까? 아무것도 하기 싫어요. 아무것도 하기 싫어요. 뭘 시키면 상대방 성질부터 내요? 신경질부터 내요. 기분부터 나빠지고 감정부터 상해요. 왜 그럴까요? 소모전에서 이미 진 거예요. 이미 끝난 거예요. 거기 이기려고 몸부림치는게 영적 성장이고요. 영적 뭡니까? 영적 뭐예요? 경건의 생활에 대한 영적 축복이에요."], ["7:39", "경건의 생활 영적 축복. 그 영적 축복을 눌릴 때 뭐 합니까? 마음이 식는 게 안 생겨요. 목사는 가장 많이 준비하는 게 뭔지 아십니까? 마음이 식지 않게 만드는 걸 가장 많이 준비해요. 가슴이 뜨겁게 만드는 거. 그래서 부정적인 사람들하고 대화 안 해요. 그리고 뭡니까? 신앙이 관심 없는 사람하고는 대화 안 해요. 목사님 왜 안 할까요? 소모전이기 때문에 자기가 갖고 있는 영적인게 소모돼요. 그래서 대화할 때 영적으로 소모된다면 그 사람하고 절대로 대화 안 합니다. 목사는 특별히 그래요. 그래서 교회가 커지는 이유 중에 하나가 뭔지 아십니까? 목사가 소모전에 이기고 있는 거예요. 자기 소모전에 이기고 있다고요. 목사가 지치지 않게 만드는 거예요."], ["8:27", "그럼 교회들은 뭐 합니까? 성령 충만해요. 성령 충만해. 어쨌든 예배 끝나고 난 다음에 어떤 권사님하고 만나서 교제했는데 권사님이 그러더라고요. 목사님 우리 교회는 금방 부흥될 것 같습니다. 저는 이렇게 은혜롭고 이렇게 뜨겁고 이렇게 가슴이 벅찬 예배를 처음 드립니다. 그러면 신경은 졸업할게 얼마 안 남았어요. 내년 2월 달에 졸업한대. 그래 가지고 그 얘기 하더라고요. 내년 2월이면 신경은 제가 졸업합니다. 그때 날 전사들이 되니까 이제는 뭡니까? 권사데 부를 이름이 얼마 안 남았네. 내 그랬어요. 그 그 양이 그러더라고요. 우리 반짝반짝해요. 나이가 60대 다 돼가는데 반짝반짝해. 왜 그럴까요?"], ["9:15", "소모전에 지지 않는 거야. 그 사람 낮에 뭐 하고니까 하루 종일 어린이집에서 일하고 와요. 교사예요. 어린이집. 나이가 60이 다 돼가는데도 어린이집에서 아침에 출근해서 7시 반에 출근하면 거의 5시 끝난대요. 나이가 60이 다 되는데. 근데 또 예배 시간에 졸지 않고 눈 반짝반짝해요. 그리고 저하고 얘기할 때도 눈 반짝반짝하더라고. 왜 그런지 아십니까? 요즘에 신났대요. 말씀의 은혜 받고 신났대요. 요즘에 그러니까 나이하고 상관이 없더라고요. 그 사람은 영적 소모전에 안 지는 거예요. 여러분들 영적 소모전에 지니까 자꾸 예배 시간에 힘이 빠지는 거예요. 그리고 나가면 또 활발해지고 싱싱해져요. 여기 앉아서 눈을 보면 금방 죽을 것 같아요. 그 나가면 몇날드까지 아무렇지도 않게 달려가요."], ["10:04", "영적 소모전의 증거예요. 무슨 말인지 아십니까? 육적으로는 소모된 게 없어요. 영적 소모전에 진 거예요. 그거 꼭 기억하셔야 돼요. 영적 소모전에 지면 한 명도 변화 못 시켜요. 한 명도 변화 못 시켜요. 진 거예요. 근데 그 시작이 영적 소모전에 지는 시작이 제일 먼저가 뭔지 아십니까? 오늘 본문에 나오는 내용이에요. 그게 어떤 거냐면 마귀가 예수님을 시험할 때 첫 번째로 시험이 무슨 시험인지 아십니까? 물질적 시험이야. 그 물질이 뭡니까? 먹는 거야. 먹는 거. 그러니까는 하나님 말씀을 안 봐도 문제 없지만 밥을 안 먹으면 미쳐 버리는 거예요. 하나님 말씀을 안 봐도 항상 기도 안 해도 상관없는데 밥을 안 먹으면 신경질 나는 거예요. 성질이 나고 막 그러는 거예요. 그 육적인 것은 굉장히 민감하죠."], ["10:56", "육적인 건 엄청 민감하니까 못 참아요. 되게 민감해요. 그러니까 오늘도 뭐라 합니까? 사람. 여기 뭐라고 얘기합니까? 시험하는 자가 예수께 와서 마귀가 얘기하는 거든요. 예수께 와서 이르되 네가 만일 하나님의 아들이어든 명하여 이 돌들로 떡덩이가 되게 하라 얘기하는 거 이 돌을 떡이 되게 하라는 거예요. 여러분 무슨 시험이래요? 유혹이라는 것은 어떤 건지 아세요? 말도 안 되는 것을 얘기해. 그게 유혹이에요. 너 여자 되고 싶냐? 여자 되라. 너 여자 되고 싶냐? 여자 되고 싶습니다. 여자 되라. 넌 지금부터 여자일 것이다. 그게 돼요. 유혹이에요. 유혹은 뭐예요? 말이 안 되는 거를 설득하는 거예요. 여러분 테스트는 말이 되는 거를 하려고 몸부림치는 거거든요. 유혹은 말이 안 되는 거를 설득시키는 거예요."], ["11:46", "그게 마귀의 사명이에요. 마귀가 우리에게 사명을 줄 때 마귀가 사명을 가지고 우리에게 유혹할 때 템테이션 할 때 뭔지 아십니까? 말이 안 되는 걸로 유혹해요. 말이 안 되는 걸로. 요즘에는 뭐가 되게 많을까요? 21세기는 널리지 시대거든요. 지식의 시대예요. 그러니까 지금 계속 핸드폰 가지고 지식 보는 걸로 마귀가 계속 유혹해요. 그 유혹이 뭔지 아십니까? 나를 내 몸을 또 내 육신에 대한 것에 매우 큰 관심을 갖게 만들어요. 매우 큰 관심을. 그래 그것 때문에 정신이 나가서 육신의 문제가 생기면 바로 정신병이 생기는게 그거예요. 육신의 문제에 걸렸으면 바로 육신의 문제가 해결되는게 아니라 정신병이 생긴다고요."], ["12:32", "왜냐면 육신의 문제를 해결하기 위해서 뭐를 많이 있어야 돼요? 머리가 아프기 시작하잖아요. 살을 빼고 싶은데 살이 안 빠져요. 근데 뭘 먹고 뭘 먹고 어떤 운동을 하면 빠진다 그래요. 근데 운동을 하고 그다음날 재보니까 똑같아요. 그리고 운동을 하고 그다음날 재보니까 또 똑같아요. 그럼 그다음에 무슨 생각하잖아요? 이거 아닌 거 아니야? 그러면서 계속 고민해요. 계속 고민해요. 그럼 계속 저울에 올라가요. 그리고 몸무게가 안 빠지면서 성질나요. 그러고 나서 이제는 뭘 얘기합니까? 그렇죠. 육신의 몸은 운동으로 빼는게 아닙니다가 나오잖아요. 지금 뭘로 뺀다 그래요? 약으로 뺀다고 얘기하죠. 근데 거기 꼭 걸리는게 뭐죠? 약이 아니라 식품입니다. 인정하는 사람 있죠? 거기에 얘기하잖아요. 몸에 몸에 뭘 뺐는데?"], ["13:25", "살을 빼는데 약을 먹어야 되는데 이건 약이 아니라 식품입니다. 그래서 당신의 몸에 조금도 이상이 없습니다. 그렇게 얘기해요. 그거 말짱 거짓말이에요. 근데도 이게 육신의 문제가 해결이 안 되면 정신적인 문제가 스트레스를 받기 때문에 공황장애가 오고 자꾸 엉뚱한 거를 자꾸 고민하기 시작해요. 그래서 육신의 문제는 어디 연결되냐? 정신의 문제랑 바로 연결이 돼요. 그래서 두 번째 시험은요. 정신 시험이에요. 정신 시험. 그게 뭔지 아십니까? 이 꼭대기에서 뛰어내리래요. 미친놈이에요. 아니 꼭대기에서 뛰어내려요?. 제가 오늘 새 가가지고 목사님들하고 교제 있어서 교제 잠깐하고 우리 교회 보고 싶다 해서 왔는데 가까운데 45층에 커피숍 있는 거 아십니까? 거기 거기 우리 같이 데려가더라고요. 45층이 커피숍이에요. 45층 45층이 커피숍을 대사하고 45 뭐로 쓰 있는 45 커피라고 쓰 있을 거예요."], ["14:24", "그죠? 45 커피 맞죠? 그 차고 있을 거예요. 거기 근데 거기 45층에 뛰어내려 버린 거예요. 이 미친놈 아니에요. 여기 보세요. 높은 데서 성전 꼭대기에서 뛰어내리기를 하잖아요. 여러분들 우리 갔다 봐서 알죠? 성전 꼭대기가 높아요 낮아요? 이게 이게 엄청 높잖아요. 성전 꼭대기가 거기서 뛰어내려 버려요. 이 미친놈이에요. 정신적인 질병이죠. 그죠? 정신적인 질병인 거예요. 이 말도 안 되는 짓이라는 거예요. 지금도 돌로 돌을 떡으로 만들어라는 거는 물질적인 거예서 그래 나는 지금이라도 돌이 떡이라고 생각하고 먹겠다. 왜 한 여름 부 이 되잖아요. 그러니까 그거에 대해서 아직도 뭐 하게 못하면 그렇죠. 이 이 물리적인 물질적인 질병에서 벗어나지 못하면 정신적인 질병을 바로 바꿔요. 그래서 제정신 못 차려요. 그리고 이 정신적 질병이 바로 뭐가 온지 아십니까? 세 번째로 온게 무슨 질병입니까? 영적인 질병이에요. 영적인 질병이 뭡니까?"], ["15:24", "마귀가 또 그를 데리고 지극히 높은 산으로 가서 천하만국과 그 영광을 보여주고 내게 절하라 그래요. 거기에 우상이 되는 거예요. 거기에. 그러니까 그 일에 미쳐 버리는 거예요. 그 일에 이게 이게 영적인 질병이에요. 거기에 미쳐 버리는 거예요. 거기에 거기 그러니까 이게 단계별로 다단계처럼 와 있는 거야. 이게 첫 번째는 물질적인 거, 두 번째는 정신적인 거. 세 번째는 영적인 거. 이게 계속 하늘로 묶어져서 단계별로 진행이 되는 거예요. 그리고 나중에는 뭐가 될까요? 뭐가 되겠어요? 완전 가생이 되죠. 가생이 그게 되죠. 그니까 어떤 질병이든 다 열어보잖아요. 그럼 제일 먼저 건들어지는게 물질적인 질병이라는 거. 물질적인 질병. 여기부터가 제일 먼저 오는 거. 여기부터 그것부터가 오는 거야. 거기서부터 시작이 돼 가지고 정신병 환자 되는 거거든요. 그것부터 시작돼서 거식증 환자들이 있죠."], ["16:19", "거식증을 갖기 전에 뭐가 있죠? 폭식증이 있잖아요. 거식증 환자들이 덤벼들 환자들이 같이 동반되는데 폭식증 걸 아십니까? 근데 거식증 환자는 폭식증을 없냐고요? 왜 없어요? 폭식증이 먼저 들어와요. 그리고 그다음에 거식증이 들어와요. 폭식증이 뭔지 알죠? 보는 대로 다 먹는 거예요. 냉장고 열어서 막 뭐든지 막 생 거도 먹든 생선도 막 생 거 비린 거 막 다 뜯어 먹어요. 그것도 그냥 먹지 않잖아. 막 뜯어서 막 먹잖아. 막 이렇게. 그리고 그다음에 어떻게 하고 뱉잖아요. 왜 그럴까요? 먼저 폭식증이 온 다음에 거식증이 오는 거예요. 거식증이. 폭식증은 물질적인 환자라면 거식증은요. 정신적인 환자예요. 왜 그러냐면 몸에 뭔가 들어가 있는 것을 거부하는 거거든요. 자기가 먹어 놓고 그리고 자기가 손가락으로 집어넣고 토해요."], ["17:15", "그거랑 연결되는 거거든요. 그니까 우리가 제일 먼저 걸리는게 신앙의 가장 나타니까 졸린. 그리고 뭐죠? 막 먹어 대는 거. 그리고 뭐든지 자기 몸하고 상시가 먹어서 막 살이 막 찌는데도 아무리 주도 기다리는 거. 그러니까 어느 순간부터 갑자기 느껴지죠. 내가 좀 심각해진 거 같다. 그다음부터 뭐가 될까요? 정신질병. 정신질병이 그게 오는 거예요. 무슨 얘긴지 아십니까? 이거 공감하는 사람들 지금 느낄 거예요. 스스로가. 이게 계속 가요. 이게 단계별로. 그리고 그다음에 뭘까요? 무력증이 와요. 무력증이 무기력증이 오면 어떻게 된다? 아 우울증 증상에 한 무기력증 정도는 우울증 증상의 초기 증상 올 거거든요. 그게 좀 심해지면 어떻게 되는지 아십니까?"], ["18:11", "좀 심해지면 이제는 우울증 증상이 오겠죠. 우울증 증상이 최대로 오잖아요. 제일 먼저 건드리는게 뭔지 아십니까? 죽고 싶은 마음에 자살 충동이 나와요. 우울증 사람 자살 충동. 그래서 우울증 자살 자살 충동이 몇 번 걸린 사람들이 대부분이 우울증상을 갖고 있다고 말해요. 이게 계속 연결되는 거예요. 이게 그러니까 오늘도 마귀가 조롱할 때 첫 번째가 뭐죠? 물질적인 조롱을 하는 거예요. 먹는 거, 입는 거, 그리고 심는 거. 이런 것들에 대해서 자꾸 뭐하게 만들죠? 민감하게 만들어요. 민감하게."], ["18:58", "여기서 뭡니까? 우리는 영적인 신앙의 환자를 만들어 낼 수 있어요. 영적인 신앙의 환자를. 왜냐면 계속 뭐가 되죠? 먹는 것 때문에 불편하고 계속 생각해. 먹는 것만 찾아다녀요. 엄청 미식가하고 달라요. 오해하지 마세요. 이거 미식가고 다른 거예요. 왜? 계속 그쪽에 집중하기 시작해요. 계속 여러분 이게 마귀가 우리를 무너뜨리는 첫 번째 단계의 시험입니다. 이 시험을 계속 무너지게 만들죠. 여러분 거기에 걸려 넘어졌던 사람이 한 사람이 누굽니까? 야곱의 형 에서죠. 에서 먹는 것에 굉장히 민감한 삶이죠."], ["19:46", "그러니까 나가서 짐승 잡아오고 들어오자마자 기다렸다가 요리해서 먹으면 되든지 엄마한테 어머니한테 가서 요리해 달라고 해서 먹으면 기다리는 못 기다려 못 기다려. 이게 자꾸 뭐가 문제 급함을 만들어내는 거 급함. 그러니까는 그걸 너무나 잘 알죠. 누가 그러니까 오자마자 뭐 합니까? 그도 뭐 맛있게 살렸다. 그때 형 그서 뭘 얘기하죠? 형 뭘 얘기죠? 형 그거 나한테 장자권 주면 내가 이거 줄게. 야곱이 동생에게 얘기하죠. 형이 뭐라고 가죠. 그 먹는 거에 민감한 사람은 뭐가 될까? 자기의 중요한 걸 쉽게 잃어버려요. 자기의 중요한 걸 왜 먹는 거를 바로바로 바꿔치게 하거든요. 누가 그랬을까요?"], ["20:45", "최초의 인류의 조상님 아담과 하와가 그랬죠. 선악과 안 먹어도 됐어요. 거기에 에덴이 먹을게 얼마나 많은데요. 근데 굳이 먹지 말라고는 선악과에 먹었을까요? 보암직도 하고 먹음직도 하고 만져보고 또 탐스럽고 갖고 싶고 그런 충동이 자꾸 느껴지면 된다. 그게 느껴지면서 뭐가 만들어지는 거죠? 그렇죠. 자기의 영적 무기력이 생겨요. 영적 무기력. 여러분들 이해되십니까? 무기력증이 생기는 거예요. 그 그거에 우리가 계속 뭐 하죠? 민감성이 떨어져요. 그래 자꾸 먹는 거 찾는 애들은 둔해요. 이 둔하다는 말이 다른 말로 나오면 머리가 나빠진다는 말을 쓰는게 그거예요."], ["21:33", "왜? 정신적으로 둔해져요. 이게 물질적인게 민감한 사람들은 정신적으로 둔해져요. 그래서 자기 급이 사람들 머리 좋은 사람들이 별로 없어요. 먹는 거 좋아하는 사람들이 머리 별로 안 좋거든요. 그래서 많이 먹는 사람들 이런 사람들은요. 머리가 대부분 나빠요. 왜? 먹고 나면 몸이 무겁지. 그리고 또 졸리지 아무것도 못 하지. 거기 다 걸려 있어요. 그러면 이 사람은 신앙생활을 못 해요. 왜 못 하냐면요. 이것 때문에 이 무기력증이 자꾸 생겨요. 먹어서 무기력증, 안 먹어서 무기력증 계속 생겨. 그럼 시간이 지나면 어떻게 될까요? 이 이 사람은 이거 외에는 다른 것에 관심이 없어요. 관심이 없어요. 사탄이 예수님께 시험했을 때 가장 첫 번째 시험이 이것도 먹는 거죠. 왜? 40일을 금식했잖아요."], ["22:27", "예수님이 밤낮으로 40일을 금식했으니까 여러분 제가 얘기했잖아요. 하루 금식도 쉽지 않은 거라고. 근데 40일을 금식했으니까 먹는 거에 대해서 굉장히 급해졌을까요? 정말 그럴까요? 예. 여러분들 40일 금식하면 먹는게 급해졌을까요? 먹는 거 생각 안 날 수도 있어요. 이게 생각 안 날 수도 있어요. 왜 안 날 수도 있을까요? 40일 안 먹었는데 뭘 하루 더 안 먹는다고 문제가 생기겠어요? 그리고 40일씩 갖고 바로 먹으면 돼요? 안 될걸요. 왜? 속에 위에 아무것도 안 들어가는데 40일 아무것도 안 들어왔는데 갑자기 수막 밥이 막 들어와. 얘 병원 실려 가지 않을까요? 거기에 뭐가 있을까요? 그렇죠. 거기에 뭐 한다고 이 돌들로 떡을 만들라. 예수께서 뭐라고 합니까? 사람이 떡으로만 살 것이 아니 내가 40일 금식해 보니까 이 안 먹는 걸로 죽지 않더라. 나도 안 먹으면 죽는 줄 알았어."], ["23:32", "열흘만 안 먹어도 일주일만 안 먹어도 4일만 안 먹어도 나 죽을 줄 알았다. 근데 40일을 안 먹어도 안 죽더라. 결국에는 뭐죠? 사람이 먹는 걸로 사는게 아니더라. 그 뭘로 사는 겁니까? 하나님의 입으로 나오는 말씀으로 살 것이다. 그 말씀은 뭡니까? 뭐죠? 공허함을 채워내는 거. 그 자꾸 먹는 사람들이 특징이 공허한 사람들이 많아요. 옆사람 물어보세요. 먹는 거 좋아하는 사람들이 공허함이 많아요. 어딘가 비어 있어요. 어딘가 안 채워주고 외롭고 쓸쓸하고 그리고 아무도 없고 어딘가 모르게 혼자 있다라는 느낌. 이런 것들이 계속 들거든요. 이런 것들이 계속 드는 이유가 뭐죠? 이 이 공허함 때문에 견딜 수가 없는 거예요. 그거를 자꾸 잠으로 채우고 그거를 먹는 걸로 채우고 그거를 노는 걸로 채우고 이러는 거야. 근데 단기간은 그게 효과가 있어요."], ["24:30", "그런데 장기적으로 볼 때는 이건 효과가 있는게 오히려 손해를 보는 거예요. 오히려 손해를 보는 거야. 그러니까 뭐가 필요하다는 거예요? 하나님 말씀이 너를 살려낸다는 거예요. 여러분 굶어 죽는 사람이 많을까요? 외로워서 자살한 사람이 많을까요? 외로워서 자살한 사람 많아요. 고독한 사람들이 너무 많아요. 왜? 왜 자꾸 고독할까요? 사람들이 핸드폰 보면 되는데 핸드폰으로 안 채워지죠. 그거 계속 봐도 별거 없어요. 근데 똑같은 거를 계속 반복하잖아요. 왜 반복할까요? 그냥 심심해서요. 심심해서 그거 이런 거거든요. 그냥 심심해서요. 다섯 거야. 새로운 것도 아니야. 별 다른 것도 없어. 여러분들하고 제 핸드폰은 좀 다른가요? 틀려요."], ["25:23", "그럼 제가 나오는 거 여러분들 맞는 거 아니에요? 그러면 결국 볼 거 별로 없는 거예요. 왜? 열어보면 열어볼수록 다 다른게 나오지만 결국은 돌아가면 돌아가면 똑같은 것 또 나오고 계속 스포츠만 계속 보면 스포츠만 계속 나오고 음식만 계속 보면 음식만 계속 나오고 옷만 계속 보면 옷만 계속 나오는 거 아니에요? 그 여러분들은 옷을 계속 먹는 것도 나오고 막 그냥 노는 것도 나오고 스쳐도 나오고 돼요. 다통만 나오잖아요. 거기에 설교만 계속 찾으면 뭐만 나와요? 설교만 계속 나오잖아요. 그건 무슨 얘기입니까? 네가 요구하는 건 내가 들어줄 수 있어. 우상이에요. 그게 어제 얘기했잖아요. 네가 요구하는 거 내가 들어줄 수 있어. 우상이라니까요. 그게 네가 요구하는 대로 내가 줄 수 있어. 너한테 그 계속 주는 거예요."], ["26:10", "계속 계속 주는 거예요. 챗GPT랑 채팅하는 사람들 있죠. 서로 얘기하는 사람들 뭐라고 말해 주고 싶고 무슨 얘기를 하고 싶고 뭐 이런 거 궁금해. 나 이런 거 궁금해. 보지 마세요. 왜? 그거 가장 기본적인 거 얘기하는 거예요. 내가 그랬잖아요. 그때 예전에 아 우리 아들이 딸내미 같이 휴가 갔다가 잠만 부절로 가지고 잠을 적게 재우는 방법 없을까? 그렇게 하고 챗GPT한테 물어봤더니 챗GPT가 뭐라고 말하냐면 잠은 신성한 겁니다. 잠은 잘수록 좋은 겁니다. 그리고 무기력증을 해소하고 잠은 뭐 알아. 그런데 네가 말하는 그 잠을 얘기하는게 아니야. 아무 때나 생각 없이 자는 거죠."], ["27:03", "아무 때나 생각 없이. 여러분들 핸드폰도 좋은 거는 뭘 얘기하죠? 때와 장소 가리지 않고 빵빵 터져야 되잖아요. 그래 안 그래요? 그게 좋은 핸드폰 아니에요? 좋은 기지국이고. 근데 여러분들 푼수가 뭐죠? 시간과 장소를 가리지 않고 빵빵 터지는 거 아니에요. 그게 푼수잖아요. 시간과 장소 가리지 않고 빵빵 터지는 거. 할 말 안 할 말 상관없이 막하는 거. 그죠? 어느 때나 가서 뭐든지 하는 거죠. 내가 틀린 말했나? 맞는 얘기죠. 근데 왜 그걸 여기서 얘기를 해야 돼? 그죠? 그럼 왜 여기서 얘기를 해야 돼? 여러분들이 이해되십니까? 그런 거죠. 그거 아닙니까? 뭡니까? 그 얘기가 맞는 얘기지만 그 얘기를 굳이 밥 먹을 때 왜 해?"], ["27:56", "어제부터 자꾸 뽕먹이 그지럽다든지 근지러워서 밥니 회충이 나왔다는 그런 얘기를 밥 먹을 때 왜 해야 되죠? 그 푼수 아니에요? 그렇지 않습니까? 그런 거죠. 그런 부분들을 만들어 내는 거죠. 우리도 마찬가지입니다. 육적인 것에 계속 거기에 연연하다 보니까 자꾸 뭐가 되죠? 자기의 목표와 방향이 상실이 돼요. 목표와 방향이 상실이 되죠. 우리 눈으로 보여지는 거 그리고 입으로 자꾸 집어넣는 거 그런 것들 자꾸 뭔가 내 몸에 맞추게 있는 거 이런 것들을 자꾸 생각하다 보면 뭐가 되죠? 내 방향이 흐려진다고요."], ["28:45", "내가 가야 될 방향이 흐려지고 목적이 흐려져요. 그리고 내가 지금 어디로 가는지도 몰라요. 목사의 목사의 가장 민감성 중에 하나가 두 번째가 뭔지 아십니까? 그거예요. 방향성이에요. 첫 번째는 모르겠죠. 가슴을 뜨겁게 만드는 거. 열정을 만들어 내는데 목사가 해야 될 일이 하나요. 제가 놓치지 않는 걸 지금 여러분들한테 얘기하는 거예요. 우리 전도사님들 잘 들으세요. 나는 가슴을 뜨겁게 하는 걸 우리 목사님처럼 안 붙쳐 있구나. 그리고 내가 가는 방향을 늘 고민하고 생각하는 지도자가. 나는 지금 어디로 가는지를 지금 정확하게 지금 가지고 있는 사람인가? 이걸 보지 않으면 자꾸 무너지고 깨져요."], ["29:28", "왜 그렇죠? 다른 생각을 자꾸 하게 되니까요. 다른 생각을 하게 되. 여러분 여기 있는 거하고 세종 있는 거하고 또 차이가 있죠. 세종 있을 때는 거리가 멀리니까 목사님의 안 보이니까 눈을 감아도 상관없다고 생각하는데 여기는 눈 감기가 미안하죠. 하나씩 다쳐다보고 얘기하니까 그죠. 그러니까는요. 저쪽에 있을 때는 신앙이 만들어지려면 눈을 조금 쓰고 정신 바짝 차려야 돼요. 여기서는 안 차 때 내가 쳐다만 봐도 까먹었다고 뜨거든. 근데 거기는 안 보이잖아요. 그러니까는 눈을 뜰 수가 없는 거예요. 왜? 안 보이니까 자연적으로 감아요. 자연적으로 감아요. 어느 순간에 교회 오기 싫어져요. 어느 순간에. 왜 그럴까요? 오늘도 가서 잘 건데 뭘 그래 하고 마귀가 안에서 뭐 하죠? 템테이션 시작하죠."], ["30:20", "잘 건데 뭘 가? 그냥 가지 마. 하루 안 간다고 문제냐? 해. 어떤 거짓말? 야, 오늘 바빴다 그래. 아팠다 그래. 그리고 좀 있어. 누군가 물어보면 뭔 일 있다고 하고 안 물어보면 너무 하는 거야. 그게 마귀 유혹이에요. 몰랐죠? 마귀 유혹이에요. 마귀는 우리를 뭐 하게 만든다고요? 죽이는 죽이게 만든다고요. 죽이게 만드는 거. 마귀는 그렇게 해요. 거기에 우리가 자꾸 뭡니까? 거짓말을 자꾸 하고 거짓말에도 상관은 없어요. 당신의 영적인 문제가 손해를 봐서 문제예요. 제가 거짓말한다고 여러분에게 뭘 손해를 보겠어요? 제 자신이 손해를 보니까 안 하죠. 내가 손해를 보니까 안 하죠. 왜? 거짓말 자꾸 하면 민감성이 떨어지죠."], ["31:12", "저는 거짓말을 안 해서 거짓말 한 번 하면 불편해요. 하루가. 그래서 그냥 고백하는게 나 불편해서 거짓말은 불편해 견딜 수가 없어요. 근데 거짓말을 자꾸 하는 사람은 안 불편해요. 거기에 둔해진 거예요. 둔해진 거. 자기를 고쳐 나가겠다는 작업이 신앙인데 자기가 자기를 망치는 일을 계속하고 있으면 성령이 그 안에서 둔해지잖아요. 둔해지잖아요. 이해되십니까? 둔해지. 목사님 저는 기도 안 해도 괜찮아요. 기도 안 해도 괜찮은 건 맞아요. 둔해져서 그렇죠. 둔해져서 그렇죠. 저 안 아픈데요. 상관없어요."], ["32:00", "갑자기 어느 순간 배가 좀 이상해서 갔더니 암 말기래. 그게 문제지. 이게 문제지. 뭐가 문제예요? 왜 자꾸 민감해져야 되죠? 암 말기 전에 가야 되니까요. 영적인 것도 그렇죠. 교회 떠나고 싶습니다. 그만 하기 전에 미리 민감성을 깨는 거를 없애야 돼요. 다른 사람한테 거짓말 막 하는 거 자기 손해라고 생각 한 번도 안 하죠. 바보라서 그래요. 자기가 손해예요. 자기가. 왜 그럴까요? 내가 그 거짓말이 능수능란해져서 자기가 거짓말을 하는 거에 대해서 죄책을 못 느껴요. 옆사람 우리가 인제 막 때렸어요. 목사님 안 아픈데요. 뼈 부러지지 않았을까요?"], ["32:53", "뼈가 부러졌는데도 안 아프대요. 그러면 괜찮아요? 여러분 아파야 되는 거 아니에요? 그래야 피할 거 아닙니까? 아무리 때려도 안 아프대요. 곧 죽는 거예요. 아무리 먹어도 배가 안 부르대요. 배 터지는 거 아닙니까? 생각해 보세요. 어느 순간에 민감성이 있어야 되잖아요. 졸고 있고 자고 있어요. 그때 내 영적으로 내려간다는 걸 못 느낀다는 거니 영적으로 죽어가고 있다는 거예요. 그것 때문에 자꾸 뭘 만들 민감하게 만드는 거예요. 왜? 그거 죽어 가면은 나도 모르게 불신자가 돼 있으니까 하나님의 영이 없고 기도가 안 되고 말씀이 안 보이잖아요."], ["33:40", "그리고 스스로가 은혜 못 받는 얘기를 설교하잖아요. 스스로가 그 민감성 때문에 그렇다니까요. 육체적인 것도 민감성 때문에 그래요. 몸을 갖다가요. 냉동시켜 놓고 빼 봐요. 그리고 뭡니까? 톱으로 잘라 봐요. 아픈가? 냉동시키는 몸뚱이 안 아파요. 그런데 어때 아프죠? 지금 잘르면 안 아플까요? 아프잖아요. 이 민감성 때문에 그래요. 이것 때문에 내 자신을 똑바로 세우는 거예요. 이게 없으면은 시간이 지나면 다 뭐 하게 되죠? 거기에 둔해지죠. 거기에 둔해지죠. 둔해지면 그다음에 또 뭐야 될까요?"], ["34:28", "자기 좋아하는 사람들도 거짓말 능수능란해져요. 나중에 무슨 생각하죠? 너 왜 맨날 거짓말하니? 나 진짜야. 아 그 말이야. 금방 내 거짓말에 금방 내 그래 놓고도 안 했다 그래요. 왜 그럴까요? 조금도 불편하지 않아요. 그 거짓말이 능수능란해지는 거야. 민감성이 없이 둔해지는 겁니다. 여러분들 그거 아십니까? 둔해진 겁니다. 목사가 그게 떨어지는 순간 성도들은 교회에서 은혜를 못 받아요. 나가게 돼요. 하나씩 빠져나가게 돼요. 그리고 자기도 두뇌지는 안 듣게 돼요."], ["35:13", "그렇게 자꾸 졸게 되고 딴 생각해 되고 나가게 되고 교회가 커질수록 성도들의 신앙이 약해지는게 그거예요. 왜? 여기서는 목사가 좀 쳐다보잖아요. 거기서는 못 쳐다보잖아요. 모르니까. 그러니까 자기도 그게 졸게 되고 자게 돼요. 그래서 교회 큰 교회가 신앙이 별로 없는 사람이 신앙이 별로 없는 사람들이 곳곳에 있는게 그거예요. 자기 졸라도 아무도 얘기하지 하지 않아요. 자기 자도 아무도 얘기 하지 않아요. 거기에 깨우고 이런 해야 되거든요. 근데 안 해요. 왜 안 할까요? 그래서 어느 순간 성도들이 자꾸 뭐가 되죠? 졸게 자게 되고 그다음부터 교회 나오기 싫게 되고 이게 연속성을 가지고 단계별로 자꾸 가는 거예요. 단계별."], ["36:08", "이것들을 빨리빨리 바꿔 나가는 작업들을 여러분들이 하지 않으면 우리는 신앙에 벌써 물질적인 시험에 템테이션에 져 있는 거예요. 누구처럼? 아담처럼 하와처럼 거짓말, 사울처럼 거짓말, 야곱처럼 거짓말 그리고 그들의 평생을 뭐하게 살았죠? 힘들게 살았죠. 왜 힘들게 살았을까요? 하나님이 당신을 돕지 않으니까요. 기도의 응답이 안 되니까요. 하나님 앞에 기도할 때 응답이 없습니다. 그래서 기도 안 하게 돼요. 하나님께 말씀들을 때 가슴으로 오지 않습니다. 성경 안 봐요. 사람과 대화 안 해요. 왜 안 할까요?"], ["37:00", "자기한테 별것이 없으니까. 그래서 혼자 이렇게 돌아다니게 돼요. 그 사람은 교회 나가나 첫 번째 사람입니다. 혼자 있을 때 교회 나가게 된 첫 번째 사람입니다. 여러분들 이해되십니까? 교회 가장 중요한 교회 목적이 뭐죠? 하나됨이죠. 그 하나됨을 만들어 가는 공동체는 절대로 이탈하는 사람이 없습니다. 개인의 문제 있는 사람 이런 사람들을 마귀가 가장 먼저 찾아가죠. 우는 사자와 같이 삼킬 자를 찾나니 너희는 믿음을 굳건하게 하여 저를 대적하라 그러죠. 대적하라. 대적할 수 없죠. 왜 대적할 수 없을까? 이미 이탈되는데 무슨 대요? 대도 못 하죠. 오늘 이것 꼭 기억하셔야 돼요."], ["37:51", "하나님 말씀이 내 안에 똑바로 살아야 된다고 하는 그 내용들이 우리 안에 정확하셔야 됩니다. 저는 두 개 섬기면서 걱정과 염려가 그거예요. 뭔줄 아십니까? 목사가 교회가 두 개니까 여기저기 분열됐잖아요. 거기에 어느 순간에 목사의 눈이 자꾸 피해지고 혼자 있는 시간들이 많아지고 하다 보면 거기에 유혹에 걸려요. 그리고 자기도 나가요. 그런 사람들이 세종에 무지하게 많습니다. 엄청나게 많습니다. 세종이 그러면서 교회 오고 싶어도 자신이 없어요. 왜 없을까요? 혼자서 생활한다고 생각합니다. 여러분 우리 교회는 아무리 여러분들이 환자해도 아무 상관없는게 왜 그런지 아십니까? 목사가 이렇게 모이게 만들잖아요. 기수로 모이게 만들고 부서로 모이게 만들고 계속 만들죠."], ["38:49", "그러니까 자기 스스로가 있다 하더라도 거기만큼은 가서 다시 도전받아. 이것들을 계속 반복해 갈 수 있는 거. 지지치지 마십시오. 여러분들 알겠죠? 지치지 마십시오. 그래서 자기 신앙 꾸준히 만들어가고 첫 번째 시험에 무너지지 않는 성도로 든든하게 세워지기를 주의 이름으로 축복합니다. 아멘."]];
+const toSec=t=>t.split(':').reduce((a,b)=>a*60+ +b,0);
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const S=T.map(([t])=>toSec(t));
+const W=T.map(([,x])=>x.split(/\s+/).filter(Boolean));
+// 단어별 대략적 시작 시간: 문단 시간 사이를 글자 수 비율로 나눔
+const WT=W.map((ws,i)=>{const a=S[i],b=i+1<S.length?S[i+1]:END;const tot=ws.reduce((n,w)=>n+w.length+1,0);let c=0;return ws.map(w=>{const t=a+(b-a)*c/tot;c+=w.length+1;return t;});});
+const list=document.getElementById('list'), scroller=document.getElementById('scroll');
+list.innerHTML=T.map(([t],i)=>`<div class="seg" data-i="${i}"><div class="av">임</div><div><div class="who">임헌규 목사<button data-s="${S[i]}">${t}</button></div><div class="tx"></div></div></div>`).join('');
+const segs=[...list.children];
+function renderTx(i,k){const tx=segs[i].querySelector('.tx');tx.innerHTML=W[i].map((w,j)=>{let h=esc(w);if(k&&w.includes(k))h=h.split(esc(k)).join('<mark>'+esc(k)+'</mark>');return `<span class="w" data-i="${i}" data-j="${j}">${h}</span>`;}).join(' ');}
+T.forEach((_,i)=>renderTx(i,''));
+const q=document.getElementById('q'),cnt=document.getElementById('cnt');
+q.addEventListener('input',()=>{const k=q.value.trim();let n=0;segs.forEach((el,i)=>{renderTx(i,k);const ok=!k||T[i][1].includes(k);el.classList.toggle('hide',!ok);if(k&&ok)n++;});cnt.textContent=k?`'${k}' ${n}개 구간`:'';});
+
+/* ---- 유튜브 플레이어 ---- */
+let player=null, ready=false, pending=null;
+const START=(()=>{const m=location.hash.match(/t=(\d+)/);return m?+m[1]:S[0];})();
+const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+let lastSave=0;
+function saveProg(t,force){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();const P=lsGet('sermon-progress',{});const o=P[VID]||{};const dur=(player&&player.getDuration&&player.getDuration())||END;P[VID]={t:Math.floor(t),at:Date.now(),done:o.done||t/dur>=0.9};lsSet('sermon-progress',P);}
+const bm=document.getElementById('bm');
+const drawBm=()=>{const on=lsGet('sermon-saved',[]).includes(VID);bm.classList.toggle('on',on);bm.textContent=on?'★ 저장됨':'☆ 저장';};
+bm.onclick=()=>{let s=lsGet('sermon-saved',[]);s=s.includes(VID)?s.filter(v=>v!==VID):[VID,...s];lsSet('sermon-saved',s);drawBm();};
+drawBm();
+const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
+window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{videoId:VID,playerVars:{playsinline:1,rel:0,start:START},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
+function seek(t){if(!ready){pending=t;return;}player.seekTo(Math.max(0,t-0.5),true);player.playVideo();}
+
+/* ---- 재생 위치에 맞춰 스크립트 따라가기 ---- */
+let follow=true, lastI=-1, lastW=null, userScrollAt=0;
+/* ---- 설정: 글자 크기 ---- */
+(()=>{const sizes=[[0.88,'가',13],[1,'가',15],[1.15,'가',17],[1.3,'가',19],[1.5,'가',21]];
+  let cur=1; try{const v=parseFloat(localStorage.getItem('sermon-font'));if(v)cur=v;}catch(e){}
+  const box=document.getElementById('fsz');
+  const apply=v=>{cur=v;document.documentElement.style.setProperty('--fz',v);try{localStorage.setItem('sermon-font',v);}catch(e){}box.innerHTML=sizes.map(([z,t,px])=>`<button data-z="${z}" class="${z===cur?'on':''}" style="font-size:${px}px" aria-label="글자 크기 ${Math.round(z*100)}%">${t}</button>`).join('');};
+  box.onclick=e=>{const b=e.target.closest('button');if(b)apply(+b.dataset.z);};
+  document.getElementById('gear').onclick=()=>document.getElementById('setp').classList.toggle('on');
+  apply(cur);})();
+const fbtn=document.getElementById('follow');
+fbtn.onclick=()=>{follow=!follow;fbtn.classList.toggle('on',follow);fbtn.textContent=follow?'따라가기 ON':'따라가기 OFF';if(follow)lastI=-1;};
+scroller.addEventListener('touchmove',()=>userScrollAt=Date.now(),{passive:true});
+scroller.addEventListener('wheel',()=>userScrollAt=Date.now(),{passive:true});
+function locate(t){let i=0;for(let k=0;k<S.length;k++)if(S[k]<=t)i=k;let j=0;WT[i].forEach((wt,k)=>{if(wt<=t)j=k;});return [i,j];}
+setInterval(()=>{
+  if(!ready||!player.getPlayerState)return; const st=player.getPlayerState(); if(st!==1&&st!==3)return;
+  const t=player.getCurrentTime(); saveProg(t); if(t<S[0]-1)return;
+  const [i,j]=locate(t);
+  if(i!==lastI){segs.forEach(s=>s.classList.remove('now'));segs[i].classList.add('now');lastI=i;
+    if(follow&&Date.now()-userScrollAt>4000&&document.getElementById('txt').classList.contains('on')){const r=segs[i].offsetTop-8;scroller.scrollTo({top:r,behavior:'smooth'});}}
+  const w=segs[i].querySelector(`.w[data-j="${j}"]`); if(w!==lastW){if(lastW)lastW.classList.remove('say');if(w)w.classList.add('say');lastW=w;}
+},250);
+
+window.addEventListener('pagehide',()=>{try{if(ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
+document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
+
+
+/* ---- 듣기 모드: 영상은 작게, 자막은 크게 ---- */
+const fmtT=s=>{s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`;};
+const ppBtn=document.getElementById('pp'), tmEl=document.getElementById('tm'), tdEl=document.getElementById('td'), skEl=document.getElementById('sk');
+let dragging=false;
+function setMini(on){document.body.classList.toggle('mini',on);lsSet('sermon-mini',on);document.getElementById('lm').textContent=on?'🎬 영상 크게':'🎧 듣기 모드';}
+document.getElementById('lm').onclick=()=>setMini(!document.body.classList.contains('mini'));
+document.getElementById('ex').onclick=()=>setMini(false);
+ppBtn.onclick=()=>{if(!ready){pending=START;return;}const st=player.getPlayerState();if(st===1||st===3)player.pauseVideo();else player.playVideo();};
+const jump=d=>{if(!ready)return;player.seekTo(Math.max(0,player.getCurrentTime()+d),true);};
+let SKIP=10; try{const v=parseInt(localStorage.getItem('sermon-skip'));if(v)SKIP=v;}catch(e){}
+const bkB=document.getElementById('bk'), fwB=document.getElementById('fw'), skp=document.getElementById('skp');
+function setSkip(v){SKIP=v;try{localStorage.setItem('sermon-skip',v);}catch(e){}bkB.textContent='-'+v;fwB.textContent='+'+v;bkB.setAttribute('aria-label',v+'초 뒤로');fwB.setAttribute('aria-label',v+'초 앞으로');
+  skp.innerHTML=[5,10,15,30].map(s=>`<button data-s="${s}" class="${s===SKIP?'on':''}" style="font-size:13px;min-width:46px">${s}초</button>`).join('');}
+skp.onclick=e=>{const b=e.target.closest('button');if(b)setSkip(+b.dataset.s);};
+bkB.onclick=()=>jump(-SKIP); fwB.onclick=()=>jump(SKIP);
+setSkip(SKIP);
+skEl.addEventListener('input',()=>{dragging=true;document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
+skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
+setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');}},500);
+tdEl.textContent=fmtT(END);
+if(lsGet('sermon-mini',false)) setMini(true);
+document.getElementById('mtitle').textContent=document.querySelector('.head h1').textContent;
+
+/* ---- 단어·시간 누르면 그 위치부터 재생 ---- */
+list.addEventListener('click',e=>{
+  const w=e.target.closest('.w'); if(w){userScrollAt=0;seek(WT[+w.dataset.i][+w.dataset.j]);return;}
+  const b=e.target.closest('.who button'); if(b){userScrollAt=0;seek(+b.dataset.s);}
+});
+
+/* ---- 탭 / 구간 바로가기 ---- */
+const tabs=document.querySelectorAll('.tabs button');
+function show(t){tabs.forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));scroller.scrollTop=0;}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.t));
+document.querySelectorAll('.chap a').forEach(a=>a.onclick=e=>{e.preventDefault();show('txt');lastI=-1;userScrollAt=0;seek(+a.dataset.s);});
+</script>
+</body>
+</html>
