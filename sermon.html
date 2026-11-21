@@ -106,7 +106,7 @@ button{font:inherit;color:inherit}
 
 <script>
 const DAYS=['일','월','화','수','목','금','토'];
-const TYPES=['주일예배','수요예배','목요예배','금요예배','토요예배','새벽예배'];
+const TYPES=['주일예배','수요예배','목요예배','금요예배','토요예배','대학처예배','새벽예배'];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
 const PROG=load('sermon-progress',{}), SAVED=load('sermon-saved',[]);

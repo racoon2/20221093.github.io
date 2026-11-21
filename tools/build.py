@@ -19,8 +19,8 @@
 import html, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SLUG = {"주일예배": "sun", "수요예배": "wed", "목요예배": "thu", "금요예배": "fri", "토요예배": "sat", "새벽예배": "dawn"}
-TYPE_ORDER = ["주일예배", "수요예배", "목요예배", "금요예배", "토요예배", "새벽예배"]
+SLUG = {"주일예배": "sun", "수요예배": "wed", "목요예배": "thu", "금요예배": "fri", "토요예배": "sat", "대학처예배": "sat", "새벽예배": "dawn"}
+TYPE_ORDER = ["주일예배", "수요예배", "목요예배", "금요예배", "토요예배", "대학처예배", "새벽예배"]
 e = html.escape
 
 
