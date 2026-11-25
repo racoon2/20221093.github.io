@@ -166,7 +166,7 @@ const drawBm=()=>{const on=lsGet('sermon-saved',[]).includes(VID);bm.classList.t
 bm.onclick=()=>{let s=lsGet('sermon-saved',[]);s=s.includes(VID)?s.filter(v=>v!==VID):[VID,...s];lsSet('sermon-saved',s);drawBm();};
 drawBm();
 const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
-window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{host:'https://www.youtube-nocookie.com',videoId:VID,playerVars:{playsinline:1,rel:0,start:START},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
+window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{videoId:VID,playerVars:{playsinline:1,rel:0,start:START},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
 function seek(t){if(!ready){pending=t;return;}player.seekTo(Math.max(0,t-0.5),true);player.playVideo();}
 
 /* ---- 재생 위치에 맞춰 스크립트 따라가기 ---- */
