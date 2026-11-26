@@ -144,8 +144,10 @@ const toSec=t=>t.split(':').reduce((a,b)=>a*60+ +b,0);
 const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const S=T.map(([t])=>toSec(t));
 const W=T.map(([,x])=>x.split(/\s+/).filter(Boolean));
-// 단어별 대략적 시작 시간: 문단 시간 사이를 글자 수 비율로 나눔
-const WT=W.map((ws,i)=>{const a=S[i],b=i+1<S.length?S[i+1]:END;const tot=ws.reduce((n,w)=>n+w.length+1,0);let c=0;return ws.map(w=>{const t=a+(b-a)*c/tot;c+=w.length+1;return t;});});
+// 단어별 시작 시간: 자막 구간 시작점([단어순번, 초])이 있으면 그 사이를, 없으면 문단 전체를 글자 수 비율로 나눔
+const WT=W.map((ws,i)=>{const end=i+1<S.length?S[i+1]:END;const A=(T[i][2]&&T[i][2].length)?T[i][2]:[[0,S[i]]];const out=new Array(ws.length);
+  A.forEach(([w0,a],k)=>{const w1=k+1<A.length?A[k+1][0]:ws.length,b=k+1<A.length?A[k+1][1]:end;const part=ws.slice(w0,w1);const tot=part.reduce((n,w)=>n+w.length+1,0)||1;let c=0;part.forEach((w,m)=>{out[w0+m]=a+(b-a)*c/tot;c+=w.length+1;});});
+  for(let j=0;j<ws.length;j++)if(out[j]==null)out[j]=j?out[j-1]:S[i];return out;});
 const list=document.getElementById('list'), scroller=document.getElementById('scroll');
 list.innerHTML=T.map(([t],i)=>`<div class="seg" data-i="${i}"><div class="av">임</div><div><div class="who">임헌규 목사<button data-s="${S[i]}">${t}</button></div><div class="tx"></div></div></div>`).join('');
 const segs=[...list.children];

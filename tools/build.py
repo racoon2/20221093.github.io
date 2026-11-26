@@ -8,7 +8,7 @@
   "vid": "유튜브 영상 ID", "date": "YYYY-MM-DD",
   "type": "주일예배|수요예배|금요예배|새벽예배", "title": "설교 제목",
   "text": "성경 본문 (예: 삿 14:19~15:20)", "preacher": "설교자", "dur": 영상 길이(초),
-  "paragraphs": [["m:ss", "문단 내용"], ...],          # 시간순, 첫 항목이 자막 시작 시점
+  "paragraphs": [["m:ss", "문단 내용", [[단어순번, 초], ...]], ...],  # 시간순. 셋째 항목(자막 구간 시작점)은 선택
   "summary": {
     "keywords": ["키워드", ...],
     "points":   [["핵심 포인트 제목", "설명"], ...],
@@ -48,7 +48,7 @@ def main(path):
     for k in ["vid", "date", "type", "title", "text", "preacher", "dur", "paragraphs"]:
         assert k in d and d[k], f"입력에 '{k}' 값이 없습니다"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", d["date"])
-    paras = [[t, x] for t, x in d["paragraphs"] if x.strip()]
+    paras = [p[:3] if len(p) > 2 and p[2] else p[:2] for p in d["paragraphs"] if p[1].strip()]
     secs = [to_sec(t) for t, _ in paras]
     assert secs == sorted(secs), "문단 시간이 시간순이 아닙니다"
 
