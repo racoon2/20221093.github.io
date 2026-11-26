@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유혹을 이기라 · 말씀 클래스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1b1d21;--sub:#6b7280;--line:#e6e8ec;--accent:#12a37a;--accent-soft:#e7f6f1;--hl:#fff3b0}
+@media (prefers-color-scheme: dark){:root{--bg:#121417;--card:#1c1f24;--ink:#eceef1;--sub:#9aa1ab;--line:#2b2f36;--accent:#3cc99c;--accent-soft:#183a30;--hl:#5a4d10}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;height:100dvh;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;max-width:720px;margin:0 auto}
+.top{flex:none;background:#000}
+.vid{position:relative;width:100%;aspect-ratio:16/9}
+.vid{max-height:38vh;width:min(100%,calc(38vh*16/9));margin:0 auto}
+.pbar{flex:none;position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:14px 14px calc(6px + env(safe-area-inset-bottom))}
+.pbar .line{position:absolute;left:0;right:0;top:0;height:3px;background:var(--line);pointer-events:none}
+.pbar .line i{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:var(--accent)}
+.pbar .line b{position:absolute;top:50%;left:var(--p,0%);width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--accent)}
+.pbar .seek{position:absolute;left:0;right:0;top:-2px;height:20px;width:100%;margin:0;padding:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;touch-action:none}
+.pbar .t{flex:1;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.pbar .t.r{text-align:right}
+.pbar .btns{display:flex;align-items:center;gap:16px}
+.pbar .sk{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--sub);font:inherit;font-size:11px;cursor:pointer}
+.pbar .pp{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:15px;cursor:pointer}
+.tabs .home{flex:none;width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--sub);text-decoration:none;font-size:10.5px;border-right:1px solid var(--line)}
+.tabs .home:active{color:var(--accent)}
+.mctl{display:none}
+.lm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;margin-left:6px}
+body.mini{display:flex!important;flex-direction:column;max-width:720px;height:100%;height:100dvh}
+body.mini .top{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+body.mini .vid{flex:none;width:200px!important;background:#000;max-height:none;margin:0;border-radius:8px;overflow:hidden}
+body.mini .mctl{display:flex;flex:1;min-width:0;flex-direction:column;gap:6px}
+body.mini .head{display:none}
+body.mini .tabs,body.mini .scroll{border-left:0;margin:0}
+body.mini .scroll{flex:1}
+.mctl .mt{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mctl .mr{display:flex;align-items:center;gap:8px}
+.mctl .pp{flex:none;width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:14px;cursor:pointer}
+.mctl .tm{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;flex:1}
+.mctl .ex{flex:none;border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+@media (min-width:900px){
+  .pbar{grid-column:1/3;grid-row:4}
+  body{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(400px,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;height:100dvh;column-gap:0}
+  .top{grid-column:1;grid-row:1/3;background:#000;display:flex;align-items:center;justify-content:center}
+  .vid{max-height:none;width:100%}
+  .head{grid-column:1;grid-row:3;align-self:start;border-bottom:0;padding:14px 18px}
+  .head h1{font-size:20px}
+  .tabs{grid-column:2;grid-row:1;border-left:1px solid var(--line)}
+  .scroll{grid-column:2;grid-row:2/4;border-left:1px solid var(--line);background:var(--bg)}
+}
+.vid #yt,.vid iframe{position:absolute;inset:0;width:100%;height:100%}
+.head{flex:none;background:var(--card);padding:10px 14px;border-bottom:1px solid var(--line)}
+.hrow{display:flex;justify-content:space-between;align-items:center}
+.bm{border:1px solid var(--line);background:none;color:var(--sub);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.bm.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.back{display:inline-block;font-size:13px;color:var(--accent);text-decoration:none;margin-bottom:4px;font-weight:500}
+.head h1{font-size:16px;margin:0 0 2px;line-height:1.35}
+.head .meta{font-size:12.5px;color:var(--sub)}
+.tabs{flex:none;display:flex;background:var(--card);border-bottom:1px solid var(--line)}
+.tabs button{flex:1;border:0;background:none;padding:11px 0;font:inherit;font-size:14.5px;color:var(--sub);border-bottom:2px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--ink);font-weight:700;border-color:var(--accent)}
+.scroll{flex:1;overflow-y:auto;position:relative}
+section{display:none;padding:10px 14px 40px}
+section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 10px}
+.card p{margin:0;font-size:calc(15px * var(--fz,1));line-height:1.75}
+.kw{display:flex;flex-wrap:wrap;gap:6px}.kw span{font-size:13px;background:var(--accent-soft);color:var(--accent);padding:5px 10px;border-radius:999px}
+ol.pts{margin:0;padding:0;list-style:none;counter-reset:p}
+ol.pts li{counter-increment:p;position:relative;padding:0 0 14px 34px;font-size:15px;line-height:1.7}
+ol.pts li::before{content:counter(p);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+ol.pts li b{display:block} ol.pts li small{color:var(--sub);font-size:13.5px}
+.chap a{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14.5px}
+.chap a:first-child{border-top:0}
+.chap time{color:var(--accent);min-width:44px;font-weight:500;font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:8px;align-items:center;padding:0 0 8px}
+.tools input{flex:1;font:inherit;font-size:15px;padding:10px 13px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);outline:none}
+.follow{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.follow.on{color:var(--accent);border-color:var(--accent)}
+.count{font-size:12.5px;color:var(--sub);min-height:0}
+.tip{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin-bottom:6px}
+.seg{display:flex;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line);border-radius:10px}
+.seg.now{background:var(--accent-soft)}
+.av{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.who{font-size:13px;color:var(--sub);margin-bottom:3px}
+.who button{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;margin-left:6px;padding:0;cursor:pointer;font-variant-numeric:tabular-nums}
+.tx{font-size:calc(15.5px * var(--fz,1));line-height:1.85;word-break:keep-all}
+ol.pts li{font-size:calc(15px * var(--fz,1))!important}
+.gear{flex:none;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;padding:8px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.tools input{min-width:0;width:0}
+.setp .row{flex-wrap:wrap}
+.setp{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.setp.on{display:block}
+.setp .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.setp .lb{font-size:13.5px;font-weight:500}
+.fsz{display:flex;gap:4px}
+.fsz button{border:1px solid var(--line);background:none;color:var(--sub);border-radius:8px;min-width:38px;padding:6px 0;cursor:pointer;font-family:inherit}
+.fsz button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.setp .pv{margin-top:10px;font-size:calc(15.5px * var(--fz,1));line-height:1.8;color:var(--sub)}
+.w{cursor:pointer;border-radius:3px}
+.w.say{background:var(--accent);color:#fff}
+mark{background:var(--hl);color:inherit;border-radius:3px}
+.hide{display:none}
+.note{font-size:12.5px;color:var(--sub);line-height:1.6;padding:14px 4px 0}
+body.mini{display:flex!important}
+</style>
+</head>
+<body>
+<div class="top"><div class="vid"><div id="yt"></div></div><div class="mctl"><div class="mt"><a href="../sermon.html" style="color:var(--accent);text-decoration:none;margin-right:6px" aria-label="말씀 클래스로">←</a><span id="mtitle"></span></div><div class="mr"><button class="ex" id="ex">영상 크게</button></div></div></div>
+<div class="head">
+  <div class="hrow"><a class="back" href="../sermon.html">← 말씀 클래스</a><span><button class="bm" id="bm">☆ 저장</button><button class="lm" id="lm">🎧 듣기 모드</button></span></div>
+  <h1>유혹을 이기라</h1>
+  <div class="meta">마태복음 4장 1~11절 · 임헌규 담임목사 · 세종월드교회 목요예배 · 2026. 11. 26</div>
+</div>
+<nav class="tabs"><a class="home" href="../sermon.html" aria-label="홈으로"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg><span>홈</span></a><button class="on" data-t="txt">스크립트</button></nav>
+<div class="scroll" id="scroll">
+<section id="txt" class="on">
+  <div class="tip">💡 단어를 누르면 영상이 그 부분부터 재생돼요</div>
+  <div class="tools"><input id="q" type="search" placeholder="스크립트 검색"><button class="follow on" id="follow">따라가기 ON</button><button class="gear" id="gear" aria-label="설정">⚙</button></div>
+  <div class="setp" id="setp"><div class="row"><span class="lb">글자 크기</span><div class="fsz" id="fsz"></div></div><div class="pv">하나님은 예배하는 자를 찾으십니다. 아멘.</div><div class="row" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><span class="lb">건너뛰기 시간</span><div class="fsz" id="skp"></div></div></div>
+  <div class="count" id="cnt"></div>
+  <div id="list"></div>
+  <p class="note">유튜브 자동 자막을 바탕으로 정리했습니다. 잘못 인식된 성경 인명·지명 등은 바로잡았습니다. 단어별 재생 위치는 문단 시간을 기준으로 계산한 값이라 몇 초 정도 차이가 날 수 있어요.</p>
+</section>
+
+</div>
+<div class="pbar">
+  <div class="line" id="line"><i></i><b></b></div>
+  <input class="seek" type="range" id="sk" min="0" max="1000" value="0" aria-label="재생 위치">
+  <span class="t" id="tm">0:00</span>
+  <div class="btns">
+    <button class="sk" id="bk" aria-label="10초 뒤로">-10</button>
+    <button class="pp" id="pp" aria-label="재생/일시정지">▶</button>
+    <button class="sk" id="fw" aria-label="10초 앞으로">+10</button>
+  </div>
+  <span class="t r" id="td">0:00</span>
+</div>
+<script>
+const VID="RqhdvE7k8Fo", END=2467;
+const T=[["0:00", "여러분, 우리가 전주에 했던 것에 이어서 지금 말씀을 여러분과 같이 나눠야 됩니다. 어 예수님께서 어 마귀에게 어 시험을 받으시는 장면인데이 시험은 사실은 어 예수님의 성경을 만들어내는 것을 테스트 시험이라고 합니다. 그런데 어 누군가에 의해서 예수님의 인격과 예수님의 영적 실력을 떨어뜨리려고 만들어 낸 것은 시험이라고 볼 때 그건 테스트가 아니라 템테이션이라고 했습니다. 그건 유혹입니다. 그니까 마귀는 우리에게 시험을 줄 때 우리를 감성하게 만들려고 시험을 주는게 아닙니다. 그래서 그 시험은 늘 우리를 망가지게 만들고 무너지게 만들고 좌절되게 만들고 절망되게 만듭니다. 근데 예수님이 우리에게 주신 시험은 우리의 신앙의 성숙과 성장과 관련이 있습니다.", [[0, 0.0], [10, 6.0], [19, 12.0], [28, 19.0], [36, 25.0], [46, 31.0], [54, 37.0], [73, 47.0]]], ["1:00", "아멘. 아멘. 아브라함에게 이삭을, 네 아들 이삭을 모리아산에 가서 번제로 바치라고 하지 않습니까? 그건 아브라함의 신앙을 테스트해서 아브라함의 신앙을 곤두박질 치게 하려고 하는 하나님의 의도가 거기에는 전혀 없습니다. 이제 너도 내가 너를 믿음의 조상 어 아브라함 믿음의 조상으로 만들어내려고 했으니 그 믿음의 조상의 모형은 좀 보여야 되지 않을까? 그래서 75세에 부르심 받고 115세에 어 하나님께서 아브라함을 테스트하는 겁니다. 그죠? 거기서 아브라함은 어 아들 이삭을 모리아산에 가서 번제로 바치려고 했습니다. 그때 하나님은 아 이삭을 죽이지 않았습니다. 만드시고 건들지 말아라. 네가 나를 사랑하는 줄 알았다. 이러시면서 어 더 그 아브라함의 믿음을 인정하셨습니다. 그걸 보고 우리는 테스트라고 합니다. 여러분들 하나님은 우리에게 신앙의 성장을 위한 테스트를 하십니다. 그렇지만 하나님의 신앙의 테스트도 많지만 뭐가 더 많냐면 템테이션 유혹에 맞습니다. 유혹은 마귀가 우리를 넘어뜨리려고 하는 겁니다. 무너지게 만들려고 하는 겁니다.", [[0, 60.0], [12, 67.0], [20, 73.0], [30, 80.0], [40, 85.0], [55, 95.0], [64, 102.0], [73, 108.0], [80, 114.0], [89, 120.0], [97, 125.0], [106, 131.0]]], ["2:22", "그래서 그 유혹은 훨씬 더 달콤하고 흥미롭습니다. 그래서 자꾸 우리 마음속에 그 유혹에 끌려가는 겁니다. 마귀는 우리에게 늘 뭐를 얘기하냐면 더 좋은 거를 기대하게 만드는 어 그런 시험을 합니다. 그래서 그것이 오히려 우리에게 더 좋아질 거를 생각하고 마귀가 주는 것을 넘어갈 때가 많습니다. 그 중에 하나가 우리가 처음 태초를 시작했을 때 아담과 하와 아닙니까? 마귀는 아담과 하와를 성장하려고 테스트한게 아닙니다. 그거를 무너뜨리고 깨부시고 하나님과의 관계를 끊어내려고 하는 유혹이었습니다.", [[0, 142.0], [7, 148.0], [18, 154.0], [28, 160.0], [37, 167.0], [47, 172.0], [57, 178.0]]], ["3:08", "그래서 거기에 뭡니까? 선악과가 보암직도 하고 만져보고 싶기도 하고 그죠? 먹고 싶은 마음이 들기도 하고 그래서 결국은 하와가 먹지 않습니까? 먹고 난 다음에 어떤 일이 벌어져? 먹기 전에 뭐라 합니까? 너 이거 먹으면 하나님과 똑같이 된다 그러는 거잖아요. 그게 유혹이에요. 높은게 올라간게 아니에요. 자기 자리를 모르는 거예요. 여러분, 우리의 가장 큰 위기가 뭔지 아십니까? 우리는 하나님이 만드신 거룩한 피조물입니다. 아멘. 아멘. 아멘. 근데 여기에 뭐하고 견주려고 하냐면 창조자와 나란히 서려고 하는 마음입니다. 그거는 높아진게 아닙니다. 그거는 마귀가 우리를 무너뜨리고 무너뜨리려고 하는 템프테이션 유혹입니다.", [[0, 188.0], [20, 201.0], [41, 210.0], [59, 221.0], [62, 223.0], [76, 233.0]]], ["3:59", "그 유혹이 얼마나 많은 사람들이 무너지는지 모릅니다. 그걸 보고 다른 말로 하면 교만이라는 단어를 씁니다. 그 교만은 우리를 정말 높아지게 하는 거 같고 우리를 정말 뭔가 멋지게 보이게 하는 것 같습니다. 그렇지만 결과적으로 봤을 때 그거는 우리를 높아지게 한게 아니라 망하게 하는 일이었습니다. 그렇지 않을까요? 망하게 하는 일이었습니다. 그런 일들이 성경에는 수없이 나옵니다. 그리고 그런 일들을 통해서 너무 많은 사람들이 유혹에 무너진 적이 많습니다. 그렇지만 오늘 이 내용을 통해서 우리가 교훈해야 된다 그거는 예수님도 그 유혹에서 뭐 했다는 겁니까? 그렇죠. 유혹을 이기고 넘어갔다는 겁니다. 따라서 유혹은 이기고 넘어가야 됩니다.", [[0, 239.0], [10, 244.0], [21, 250.0], [45, 263.0], [53, 268.0], [73, 279.0]]], ["4:46", "유혹은 이기고 넘어가야 된다. 유혹이 머뭇거리고 안 돼요. 아멘. 아멘. 왜냐면 그 유혹은 자꾸 달콤하기 때문에 자꾸 돌아보게 됩니다. 누가 그랬습니까? 아 그렇죠. 롯의 처도 그러지 않았습니까? 응. 소돔성이 뭘 그렇게 좋았나 보죠. 그죠? 안 좋았으면 돌아보지 말란다고 뭐 돌아보지 말란다고 뭐 안 돌아봤겠죠? 안 그죠? 돌아보란다고 뭐 돌아봤겠어요? 너무 좋았다는 거죠. 얼만큼 좋았을까요? 돌아볼만큼 좋았다는 겁니다. 아, 그럴까 안 그럴까요? 아니, 여러분 생각해 보세요. 형, 자매들은 오해하지 말고 들으세요. 형제들하고 둘이 사서 길거리 가면요. 시내 같은 데를 가지 마십시오. 거기 가면 유혹거리가 너무 많습니다.", [[0, 286.0], [8, 290.0], [22, 298.0], [31, 304.0], [49, 315.0], [66, 324.0]]], ["5:34", "왜냐면 내 여자 친구보다 더 이쁜 여자들이 한두 명이 지나가고 자꾸 뭐 하게 되죠? 요렇게 돌아보게 되는 겁니다. 그럼 옆에하고 툭면서 어딜 쳐다봐? 이런단 말이죠. 뭘? 어딜 쳐다봐? 아, 너보다 이쁘니까 쳐다보지. 너보다 못생기면 쳐다보라는 소리 해도 안 쳐다봐요. 맞아, 안 맞아? 얘기해 봐. 그렇잖아요. 유혹이 원래 그래요. 유혹이기 때문에. 유혹은 못생긴 여자를 앞에다 대구선. 어때? 내가 너 좋아해. 내가 너 사랑해. 광명이도 안 넘어가요. 그런데 진짜 여러분 유혹은 내 옆에 사람보다 이쁜 거예요. 이쁘니까 쳐다보게 되는 거란 말이에요. 이쁘니까 이쁜게 다야 다 같이 형제들만 다가요. 다잖아요.", [[0, 334.0], [22, 343.0], [45, 357.0], [61, 366.0], [74, 377.0]]], ["6:25", "이쁜게 다해요. 그 제가 얘기했잖아요. 얼굴이 이쁘고 공부를 못 하는 여자. 얼굴은 못생겼는데 머리가 좋은 여자. 공부를 잘한 여자. 형제들 누구 선택할까요? 빨리 얘 봐. 1번 2번 1번 손 들어. 다 1번 손 들잖아. 2번은 고자야. 여자는 머리 가져온 거보다 뭐 하고 봐야 돼? 다 같이 이쁘 이쁘고 봐야 돼. 그래서 유혹이라니까 그러네. 그래서 유혹인 거 이쁘고 봐야 되는 거예요. 여자는. 그러니까 나는 못생겼다. 당연히 공부 잘해야 돼. 얼굴도 못생겼는데 공부도 못 하면 완전히 설상가상이야. 인생 살 생각하지 마. 이 두 가지가 있고 예수 잘 믿어.", [[0, 385.0], [17, 394.0], [36, 405.0], [52, 411.0], [68, 420.0]]], ["7:10", "예수도 잘 믿어야 돼요. 그거 아니면은 그냥 끝나 버리는 거야. 그러니까 첫 번째는 뭐 하고 봐야 된다? 자들은 시작 형제들 예쁘고 봐야 된다. 이쁘고 봐야 된다잖아. 근데 목사님이 태어났더니요 땅이 생겼는데 어떡합니까? 그러면은요. 하나님 앞에 머리들도 좋아 달라고 좋아지게 해 달라고 해야 돼 안 해야 돼? 절대적으로 기도해야 돼. 얼굴도 못생긴 게. 그리고 머리도 나쁜게 기도 안에 이거 심각한 거예요. 알아들 알아들어요? 못 알아들어요? 알아들어. 알아듣죠. 그러니까 얼굴도 못생기고 공부도 못 하면 뭐 해야 된다? 신앙생활에도 똑바로 잘해야 된다. 아멘. 아멘. 그래서 내가 우리 교회는 그래서 신앙생활을 좀 잘 못하는 자매들이 많은 거 같아. 고맙지.", [[0, 430.0], [10, 435.0], [28, 442.0], [46, 450.0], [64, 459.0], [79, 467.0], [81, 468.0]]], ["7:55", "달에 신생 너무 잘해. 자매들이. 나도 왜 이렇게 잘하나 했어? 근데 알고 보니까 뭐야? 두 가지가 안 돼. 그러니까 마지막 세 번째 거래도 갖고 있어야 되니까 신앙생활 못 치는 거야. 그럴까 안 그럴까? 아멘. 제가 말이 맞는가 틀리는가 한번 여러분 내 얘기 한번 해 볼래요? 아 지금 기도원이 어디가 많이 부흥할까? 여기 도목사는 별로 없다는데. 저쪽에 어디 대청산인가? 어디 가면은 그 여름 수양관이 이렇게 있잖아요. 아 거기 가면 되겠구나. 흰돌산도 거기 가도 여름 수가 빨리 오잖아. 가봐. 이쁜게 만나. 못생긴게 만나. 거기 보면 X 뛰기 X 뛰기 X 뛰기 되게 많으니까가 보면 되게 많았는데 뭐는 잘해?", [[0, 475.0], [10, 481.0], [34, 494.0], [46, 499.0], [56, 505.0], [77, 515.0]]], ["8:45", "신앙은 엄청난 거야. 근데 그중에서 꼭 뭐죠? 무지하기 이쁜데 신앙생활을 개판이네. 가면은 기도 안 해. 예배도 드릴 때 안도 안 하고 맨날 줘라 앉아서 침도 질지 흘리고 줘라 그런데도 이쁜 걸 어떻게해 그지 뭘 뭐가 그렇게 좋은지 모르겠는데 이쁜 거 하나 때문에 믿음 생활 기도 열심히 하고 방언하고 모래 많이 쳐다봐 형제들은 거기만 쳐다봐자고 그러면 꼭 그러지 꼭 지랄 똑같아 갖고 같은 거 고른다고 왜지도 믿음이 없으니까 믿음 없는 거 모른다고 근데 형제들은요 믿음과 상관없이 이쁜게 좋아 안 좋아. 수 아 정직하게 말하자니까 좋아 안 좋아? 좋아. 저쪽 가서 얘기하면 안 돼. 저쪽에 할머니 권사이거 다 상처받고 우리끼리만 얘기하니까 요렇게 하는 거예요. 다 상처도 청년들이 정말 신앙이 좋은 줄 알았던 저것들이 그거 아니었구나 할 수도 있어. 그지? 그니까 우리끼리니까 이렇게 얘기를 하는 건데 두 군데 예배드리니까 이렇게 좋은 장점이 있네.", [[0, 525.0], [10, 533.0], [22, 538.0], [34, 544.0], [54, 553.0], [76, 563.0], [86, 568.0], [101, 574.0], [121, 584.0]]], ["9:49", "여러분들 잘 생각해. 그니까 마귀는 꼭 뭐 한다고요? 우리가 좋은 쪽으로 좋은 쪽을 보게 만드는 것을 유혹한다니까요. 늘 그래 한번 잘 생각해 봐. 오늘 예배가 오기 싫어. 그럼 예배보다 좋은게 있다는 거예요. 없다는 거예요? 있다는 거. 있다는 거예요. 예배보다 더 좋은게 있다는 거야. 아니, 세상에 예배가 제일 뭐가 제일 좋아? 그거는 뭐고? 그거는 뭐고? 그거는 뭐라고요? 그거를 갖고 있는 우리의 이론이고 실제는 뭐죠? 일어나고 사무 달러 다연아 그지? 예. 저게 중간에 오다가 맨날 어디로 없어지는 것도 이유가 있다니까. 어 중간에 오다가 너 이렇게 느껴왔어.", [[0, 589.0], [17, 599.0], [34, 606.0], [52, 614.0], [68, 625.0]]], ["10:34", "아 그게요. 안 들어도 돼. 왜? 어차피 예배보다 저 더 좋은게 있었다는 거예요. 없었다는 거예요? 있었다는 거예요. 그러니까는 다연님은 믿음이 약해서 유혹에 잘 빠져. 그러니까 누구든지 수갑 차고서 같이 다니라. 왜냐면 어디가 난 다연이랑 결혼할 때마다 결혼한 남자에게 꼭 얘기해 줄 거야. 내가 주례 서면서 꼭 신부랑 같이 다닐 때는 수갑을 차고 다니십 저자 어디 없어질지 알 수가 없습니다. 그러면서 내가 이거 꼭라니까 신혼여행 가도 수갑 차고 자야 되도 돌아다닐 때도 수갑 차고 돌아다녀야 돼. 왜? 어디 갔나? 으지면 찾을 수가 없어. 내 말 맞아? 안 맞아? 빨리 해 봐. 대학 얘기해 봐. 기 얘기해 봐. 맞아? 안 맞아?", [[0, 634.0], [15, 642.0], [30, 650.0], [41, 655.0], [54, 661.0], [76, 671.0]]], ["11:20", "아, 내 말이 다 되잖아. 너도 인정하는 바지. 아멘. 되잖아. 이게 못닦으면은 오가 없어지면 벌써가 있다니까 유혹이 약해. 믿음이 약해서 그래서 항상 우리 전 목사님한테 성령 기도 한 번씩 바꿔 봐야 돼요. 예배 끝나자마자 목사님 저 성령 기도하고 올려 주십시오. 저는 안 되는 사람입니다 하고 거기다가 머리 팀선 기도 주여 하고선 기도받고 봐야 돼. 그래야지 이상한 짓을 안 해. 이상한 짓을 내가 여태까지 경험해 내가 그런 얘기 했거든. 내가 지금까지 고등부 사역 10년 10년하고 청년 사역이나 대학교 사역 22년 했는데 이렇게 많은 시간 동안 많은 사람을 만났어도 너 같은 애 처음 갔다 그랬어. 가 내가 진짜 너 같은 애 처음 봤다.", [[0, 680.0], [10, 687.0], [20, 693.0], [43, 703.0], [54, 709.0], [66, 715.0], [76, 721.0]]], ["12:11", "하나님의 용하는 은혜다. 너 같은 애도 교회 와서 구원받고 앉아 있고 봐. 얼굴도 신나잖아. 저게 욕하는 건지 저게 뭐 칭찬하는 건지 겁나 헷갈려 그지? 그런단 말이야. 근데도 이게 수도 없이 얘기한다고 들리는게 아니야. 그래서 항상 끝나자마자 우리 전 목사님들 성령 기도 받고 가야 돼. 주님이 성령으로밖에 안 돼. 꽉 묶어주세요. 세워갖고 그러면 누이 왔다 갔다 갔다 갔다 엄청 빨라. 엄청 빨라. 그렇죠? 그러니까 여러분들도 잘 생각해 보세요. 내 약점 있잖아요. 그 약점에 늘 뭡니까? 마귀는 시험해요. 약점이 항상 마귀는 시험하는 거야. 그러니까 그 약점을 약점에 왜 자꾸 넘어질까 생각해 봐.", [[0, 731.0], [22, 741.0], [32, 747.0], [53, 757.0], [70, 767.0]]], ["12:57", "삼손도 그러죠. 삼손의 약점이 뭐라 있어? 빨리 얘기해 봐요. 여자. 봐봐. 여자가 아니야. 여자한테 약하다. 그게 약점이야. 삼손에. 삼손은 여자 때문에 그런게 아니 여자 앞에 약한 거예요. 아, 여자만 있다고 뭔 문제가 돼? 여자가 문제가 남자가 여자를 봤을 때 그 여자 앞에 약해. 왜 약할까요? 약한 이유가 뭘까? 분석해 봤어. 약한 이유가 뭘까? 빨리 한 개만 얘기해 봐. 얼른 얘기해 봐. 여태까지 얘기한 거 중에 하나 있었잖아. 예뻐서 그래 예뻐서 그래. 삼손은 예쁜 여자를 좋아해. 딤나에 사는 여자도 예쁘고 들릴라도 예뻤대. 그러니까는 삼손은 예쁜 여자만 보면 뭐 한다? 환장한다 그지? 예쁜여 보면 환장하는 거야. 그지?", [[0, 777.0], [9, 780.0], [24, 790.0], [43, 801.0], [53, 806.0], [76, 816.0], [89, 825.0]]], ["13:51", "얘도 그래. 아 나 전도사 시킨게 불안해 하나님이. 아니 무슨 전도사가 여자들 다 좋아해. 나는 목사님 어떤 여자도 다 좋아요. 나 장가만 가게 해 주세요. 이러는 스타일인데 그 스타일 하나가 또 있더라고. 우리 열린국교회 저쪽에 계룡에 사는 김지성 목사님 얼마 전에 그 뭐지? 어머니가 돌아가셨어요. 이제 지금 이제 내 오늘까지 오늘 저기 반일했겠다. 내가 어제 갔다 왔는데 돌아가셨거든요. 돌아가셔서 갔는데 아유 우리 김성 목사님이 저를 그렇게 생각보다 사랑하지 않아요. 근데 그날 갔더니 내 손을 꽉잡더니 너무 반가워해. 그래가지고 부모님 엄마 돌아가셔서 내가 와져 갖고 되게 고마웠다고 했는데 그게 아니요. 뭐다 옆에 있더니 또 아들가 어디 아이고 목사님 막 내 손을 꽉 잡는 거예요.", [[0, 831.0], [20, 841.0], [41, 852.0], [69, 867.0], [90, 877.0]]], ["14:42", "그래서 내가이 부자지간에 무슨 일이지 했더니 나한테 그러더 옆에 와서 목사님 저 장가 좀 보내 주세요. 그래 그 잠깐 가면 되잖아. 가면은 제가 갈 수 있으면 뭘 얘기를 하겠어요? 우리 아빠가 우리 아버지가 그러는데 거기는 청년들이 되게 많다는데 누구 하나만 좀 보내 주시면 안 돼요. 가려. 빨리 우리 자매들 갈 거야? 안 갈 거야? 안 갑니다. 갑니다. 아 그래 가지고 두 사람이 부자가 나를 너무 환영하는 거야. 그더니 손잡고 장가지 보내 달라. 그래서 목사님 진짜 우리 아들가 진짜로 얘기하는 거야. 좀 어 자손교회 자유집 하나 좀 보내 주세요. 그러더라고. 어떻게 경의가 밝게 이따가 자녀들끼리 모여 가위바위보 해가지.", [[0, 882.0], [22, 893.0], [43, 901.0], [57, 910.0], [74, 918.0], [85, 924.0]]], ["15:37", "그래서 나한테 죽은 사람이 부자가 부탁을 하는데 그걸 안 들어주면은 내가 벌받을 수도 있을 것 같은이 마음속에 부담감이 굉장히 커졌거든. 그러니까 자매들이 있다가 우리 천사님들이 같이 모여 가지고 저쪽에서 자매들끼게 모여서 가위바위보 해 가지고 진 사람 빨리 하나 보내 알았죠? 얼른 저쪽으로 보내 갖고 둘이 결혼시켜서 결혼하면 사모님 그러네. 거기 조금 있으는 거야. 우리 교회에 물려 줄 거예요. 우리 아들한테 별로 크진 않지만 그래도 없는 거보다 낫잖아. 그지? 그니까 거기 가서 사모할 사람은 빨리 손을 쳐들어. 네가 할게 뱀 저는 뒤에가 왔잖아 못 간다고 생각하잖아 아 그냥 본다 싫다 그래 그 얼굴에 독시다 해야 되잖아 참들도 똑같지 않아 솔직하게 얼굴 잘생기고 공부 못하는 형제가 좋다 아니면 얼굴이 못생기고 공부 잘하는 형제 좋다 빨리 자매들 어느 쪽에 1번 2번 1번 손들어 말고 똑같네 뭘 그래 근데도 서로 엮기지 않는 것은 어떤 입장 있는 거 두 번째다 여기지 않는구나 두 번째다", [[0, 937.0], [20, 947.0], [41, 955.0], [62, 965.0], [76, 975.0], [85, 986.0], [90, 991.0], [111, 1001.0], [130, 1011.0]]], ["16:58", "자매들은 우리 교회 형제 중에 어디 잘생긴 형제가 어디 있어요 하는 입장이 형제들은 우리 교회 자매 중에 어 이쁜 여자가 어디 있어요 그런 엉성한 생각을 가지면 안 되고 조금 낮춰서 그니까 오늘 오늘 짜 되잖아 분을 낮추고 마을 좀 낮추고 조금 아이를 좀 낮추고 좀 낮춰 좀 낮은 낮아짐이 이긴데잖아. 아 그게 좀 낮추고 쳐다보면 안니까 돌판데서 쳐다보니까 없는 거야 이게. 그러니까는 아 나는 요새 시집을 가고 싶은데 미치겠 끝나고 나자마자 목사님 공해요교회 5 7도 파이브로 언론 문자 목사님 아까는 제가 수러서 말을 못 하고 손을 못 들었는데 혹시 제가 한번 만나보면 안 될까요? 나이 28 안 됐어. 빨리 어 안 될까요라고 얼른 가서 얘기해. 그럼 내가 얼른 어 내일 내일 바로 내가 넣어 줄게.", [[0, 1018.0], [23, 1026.0], [34, 1037.0], [50, 1050.0], [61, 1057.0], [79, 1068.0], [103, 1077.0]]], ["18:04", "알아들으시겠죠? 그래 뭐야? 낮아지는 거야. 그니까 우리 유혹을 볼 때 늘 무슨 말이 갖다고요? 내 안에 보암직도 하고 먹음직도 하고 만지기에도 탐스러 이런 마음들이 드는 곳에 유혹이 있다라는 거예요. 알아들으시죠? 목사님 그런 이쁜데 어떻게 포기를 해요? 그러니까 유혹이지. 알아들으십니까? 그러니까 유혹이야. 그래 갖고 여러분들 뭐 해야 됩니까? 유혹은 딱 어떤 부분에서 내가 볼 때 참 괜찮다. 멋있다. 그런 쪽에 유혹이 많다는 걸 잊어 먹지 마시고 거기서 아휴 내 차례가 내 차례가 꼭 생각해요. 이거 진짜로 중요한 거야. 나 너밖에 없어서 너밖에 기억이 안 나서 너한테 온 거야. 네가 좀 해. 하지 마. 왜? 자기 체대가 올 거라고 생각하지 마. 그런 거. 알아들으시죠? 이거 얼마나 좋은게 이거 평생 없다 하지 마. 알았죠? 절대 속으면 된다. 안 된다. 마귀는 항상 어떻게 한다고요?", [[0, 1084.0], [20, 1094.0], [29, 1101.0], [39, 1110.0], [47, 1114.0], [59, 1122.0], [72, 1129.0], [83, 1134.0], [96, 1140.0]]], ["19:14", "우리에게 자꾸 한 번 더 쳐다보게 만드는 거야. 마귀는 늘 그래 쳐다보게 만드는 거야. 오늘 첫 번째가 뭐했죠? 사람이 떡으로만 살 것이 아니요. 그게 뭐예요? 어떤 얘기하는 겁니까? 이 이 돌로 떡덩이가 되게 하라 얘기했잖아요. 아니 그렇게 먹을게 없어도 돌을 갖다가 똥이대가 갖고 먹을 필요가 뭐가 있어. 근데 마귀는 늘 그런 식으로 얘기하는 거야. 그런 식으로 안 되는 걸 자꾸 되는 것처럼 기독교 똑같습니다. 뭐든지 자꾸 안 되는 걸 되는 것처럼 말하지 마라. 알아들으시겠죠? 안 되는 거 자꾸 되는 것처럼 말하지 마. 내가 그랬잖아. 예전에 어떤 분들하고 이렇게 모여 갖고 얘기하는 또 목사님 사모님들하고 어떡하다 모여서 얘기했는데 나 그러더라고 목사님 저는요 신기한 은사가 있습니다. 그러더라고 그 내가 무슨 은사인데요 그랬더니 궁금하잖아 그런 말하면 나는 궁금한 거 원래 찾는데 영적인 건 또 못 참거든 궁금한 거는 또 물어봤다는 거 아니야 뭐가 신기합니까 했더니 그냥 말이 그래요. 여자분인데 하는 말이 여자 목사님인데 자기 남편 옆에서 가만히 듣기만 있고 자기랑 얘기를 하는데 그러는 거야. 커피하면 딱 마시더니 제가 가르쳐 드릴게요. 잘 들으세요. 그러면서 저는 예배드릴 때 하늘에서 금가루가 내려온대.", [[0, 1154.0], [21, 1164.0], [41, 1173.0], [73, 1188.0], [93, 1195.0], [105, 1203.0], [128, 1212.0], [148, 1222.0]]], ["20:32", "하늘에서 금가루가 내려온대. 그러면서 찍은 걸 나한테 보여 줬어. 근데 금가루가 너무 조그만해갖고 잘 안 보이더라고. 그 이게 금가루인지 돌가루인지 알 수가 없어. 어쨌든 금가루가 내려온다는 거야. 그러면서 나는 예배드릴 때마다 하늘에서 금가루가 내면돼요. 무슨 말 무슨 아 내 이럴 때는 또 아멘하고 은혜받고 제가 그래야 되는 사람인데 저도 또 이런 얘기를 들으면 계속 이게 까배이처럼 꼬이는게 있어 가지고 뭐 그랬단 말이야. 아니 뭘 금가 내려와 갖고 돈이 되겠어요? 금덩이가 내려와야지. 네. 그랬단 말이야. 금가루가 내려와서 무슨 돈이 내 금덩어리가 내려와야지. 이왕이 내려올 거면 아 맞아 안 맞아? 맞아.", [[0, 1232.0], [19, 1241.0], [34, 1252.0], [69, 1267.0], [74, 1270.0]]], ["21:18", "아 금덩어리가 내려가지. 아니 금덩어리 내려오는 재주는 없으세요? 그랬더니 아 뭐 말이 안 통하네 그러면서 영성을 통고 그 괜히 내가 하수가 됐잖아. 그 자리에서 영적으로 안 맞는다서 하수가 된 거 아니야? 그 자리에서 그래서 아 그래요? 나는 금가루를 한 번도 본 적이 없어 가지고 이게 하늘에서 뭐 금가루가 어디 한번 쳐다보 내려오나? 어 금가루가 나는 여태까지 목회에서 금가루를 한 번도 금가루 아니가 똥가루도 못 먹고 봤는데 참 무슨 그게 내가 그런 거야 사람들 눈이 끌는 거야 사람들 알아서 눈 톡 떠지고 나는 아말 이빨을 했는데 금이빨을 되는데 예배 끝나고 나면 아말이 금이빨을 대면은 금이 왜 필요해 다 그냥 금만 만들어 주면 되지 무슨 예수믿는 사람이 뭘 그렇게 금을 좋아해 아 내가 내 거 줄까요? 내 그러려다 말았어. 어 내 거 내 거 내 반지 어 세 돈짜리 내 반지 줄까요? 내가 금반지 근데 그러려 말아서 금을 좋아해 우리 주면 되지 뭘 그래 그지? 금 금가고 쓸 것도 아무것도 없는데 그렇다고 여러분 금가루가 아니라 우리 마음에 성령이 임하셔야 돼요. 아멘 아멘. 이게 신앙이 중요한 거예요. 뭐가 떨어지든 뭘 떨어질 수도 있지 뭘 그래. 나는 그거 부인하는게 아니야.", [[0, 1278.0], [8, 1281.0], [17, 1289.0], [40, 1299.0], [61, 1308.0], [73, 1314.0], [85, 1322.0], [107, 1333.0], [134, 1342.0], [147, 1348.0], [159, 1356.0]]], ["22:43", "금가루가 떨어졌다고 내가 에이 그러는게 아니고 떨어져서 뭘 어떡하라 그 다 밑에다 바닥에 있는 거 다 구석 그럼 내가 그랬어 다 주수지 그랬었어요. 다 줄지 그냥 다아서 주으면 덩어리 되겠네. 그랬더니 그분이 그러더라고. 아니 목사님 내려올 때만 금가루 딱 떨어지면 나서 줄려니까 어디 가는 웃더래. 그 어떻게 되지? 누가 누가 좀 이런 신비로운 걸 안 있으면 저 문자에다 넣어 주셔 봐요. 나 이게 잘 몰라 가지고. 아, 우리 침신대는 이런 걸 가르쳐 준 적이 없을 것 같고 내가 아는게 없어. 이게 침신대는 신앙이 생각보다 그리요. 이게 뭐 이렇게 대로 뭐 있어야 되는데 그런 거란 말이에요. 근데 여러분 하나님 앞에 우리가 섰을 때 이런 거예요. 자꾸 돌덩이를 떡이 되게 만들어 돼요. 돌덩이를 떡이 되게 왜 만들어요?", [[0, 1363.0], [23, 1372.0], [33, 1376.0], [55, 1387.0], [80, 1394.0], [97, 1403.0]]], ["23:32", "돌하고 떡은 성분이 들린데. 맞아. 안 맞아? 아무거나 대라는 데로 다 되면 돼. 그럼 하나님이 몰리 아무거나 한 종료를 만들어서 다 되면 되지. 그죠? 그러다요. 최불암 시리즈를 보니까 그러더라고. 조카가 아니 그 뭐죠? 손자가는 말이 할아버지 할아버지 그러니까 왜 그랬더니 할아버지 어 나는 소년이다. 영어로 뭐야? 그랬더니 다 할아버지가 않았나 봐. 최고라 할아버지가 알아 갖고 아예 뭐 뭐 이랬단 말이야. 그러니까 얘가 하는 말이 그럼 할아버지 할아버지 그러면은 어 나쁜 나는 나쁜 소년이다를 영어로 뭐라 그래 했더니 아 a boy이 이랬대 그 나는 별 소년다 그랬더니 아 a boy이 이랬다는 거 아니야 이게 뭐야 이게 어 이게 또 알아 영어를 이렇게 알아들려야 분인데 이게 뭔 소리야 지금 이러고 있는 사람 지금 대충 안 되는 거야 이게 그지 이게 뭐야 이게 여러분들 무슨 얘긴지 알아들으시겠어요? 어 아니 이게 여러분들 마귀는 우리에게 늘 뭐냐면요 그게 불가능을 가능하게 만드는내는 내용이 아니에요.", [[0, 1412.0], [24, 1428.0], [40, 1437.0], [58, 1447.0], [68, 1451.0], [80, 1458.0], [92, 1465.0], [117, 1475.0], [129, 1484.0]]], ["24:51", "그게 왜 돌덩어리를 그 떡덩이로 만들 이유가 없잖아요. 떡은 뭘로 만들어야 돼? 한 밀가루로 만들면 빵이 되고 쌀가루로 만들면 떡이 되고 뭐 어쨌든 뭐 밀가루 떡 있다고 하니까 뭐 그런데 뭐 그런 종류가 이게 뭐 맞아야 될 거 아니에요. 그죠? 만약에 예수님 보고 뭡니까? 저기 밭에 쌀이 저렇게 많은데 저 쌀로 떡덩이를 만들어라. 예수님 금방 만들 수 있을 것 같아. 왜 그러냐면 그거 같은 성분이잖아. 근데 굳이 돌덩어리로 떡을 만들 이유가 없잖아요. 근데 성도들은요 그런 유혹에 너무 많이 빠진 거야. 그런게 말도 안 되고 그렇게 할 필요가 없잖아. 예수님이 못해서 안 했다고 생각하세요? 예수님이 하실 수 있어요. 근데 왜 안 했어요? 굳이 그럴 필요가 뭐가 있어? 돌은 돌이고 떡은 떡인데 그거는 예수님한테 배운 누가 누가 성철 스님이 예수님한테 배워 써먹은 거 아니야? 산은 산이고 물은 물이다. 그까 예수님한테 배운 거 아니야. 그게 그럼 산이 산이지.", [[0, 1491.0], [12, 1500.0], [35, 1510.0], [45, 1515.0], [67, 1525.0], [87, 1535.0], [108, 1543.0]]], ["25:57", "그럼 산이 물이 되냐? 그게 무슨 얘기예요? 있는 그대로 인정해 주는 거예요. 있는 그대로. 그게 신앙이에요. 있는 그대로를 봐 주는 거예요. 있는 그대로를 그걸 봐주고 신뢰하고 신앙이라는게 믿음. 신앙이라는게 믿음이 뭐예요? 있는 걸 있다고 말해 주는게 믿음 아니에요. 그럼 여러분 뭐예요? 불신은 뭐예요? 있는데 자꾸 없다고 우기는 거잖아요. 그게 불신이에요. 그러니까 하나님 계시는데 자꾸 안 계신다고 하니까 불신자가 되는 거 아니야. 불신자가. 그렇죠. 그럼 뭡니까 여러분들? 저 미신은 뭐예요? 없는데 굳이 자꾸 있다고 우기는 거 아니야. 원래 없는 거를 있다고 우기니까 미신이잖아요. 그러니까 우리는 하나님 계신 거, 창조하신 거, 창조주 하나님을 우리가 믿고 있으니까 우리 보고 뭐라 그래요?", [[0, 1557.0], [16, 1565.0], [43, 1579.0], [62, 1589.0], [69, 1594.0]]], ["26:48", "믿음 신앙이라고 하는 거예요. 아멘. 아멘. 아멘. 그러니까 여러분들은 잘 오신 거예요. 그냥 신앙인이에요. 아멘. 믿는 자고 하나님의 거룩한 백성이에요. 아멘. 이것을 우리는 절대적으로 믿어요. 그리고 인정하고 순종하고 100%로 맞춰요. 아멘. 하나님은 살아 계신 분이시니까. 아멘. 아멘. 그래서 우리 보고 성도 신앙인이라고 하고 믿는 자라고 하고 신자라고 하는 거잖아요. 이게 너무나 정확하게 우리에게 주어진 어 별명이가 아니라 주어진 뭡니까? 그렇지요. 우리 정체성의 이름이에요. 무슨 얘긴지 알아겠죠? 그러니까 여러분들 거기에 절대 놓치지 마세요. 그러니까 오늘 두 번째 하려고 하는 이게 뭐예요? 두 번째는 두 번째 조금 더 말할게요. 8절에 보니까 뭐라 그래요? 이게 그래서 사람이 떡으로만 살지 말고 너는 이렇게 먹을 것만 이렇게 좋아하냐?", [[0, 1608.0], [14, 1616.0], [21, 1621.0], [37, 1632.0], [48, 1638.0], [63, 1651.0], [82, 1659.0]]], ["27:48", "하나님이 입에서 나오는 말씀이 오늘 네 영혼을 살리고 네 생명을 살리고 네 육신을 살리고 네 인생을 살리고 너를 만들어내고 만들어내고 내가 가야 될 방향을 만들어내는 거야. 그게 하나님의 말씀인 거야. 아멘. 아멘. 거니까요. 여러분들 아시겠습니까? 그게 하나님의 말씀이세요. 신명기 8장 한번 가 볼까요? 한번 보세요. 1절부터 내가 오늘 명하는 모든 명령을 너희는 지켜 행하라. 그리하면 너희가 살고 번성하고 여호와께서 너희의 조상들에게 맹세하신 땅에 들어가서 그것을 차지하리라. 네 하나님 여호와께서 이 40년 동안에 네게 광야 길을 걷게 하신 것을 기억하라. 이는 너를 낮추시며 너를 시험하사 네 마음이 어떠한지 그 명령을 지키는지 지키지 않는지 알려 하시니라. 너를 낮추시며 너를 주리게 하시며 또 너도 알지 못하며 네 조상들도 알지 못하던 만나를 네게 먹이신 것은 사람의 떡으로만 사는 것이 아니요 여호와의 입에서 나오는 모든 말씀으로 사는 줄을 네가 알게 하려 하심이니라. 아멘.", [[0, 1668.0], [19, 1678.0], [30, 1684.0], [43, 1696.0], [45, 1703.0], [63, 1711.0], [83, 1721.0], [100, 1729.0]]], ["29:02", "아멘. 아멘. 이게 뭐라고 나와요? 또이 얘기가 예수님이 인용한 얘기예요. 신명기에서 있는 얘기를. 그죠? 그래서 뭡니까? 너를 낮추시고 너를 주리게 하시면 또 너도 알지 못하든 네 조상도 알지 못하던 만나를 네게 먹이신 것은 뭐라는 겁니까? 사람의 떡으로만 살 것이 아니요. 여호와의 입에서 나오는 모든 말씀으로 사는 줄 네게 알게 하려 하심이니라. 그러니까 하나님이 말씀 주신게 뭐예요? 만나 주셨다는게 뭡니까? 그 만나 먹으면서 너를 낮추시고 또 뭐 한다는 겁니까? 너를 주리게 하시고 내가 알지 못하는 조상들에게 먹이신 것은 하나님이 지금 너희들이 먹고 있는 떡 입으로 들어가는 거 이걸로만 사는게 아니라 하나님의 말씀이 있어야 산다. 이 얘기를 교훈으로 우리에게 하고 계신 거예요.", [[0, 1742.0], [13, 1749.0], [35, 1759.0], [55, 1768.0], [76, 1778.0]]], ["29:52", "아멘. 그러니까 주의 말씀 놓치면 돼요, 안 돼요? 예배는 거 아니니까 예배 때마다 참석해서 은혜받고 아멘 변화되겠습니다. 되겠습니다. 새로운 마음속에 계속 품고 오늘 마음의 감성함을 가지고 달려나가는 성도 꼭 되셔야 됩니다. 아멘. 하나님이 그 교회 세종월드교회를 주신 거는 가장 먼저 뭐지요? 우리가 다시금 시작할 수 있는 용기를 주실 겁니다. 아멘. 아멘. 여기 있을 때 우리가 좌절은 아니지만 하나님 기도했잖아요. 하나님 여기 공간이 너무 좁아서 조금만 더 큰 공간으로 갔으면 좋겠어요. 큰 성전으로 갔으면 좋겠어요. 거기 가니까 여러분들 너무 좋아 가지고 앉아서 좋지만 옆에서 좀 빈자리들이 있으니까 우리에게 무슨 부담이 생기는 거죠? 새로운 친구들 오면 새로운 분들 오면 같이 맞이하고 옆에 같이 앉혀서 예배드려야겠구나 하는 마음 오잖아요. 그죠? 그러니까 그게 바로 뭐죠? 오늘 오는 사람들에게 여러분들이 그리스도의 좋은 영향력을 끼칠 수 있는 현장이에요.", [[0, 1792.0], [17, 1802.0], [31, 1811.0], [48, 1821.0], [64, 1828.0], [84, 1838.0], [103, 1847.0]]], ["30:59", "아멘. 예배당은 뭡니까? 하나님 앞에 예배드려서 은혜를 받지만 은혜 받은 거를 내 옆 사람에게 나눌 수 있는 것도 예배당입니다. 그러니까 여러분들 조금 일찍 가서 옆 사람하고 인사도 나누시고 끝나고 나서 먼저 분해 가지 마시고 옆 사람에게 아이고 오늘도 은혜 많이 받았습니다. 감사합니다. 축복합니다. 고맙습니다. 아이고 저번 주 맺는데 이번 줄 또 맺네요. 반갑습니다. 해야 돼요? 안 해야 돼요? 해야 합니다. 해야 돼요. 우리가 지금도 저도 헷갈리는게 그 두 가지인데 뭐냐면 새 가족이 풍성 뭡니까? 풍요로운 교회인지 알 수가 없어요. 지금도 보고 내가 다 헷갈려. 그래서 아무나 보고 다 인사해. 아이고 오늘 쳐 보셨습니까? 목사님 저 집사인데. 아 죄송해요. 말이에요. 어 왜냐면 누군지 모르겠는 거야. 누군지 모르겠는 거야. 거기 어 뭡니까? 그 그쪽에 45층 커피숍 갔다 했잖아요. 그쪽 뒤에 이렇게 쭉 갔는데 다 마시고 나가려고 하는데 옆에서 서원서 목사님이 하는 말이 목사님 저 누가 자꾸 몇 명이 목사님을 쳐다보는데 아무리 봐도 목사님께 성동고 더 그러길래 이렇게 봤더니 나 복는 사람인데 본인만 모르는 거야 그러더라고 나한테 근데 그 양반들을 알고서 이게 쳐다보면서 웃으면서 자기들게 또 얘기하고 또 쳐다보고 얘기하 하는 거 보니까 우리 교인은 맞는 거 같아. 근데 나는 저 사람들이 우리 교인지 아직도 모르겠어. 이게 왜 왜 모를까?", [[0, 1859.0], [17, 1866.0], [38, 1876.0], [57, 1885.0], [75, 1894.0], [97, 1901.0], [103, 1906.0], [114, 1914.0], [136, 1922.0], [155, 1931.0]]], ["32:24", "끝나자마자 가서 그래 불이나. 예배 끝나고 조금 내가 지나갈 때까지 가서 볼 때까지 기다리면 얼마나 좋아. 그냥가 버리니까 내가 알 수가 없잖아. 그죠? 그니까 여러분들 이번 주부터는 어떻게 해야 돼? 주일날에 오면 가서 인사라고 하면 아이고 저 처음 왔습니다. 그래요. 다음 주에 또 봅시다. 처음이군요. 다음 주에는 9년입니다. 한 주간 더 보면 당입니다. 한 주만 더 보면 시입니다. 시구입니다. 네 번만 참석하세요. 그러면서 역사람 민사가 얼마나 좋아. 아멘. 아멘. 그래서 같이 그리스도의 사랑을 나누도록 하나님이 좀 더 넓은 성전을 주신 거예요. 아멘. 아멘. 아멘. 좁다고 막 나가지 말고 옆사람 인사하고 그렇게 하면 참 좋을 거 같아요. 그럴까 안 그럴까요? 그러니까 여러분 우리를 낮추시는 뭐야? 우리를 하나님이 사랑으로 만들어 줘서 우리 옆 사람에게 힘을 주고 용기를 주는 사람. 그게 다 뭡니까? 우리 나 모습의 그리스도인들의 향기란 말이에요. 아멘.", [[0, 1944.0], [21, 1953.0], [42, 1962.0], [58, 1971.0], [69, 1978.0], [82, 1984.0], [94, 1990.0], [103, 1996.0]]], ["33:28", "아멘. 그래서 오늘 뭡니까? 성전 꼭대기에 세웠잖아요. 꼭대기에 세워 가지고 뛰어내리라고 얘기하잖아요. 네가 하나님의 아들이면 뛰어내려 보라. 과시예요. 과시 과시라고 어떤 과시일까요? 그래 네가 하나님의 아들이라고 그 정도면 그러면 내가 하나님의 아들인데 이까지 거 떠내려 간다고 죽겠어. 하나님 너를 살리든지 아니면 네가 살 수 있든지 군중이 하나 되겠지. 우리가 신앙생활할 때 늘 걸리는 것 중에 하나가 뭐냐면요. 교만의 싹이 걸려요. 믿음 생활 잘하다 보면 기도의 응답도 받고 말씀들을 때 은혜도 되고 선한 일도 같이 하다 보니까 사람들이 자기를 좋아하기도 하고 이러다 보면 너가 좀 될 거 같은 느낌이 든단 말이에요. 그때를 뭐해야 돼요? 조심해야 돼요.", [[0, 2008.0], [13, 2015.0], [30, 2023.0], [51, 2032.0], [73, 2042.0]]], ["34:13", "그때를 아멘. 아멘. 아멘. 조심해야 돼요. 교회 조금 커졌다고 갑자기 기부수 그러면 안 돼. 우리는 무조건 가서 섬겨야 돼. 아이고 사랑합니다. 반갑습니다. 아이 우리 새롭게 오 축복합니다. 섬겨야 돼. 무슨 모습으로? 낮아진 모습으로. 낮아진 모습으로 자꾸 섬겨야 돼. 얼마나 멋진지 몰라. 그렇죠? 거기다가 막 의자 같은 거 막 다 부서별로 갖다 놓으니까 얼마나 좋아. 누가가 내 아는 목사님이 그러더라고. 아니 왜 실을 실을 그렇게 진 거예요? 에르메스실, 루이뷔통실, 프라다실 그리고 또 뭐예요? 저기 자실 몽블랑실 듀얼실 또 구찌실 이렇게 있잖아. 그래 갖고 아니 실이 그게 뭐야? 그러길래 내가 그랬어. 뭐라 하냐면 예수 믿는 사람은 명품이야.", [[0, 2053.0], [18, 2063.0], [27, 2069.0], [35, 2075.0], [66, 2088.0], [73, 2094.0]]], ["35:09", "아멘. 아멘. 아멘. 명품은 명품간에 들어가야 돼. 명품이 이상한 시장 바닥 가면 안 돼. 명품은 명품에 들어가야 돼. 우리는 하나님이 만드신 걸작품 최고의 명품들이라 우리가 들어가는 실들은 다 명품실이야. 네. 그랬더니 와 그런 기가 막힌 뜻이 있었구나 그러더라고. 그지? 그러니까 다 이유가 있어 붙인 거지. 그냥 눈 그냥 머릿속에 생각하다가 막 붙인게 아니야. 그래서 우리를 뭐라고요? 나는 명품이야. 아멘. 아멘. 나는 명품이야. 나는 하나님이 만드신 최고의 걸작품 명품이야. 아멘. 그러니까 여러분들 나는 명품처럼 살아야 돼. 여러분 명품이 나이가 많다고 짝퉁이돼요?", [[0, 2109.0], [13, 2117.0], [29, 2128.0], [53, 2141.0], [68, 2151.0]]], ["36:00", "생각해 봐. 아니 가방 어S 가방을 누가 줬어요? 그 가방을 30년 썼다고 LMS가 DBMS가 돼? 아니잖아. 에르메스는 40년이 돼도 에르메스인 거야. 태다가 가면 50년 돼도 뭐 난 거야. 그러니까 명품은 아무리 나이가 먹어도 뭐야? 명품인 거야. 우리 교회는 오래돼도 명품이고 성도들이 나이가 많아도 다 명품이야. 아멘. 하나님이 만드신 아주 멋있는 걸작품이에요. 아멘. 우리는 그 비전과 꿈을 갖고 든든 든든함을 갖고 가야 돼. 그래서 사람들은 다 볼 때 목사님 저는 할 줄 아는게 별로 없는데 저는 우리 교회 한게 별로 없는데 무슨 소리 하고 있는 거예요? 우리 교회 이렇게 하는 거 저쪽까지 옮 기도하고 또 예물도 드리고 뭐도 하고 힘써 갖고 그리 간 거 아니에요? 그러면 한게 없는 거야. 무지하게 많은 거예요.", [[0, 2160.0], [11, 2166.0], [26, 2176.0], [45, 2187.0], [52, 2193.0], [63, 2199.0], [88, 2208.0]]], ["36:58", "무지하게 많습니다. 무지하게 많은 거예요. 어디 가서도 집에 가서 엄마 아빠 우리 교회 좀 갑시다. 아 왜 우리가요 하나님 앞에 기도하고 서로 연합하기 위해서 이렇게 교회를 세웠습니다. 한번 와서 보십시오. 한손으로 와서 보시라고이야 멋있다 그러면서 얘기하실 수도 있어. 그렇죠? 그러니까는 여러분들 마음속에 우리 교회를 이렇게 멋있게 했으니까 우리 교회 가득 채우는 거밖에 없다. 수많은 사람 오도록 기도하고 오는 사람 주고 아멘죠. 그러니까 거기에 마음에 뭐가 서면 안돼? 교만이 서는 순간부터 내리막길로 가는 거야. 교만이 서는 순간부터 우리는 그런 얘기 했잖아요. 첫 번째가 정말로 하나님의 나라를 위해서 도움이 되는 교회가 되자. 아멘. 두 번째가 침례교단에 도움이 되는 교회가 되자. 아멘.", [[0, 2218.0], [20, 2226.0], [38, 2237.0], [47, 2243.0], [66, 2253.0], [76, 2259.0], [86, 2265.0]]], ["37:52", "세 번째는 세종시에 도움이 되는 교회가 되자. 아멘. 덕져서 기회가 더 주신다면 우리나라의 복음이 되는 교회가 되자. 아멘. 그래서 우리가 꿈꿨던 거를 하나씩 하나씩 이루고 만드는 것에 자꾸 전진해야 돼. 아멘. 그러면은 마귀의 유혹이 자꾸 없어져. 왜 없어질까? 마귀는요. 우리가 봤을 때 좋은 걸 보이게 하지. 우리는요 좋은게 아니라 거룩한 걸 보는 사람들이거든. 아멘. 거룩한 걸 보는 사람들이라 날마다 하나님 앞에 거룩함으로 달려가는 거라 우리는 시험에 들어도 다 이길 수 있고 유혹에 들어도 다 이길 수 있어요. 아멘. 예수님이 주신 시험에 성숙하고 마귀가 주는 템프테이션 유혹에 뭡니까? 발로 빵차 가지고 우리 이기고 넘치는 승리자가 꼭 되셔야 됩니다.", [[0, 2272.0], [7, 2275.0], [18, 2282.0], [31, 2289.0], [54, 2300.0], [78, 2311.0]]], ["38:42", "아멘. 여러분들 아시겠죠? 아멘. 아멘. 뭡니까? 그래서 그다음에 뭐한게 뭐예요? 예수께서 이르시되 주 너희 하나님을 시험하지 말라 하였느니라. 봐요. 하나님 시험하지 말고 마귀한테 소리 팍 찌르는 거. 야, 나는 그런 걸로 넘어가지 않아. 그러면서 발로 빵 차버리는 거야. 아시겠죠? 삼손처럼 그냥 또 친 죄지를 그러지 말고 나는 그런 거 넘어가지 않아하고 발로 차버리라 이거요. 그래 가지고 나는 하나님의 거룩한 백성 세종월드교회 하나님이 교회를 통해서 영광만 받아 주시옵소서 하는 큰 외침이 우리의 비전이 되기를 주의 이름으로 축복합니다. 아멘. 우리만 좋은게 아니라 우리를 바라보고 정말로 침례 교회에 비전이 있겠구나라는 걸 바라보는 분들 기도해 주실 거 아니에요. 얼마나 감사해요. 그죠? 그러니까 그 기도에 힘어서 우리도 열심히 기도하고 땀흘려 기도하고 그리고 또 하나님 앞에 영광 올려드리는 귀한 사명 잘 감당해서 절대 포기하지 않고 주지 않고 넘어지지 않고 달려 나가는 구세 성도 당당한 성도 꼭 되셔야 돼요.", [[0, 2322.0], [3, 2324.0], [20, 2334.0], [40, 2344.0], [61, 2354.0], [76, 2362.0], [91, 2372.0], [111, 2382.0]]], ["39:54", "아멘. 여러분 지금까지 우리 세종월드교회로 전화 한번 안 해본 사람은 모르겠지만 해본 사람은 거기에 무슨 소리가 들려요? 빨리 얘기해 봐요. 당당하게 당당하게 삽시다. 세상을 놀라게 하는 세종월드교회입니다. 그런다는 말이요. 전학이 딱 오면 세종월드교회로 전화를 싹 하잖아요. 그럼 거기서 당당하게 삽시다. 세상을 놀라게 하는 세종월드교회입니다. 이렇게 나온다니까 못 들어봤구나. 아이 빨리 해 봐. 거기 소리를 자꾸 듣다 보니까 아 김정윤이 목소리가 들리더라고. 그렇지. 그 목소리가 딱 들리더라고. 당당하게 삽시다. 세상을 놀라게 하는 세종월드교회입니다. 그러면 딱 들린단 말이야. 알겠죠? 그러니까 오늘 긴가 아닌가 빨리 한 번씩 전화 해 봐서 그 딱 나온단 말이야. 아시겠죠? 그래서 정말 우리는 당당하게 사는 세종 교회 하나님 앞에 비전을 가지고 달려가는 세종 교회 아멘. 세상을 놀라게 하는 세종월드교회 아멘 하나님과 우리가 하나가 돼서 연합하여 거룩한 비전과 꿈을 만들어 가기를 주의 이름으로 축복합니다. 아멘.", [[0, 2394.0], [15, 2403.0], [28, 2411.0], [44, 2420.0], [61, 2430.0], [78, 2439.0], [95, 2448.0], [111, 2457.0]]], ["41:06", "처도 일어나 주시기 바랍니다.", [[0, 2466.0]]]];
+const toSec=t=>t.split(':').reduce((a,b)=>a*60+ +b,0);
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const S=T.map(([t])=>toSec(t));
+const W=T.map(([,x])=>x.split(/\s+/).filter(Boolean));
+// 단어별 시작 시간: 자막 구간 시작점([단어순번, 초])이 있으면 그 사이를, 없으면 문단 전체를 글자 수 비율로 나눔
+const WT=W.map((ws,i)=>{const end=i+1<S.length?S[i+1]:END;const A=(T[i][2]&&T[i][2].length)?T[i][2]:[[0,S[i]]];const out=new Array(ws.length);
+  A.forEach(([w0,a],k)=>{const w1=k+1<A.length?A[k+1][0]:ws.length,b=k+1<A.length?A[k+1][1]:end;const part=ws.slice(w0,w1);const tot=part.reduce((n,w)=>n+w.length+1,0)||1;let c=0;part.forEach((w,m)=>{out[w0+m]=a+(b-a)*c/tot;c+=w.length+1;});});
+  for(let j=0;j<ws.length;j++)if(out[j]==null)out[j]=j?out[j-1]:S[i];return out;});
+const list=document.getElementById('list'), scroller=document.getElementById('scroll');
+list.innerHTML=T.map(([t],i)=>`<div class="seg" data-i="${i}"><div class="av">임</div><div><div class="who">임헌규 목사<button data-s="${S[i]}">${t}</button></div><div class="tx"></div></div></div>`).join('');
+const segs=[...list.children];
+function renderTx(i,k){const tx=segs[i].querySelector('.tx');tx.innerHTML=W[i].map((w,j)=>{let h=esc(w);if(k&&w.includes(k))h=h.split(esc(k)).join('<mark>'+esc(k)+'</mark>');return `<span class="w" data-i="${i}" data-j="${j}">${h}</span>`;}).join(' ');}
+T.forEach((_,i)=>renderTx(i,''));
+const q=document.getElementById('q'),cnt=document.getElementById('cnt');
+q.addEventListener('input',()=>{const k=q.value.trim();let n=0;segs.forEach((el,i)=>{renderTx(i,k);const ok=!k||T[i][1].includes(k);el.classList.toggle('hide',!ok);if(k&&ok)n++;});cnt.textContent=k?`'${k}' ${n}개 구간`:'';});
+
+/* ---- 유튜브 플레이어 ---- */
+let player=null, ready=false, pending=null;
+const START=(()=>{const m=location.hash.match(/t=(\d+)/);return m?+m[1]:S[0];})();
+const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+let lastSave=0;
+function saveProg(t,force){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();const P=lsGet('sermon-progress',{});const o=P[VID]||{};const dur=(player&&player.getDuration&&player.getDuration())||END;P[VID]={t:Math.floor(t),at:Date.now(),done:o.done||t/dur>=0.9};lsSet('sermon-progress',P);}
+const bm=document.getElementById('bm');
+const drawBm=()=>{const on=lsGet('sermon-saved',[]).includes(VID);bm.classList.toggle('on',on);bm.textContent=on?'★ 저장됨':'☆ 저장';};
+bm.onclick=()=>{let s=lsGet('sermon-saved',[]);s=s.includes(VID)?s.filter(v=>v!==VID):[VID,...s];lsSet('sermon-saved',s);drawBm();};
+drawBm();
+const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
+window.onYouTubeIframeAPIReady=()=>{player=new YT.Player('yt',{videoId:VID,playerVars:{playsinline:1,rel:0,start:START},events:{onReady:()=>{ready=true;if(pending!=null){seek(pending);pending=null;}}}});};
+function seek(t){if(!ready){pending=t;return;}player.seekTo(Math.max(0,t-0.5),true);player.playVideo();}
+
+/* ---- 재생 위치에 맞춰 스크립트 따라가기 ---- */
+let follow=true, lastI=-1, lastW=null, userScrollAt=0;
+/* ---- 설정: 글자 크기 ---- */
+(()=>{const sizes=[[0.88,'가',13],[1,'가',15],[1.15,'가',17],[1.3,'가',19],[1.5,'가',21]];
+  let cur=1; try{const v=parseFloat(localStorage.getItem('sermon-font'));if(v)cur=v;}catch(e){}
+  const box=document.getElementById('fsz');
+  const apply=v=>{cur=v;document.documentElement.style.setProperty('--fz',v);try{localStorage.setItem('sermon-font',v);}catch(e){}box.innerHTML=sizes.map(([z,t,px])=>`<button data-z="${z}" class="${z===cur?'on':''}" style="font-size:${px}px" aria-label="글자 크기 ${Math.round(z*100)}%">${t}</button>`).join('');};
+  box.onclick=e=>{const b=e.target.closest('button');if(b)apply(+b.dataset.z);};
+  document.getElementById('gear').onclick=()=>document.getElementById('setp').classList.toggle('on');
+  apply(cur);})();
+const fbtn=document.getElementById('follow');
+fbtn.onclick=()=>{follow=!follow;fbtn.classList.toggle('on',follow);fbtn.textContent=follow?'따라가기 ON':'따라가기 OFF';if(follow)lastI=-1;};
+scroller.addEventListener('touchmove',()=>userScrollAt=Date.now(),{passive:true});
+scroller.addEventListener('wheel',()=>userScrollAt=Date.now(),{passive:true});
+function locate(t){let i=0;for(let k=0;k<S.length;k++)if(S[k]<=t)i=k;let j=0;WT[i].forEach((wt,k)=>{if(wt<=t)j=k;});return [i,j];}
+setInterval(()=>{
+  if(!ready||!player.getPlayerState)return; const st=player.getPlayerState(); if(st!==1&&st!==3)return;
+  const t=player.getCurrentTime(); saveProg(t); if(t<S[0]-1)return;
+  const [i,j]=locate(t);
+  if(i!==lastI){segs.forEach(s=>s.classList.remove('now'));segs[i].classList.add('now');lastI=i;
+    if(follow&&Date.now()-userScrollAt>4000&&document.getElementById('txt').classList.contains('on')){const r=segs[i].offsetTop-8;scroller.scrollTo({top:r,behavior:'smooth'});}}
+  const w=segs[i].querySelector(`.w[data-j="${j}"]`); if(w!==lastW){if(lastW)lastW.classList.remove('say');if(w)w.classList.add('say');lastW=w;}
+},250);
+
+window.addEventListener('pagehide',()=>{try{if(ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
+document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&ready)saveProg(player.getCurrentTime(),true);}catch(e){}});
+
+
+/* ---- 듣기 모드: 영상은 작게, 자막은 크게 ---- */
+const fmtT=s=>{s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=String(s%60).padStart(2,'0');return h?`${h}:${String(m).padStart(2,'0')}:${x}`:`${m}:${x}`;};
+const ppBtn=document.getElementById('pp'), tmEl=document.getElementById('tm'), tdEl=document.getElementById('td'), skEl=document.getElementById('sk');
+let dragging=false;
+function setMini(on){document.body.classList.toggle('mini',on);lsSet('sermon-mini',on);document.getElementById('lm').textContent=on?'🎬 영상 크게':'🎧 듣기 모드';}
+document.getElementById('lm').onclick=()=>setMini(!document.body.classList.contains('mini'));
+document.getElementById('ex').onclick=()=>setMini(false);
+ppBtn.onclick=()=>{if(!ready){pending=START;return;}const st=player.getPlayerState();if(st===1||st===3)player.pauseVideo();else player.playVideo();};
+const jump=d=>{if(!ready)return;player.seekTo(Math.max(0,player.getCurrentTime()+d),true);};
+let SKIP=10; try{const v=parseInt(localStorage.getItem('sermon-skip'));if(v)SKIP=v;}catch(e){}
+const bkB=document.getElementById('bk'), fwB=document.getElementById('fw'), skp=document.getElementById('skp');
+function setSkip(v){SKIP=v;try{localStorage.setItem('sermon-skip',v);}catch(e){}bkB.textContent='-'+v;fwB.textContent='+'+v;bkB.setAttribute('aria-label',v+'초 뒤로');fwB.setAttribute('aria-label',v+'초 앞으로');
+  skp.innerHTML=[5,10,15,30].map(s=>`<button data-s="${s}" class="${s===SKIP?'on':''}" style="font-size:13px;min-width:46px">${s}초</button>`).join('');}
+skp.onclick=e=>{const b=e.target.closest('button');if(b)setSkip(+b.dataset.s);};
+bkB.onclick=()=>jump(-SKIP); fwB.onclick=()=>jump(SKIP);
+setSkip(SKIP);
+skEl.addEventListener('input',()=>{dragging=true;document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');const dur=(ready&&player.getDuration())||END;tmEl.textContent=fmtT(skEl.value/1000*dur);});
+skEl.addEventListener('change',()=>{dragging=false;if(!ready)return;const dur=player.getDuration()||END;userScrollAt=0;player.seekTo(skEl.value/1000*dur,true);});
+setInterval(()=>{if(!ready||!player.getPlayerState)return;const st=player.getPlayerState();ppBtn.textContent=(st===1||st===3)?'❚❚':'▶';const dur=player.getDuration()||END, t=player.getCurrentTime();tdEl.textContent=fmtT(dur);if(!dragging){tmEl.textContent=fmtT(t);skEl.value=Math.round(t/dur*1000);document.getElementById('line').style.setProperty('--p',(skEl.value/10)+'%');}},500);
+tdEl.textContent=fmtT(END);
+if(lsGet('sermon-mini',false)) setMini(true);
+document.getElementById('mtitle').textContent=document.querySelector('.head h1').textContent;
+
+/* ---- 단어·시간 누르면 그 위치부터 재생 ---- */
+list.addEventListener('click',e=>{
+  const w=e.target.closest('.w'); if(w){userScrollAt=0;seek(WT[+w.dataset.i][+w.dataset.j]);return;}
+  const b=e.target.closest('.who button'); if(b){userScrollAt=0;seek(+b.dataset.s);}
+});
+
+/* ---- 탭 / 구간 바로가기 ---- */
+const tabs=document.querySelectorAll('.tabs button');
+function show(t){tabs.forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));scroller.scrollTop=0;}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.t));
+document.querySelectorAll('.chap a').forEach(a=>a.onclick=e=>{e.preventDefault();show('txt');lastI=-1;userScrollAt=0;seek(+a.dataset.s);});
+</script>
+</body>
+</html>

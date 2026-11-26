@@ -49,7 +49,7 @@ def main(path):
         assert k in d and d[k], f"입력에 '{k}' 값이 없습니다"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", d["date"])
     paras = [p[:3] if len(p) > 2 and p[2] else p[:2] for p in d["paragraphs"] if p[1].strip()]
-    secs = [to_sec(t) for t, _ in paras]
+    secs = [to_sec(p[0]) for p in paras]
     assert secs == sorted(secs), "문단 시간이 시간순이 아닙니다"
 
     listing_path = os.path.join(ROOT, "sermons.json")
